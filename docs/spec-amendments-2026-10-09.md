@@ -320,6 +320,16 @@ transactions a year)
 
 處置：用實際查詢的結果取代，並註明算的是哪個期間。
 
+### A12-5 — 第 6 節，圖表規則裡的示意百分比（108 新增）
+
+```
+Figures are presented as statements of fact ("+4.2% versus the same quarter
+last year") rather than as characterisations ("an upward trend").
+```
+
+`+4.2%` 在引號裡、明顯是格式範例，風險比前面幾處低 —— 但它仍然是測量值的形狀，
+而且第 6 節講的正是「數字要陳述事實」。照 A12-4 的規則改成 `+X.X%`。
+
 ### A12-4 — 全文規則
 
 > Any figure that appears in this specification in the shape of a measurement
@@ -329,6 +339,48 @@ transactions a year)
 理由：這份規格的讀者包含接手的 AI 和評審。一個長得像測量值的編造數字，會被
 下一個人當成基準去比對 —— 而那正是這個產品在防的事情，發生在這個產品自己的
 文件裡。
+
+---
+
+## A13 — 第 21 節同樣要收窄「空結果是正確結果」（108 新增，優先於 README）
+
+第 21 節（寫給接手者看的那節）目前寫著：
+
+> An empty result is a correct result. If no evidence is found, the system says
+> so and shows nothing. Do not add fallback explanations, AI-generated
+> summaries, or "best guesses" to fill the space.
+
+**C1 原本只針對 README，但這句話也在規格第 21 節裡，而第 21 節是接手的人和 AI
+最先讀的一節。** 它現在會教下一個接手者把五種狀態全部壓成一個空結果 —— 正好
+是 A1 和 A2 要禁止的事。改成：
+
+> A genuine empty result is a correct result. Where research completed and the
+> record did not support a direction, the system says so and shows nothing. Do
+> not add fallback explanations, AI-generated summaries, or "best guesses" to
+> fill the space.
+>
+> But an empty result is only correct when it is true. A search that failed, a
+> quota that ran out, an event outside the measurable range, and a finding the
+> gate withheld are **not** empty results, and displaying them as one states a
+> falsehood about the historical record. See the five states in section 10.
+
+---
+
+## A14 — 第 13 節的證據鏈漏掉事前窗口（108 新增）
+
+第 13 節寫：
+
+> AI finds event → event source displayed → official price data → program
+> calculates the movement **over the following 12 months** → reviewer checks
+> presentation → result shown → human judgment
+
+但第 14 節的測量規則是**事件後 12 個月對照事件前 12 個月**。這條摘要只提了
+後半段，讀起來像是只算事後。改成：
+
+> ...→ program calculates the movement across the twelve months before and
+> after the event date → ...
+
+小地方，但第 13 節那條鏈是整份規格最常被引用的一句，而且接手的人會照它實作。
 
 ---
 
