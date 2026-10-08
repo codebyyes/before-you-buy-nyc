@@ -1,0 +1,7 @@
+# Versions are intentionally unpinned until they are pinned from a verified
+# `pip freeze` in the deployment environment. The project must stay runnable
+# through the judging period (2026-12-01 to 12-15), so the pins should come
+# from what actually runs there, not from whatever is newest today.
+flask
+openai
+tavily-python

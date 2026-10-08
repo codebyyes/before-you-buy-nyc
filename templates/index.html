@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Before You Buy NYC</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#12120f; --panel:#1a1a16; --line:#2e2e27;
+  --ink:#eceae2; --mute:#8d897c; --accent:#c8a96a; --locked:#55524a;
+}
+body{background:var(--bg);color:var(--ink);
+  font:15px/1.55 ui-sans-serif,-apple-system,"Helvetica Neue",sans-serif;
+  padding:28px 16px 64px}
+.wrap{max-width:1180px;margin:0 auto}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+h1{font-size:21px;font-weight:600;letter-spacing:-.01em}
+.tag{color:var(--mute);font-size:13px;margin-top:5px}
+.cols{display:grid;grid-template-columns:minmax(0,480px) minmax(0,1fr);gap:22px}
+@media(max-width:860px){.cols{grid-template-columns:1fr}}
+.col{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px}
+.col.off{opacity:.42}
+.col.off *{cursor:not-allowed}
+.step{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);
+  margin-bottom:12px}
+.col.off .step,.col.locked .step{color:var(--locked)}
+h2{font-size:16px;font-weight:600;margin-bottom:4px}
+h3{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--mute);
+  font-weight:500;margin:22px 0 2px}
+.sub{color:var(--mute);font-size:13px;margin-bottom:16px}
+label{display:block;font-size:12px;color:var(--mute);margin:14px 0 5px}
+select,input[type=text],textarea{width:100%;background:#0f0f0c;color:var(--ink);
+  border:1px solid var(--line);border-radius:7px;padding:10px 11px;font:inherit}
+select:disabled,textarea:disabled,input:disabled{color:var(--locked)}
+button{margin-top:16px;background:var(--accent);color:#1a1509;border:0;border-radius:7px;
+  padding:10px 18px;font:600 14px/1 inherit;cursor:pointer}
+button.ghost{background:none;color:var(--mute);border:1px solid var(--line)}
+button:disabled{background:#3a382f;color:var(--locked);cursor:not-allowed}
+.fixed{font-variant-numeric:tabular-nums;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+table{width:100%;border-collapse:collapse;margin-top:6px}
+th{text-align:left;font-size:11px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--mute);font-weight:500;padding:0 0 7px;border-bottom:1px solid var(--line)}
+td{padding:7px 0;border-bottom:1px solid #232320;font-size:13px}
+td.num,th.num{text-align:right;padding-left:16px;white-space:nowrap}
+tr.total td{border-bottom:0;border-top:1px solid var(--line);font-weight:600;padding-top:9px}
+.cat{color:var(--mute);font-size:12px}
+.chart{margin-top:10px;background:#0f0f0c;border:1px solid var(--line);
+  border-radius:8px;padding:10px 8px 4px}
+.chart svg{display:block;width:100%;height:auto}
+.qt{width:100%;border-collapse:collapse;margin-top:12px}
+.qt td{padding:4px 0;border-bottom:1px solid #1f1f1c;font-size:12px;color:var(--mute)}
+.qt td.q{color:#b4b0a3}
+.qt tr:last-child td{border-bottom:0}
+.note{color:var(--mute);font-size:12px;margin-top:14px;line-height:1.5}
+.prov{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);
+  color:var(--mute);font-size:11.5px;line-height:1.65}
+.prov b{color:#b4b0a3;font-weight:500}
+.err{background:#2a1a16;border:1px solid #5b3328;color:#e8c4b8;padding:13px 15px;
+  border-radius:8px;font-size:13px;margin-top:14px}
+.motto{color:var(--mute);font-size:12px;letter-spacing:.04em;margin-top:22px;
+  text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Before You Buy NYC</h1>
+  <div class="tag">Every decision carries risk. Before you buy or sell in New York,
+    see what actually happened after similar events in the past &mdash; with every
+    source shown.</div>
+</header>
+
+<div class="cols">
+
+{# ---------------------------- column one ---------------------------- #}
+{% if ctx %}
+<div class="col locked">
+  <div class="step">Step 1 &middot; Locked</div>
+
+  <h2>{{ ctx.borough }}</h2>
+  <div class="sub">Median sale price, 12 months to {{ ctx.cur_end }}</div>
+
+  <table>
+    <tr>
+      <th>Official property class</th>
+      <th class="num">Median</th>
+      <th class="num">Sales</th>
+      <th class="num">vs prior year</th>
+    </tr>
+    {% for c in ctx.classes %}
+    <tr>
+      <td class="cat">{{ c.category }}</td>
+      <td class="num fixed">{{ c.median|money }}</td>
+      <td class="num fixed">{{ c.count|num }}</td>
+      <td class="num fixed">{{ c.change|signed }}</td>
+    </tr>
+    {% endfor %}
+    <tr class="total">
+      <td>All eligible residential</td>
+      <td class="num fixed">{{ ctx.all_median|money }}</td>
+      <td class="num fixed">{{ ctx.all_count|num }}</td>
+      <td class="num fixed">{{ ctx.all_change|signed }}</td>
+    </tr>
+  </table>
+
+  <h3>Three-year quarterly trend</h3>
+  <div class="sub">Median sale price, all eligible residential</div>
+
+  {% if chart %}
+  <div class="chart">
+    <svg viewBox="0 0 {{ chart.w }} {{ chart.h }}" role="img"
+         aria-label="Median sale price by quarter, all eligible residential">
+      {% for g in chart.grid %}
+      <line x1="{{ chart.pl }}" y1="{{ g.y }}" x2="{{ chart.pr }}" y2="{{ g.y }}"
+            stroke="#232320" stroke-width="1"/>
+      <text x="{{ chart.label_x }}" y="{{ g.y + 3 }}" fill="#8d897c" font-size="10"
+            text-anchor="end"
+            font-family="ui-monospace,Menlo,monospace">{{ g.label }}</text>
+      {% endfor %}
+
+      {% if chart.solid %}
+      <polyline fill="none" stroke="#c8a96a" stroke-width="2" stroke-linejoin="round"
+                points="{{ chart.solid }}"/>
+      {% endif %}
+
+      {% if chart.dash %}
+      <line x1="{{ chart.dash.x1 }}" y1="{{ chart.dash.y1 }}"
+            x2="{{ chart.dash.x2 }}" y2="{{ chart.dash.y2 }}"
+            stroke="#c8a96a" stroke-width="2" stroke-dasharray="4 3"/>
+      {% endif %}
+
+      {% for m in chart.markers %}
+        {% if m.partial %}
+        <circle cx="{{ m.x }}" cy="{{ m.y }}" r="4" fill="#0f0f0c"
+                stroke="#c8a96a" stroke-width="2"/>
+        {% else %}
+        <circle cx="{{ m.x }}" cy="{{ m.y }}" r="4" fill="#c8a96a"/>
+        {% endif %}
+        <circle cx="{{ m.x }}" cy="{{ m.y }}" r="12" fill="transparent">
+          <title>{{ m.title }}</title>
+        </circle>
+      {% endfor %}
+
+      {% for t in chart.xticks %}
+      <text x="{{ t.x }}" y="{{ t.y }}" fill="#8d897c" font-size="10"
+            text-anchor="{{ t.anchor }}"
+            font-family="ui-monospace,Menlo,monospace">{{ t.label }}</text>
+      {% endfor %}
+    </svg>
+  </div>
+  <div class="note">Vertical axis spans {{ chart.axis_lo }} to {{ chart.axis_hi }}
+    and does not start at zero. No trend line or projection is drawn.</div>
+  {% endif %}
+
+  <table class="qt">
+    {% for q in ctx.trend %}
+    <tr>
+      <td class="q fixed">{{ q.label }}{% if q.partial %} *{% endif %}</td>
+      <td class="num fixed">{{ q.median|money }}</td>
+      <td class="num fixed">{{ q.count|num }} sales</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  {% if partial %}
+  <div class="note">* {{ partial.label }} is incomplete: it covers only through
+    {{ partial.through }} ({{ partial.count|num }} sales so far) and is not
+    comparable to a full quarter.</div>
+  {% endif %}
+
+  <div class="prov">
+    <b>Datasets.</b>
+    Annualized <code>{{ ctx.annual_label }}</code> {{ ctx.coverage.annual_min }} to
+    {{ ctx.coverage.annual_max }}, {{ ctx.coverage.annual_n|num }} records{% if
+    ctx.coverage.annual_updated %}, refreshed {{ ctx.coverage.annual_updated }}{% endif %}.
+    Rolling <code>{{ ctx.rolling_label }}</code> {{ ctx.coverage.rolling_min }} to
+    {{ ctx.coverage.rolling_max }}, {{ ctx.coverage.rolling_n|num }} records{% if
+    ctx.coverage.rolling_updated %}, refreshed {{ ctx.coverage.rolling_updated }}{% endif %}.<br>
+    <b>Boundary.</b> Sales up to {{ ctx.coverage.annual_max }} are taken from the
+    annualized dataset, later sales from the rolling dataset, so no sale is counted
+    twice.<br>
+    <b>Windows.</b> Current {{ ctx.cur_start }} to {{ ctx.cur_end }}.
+    Prior year {{ ctx.prior_start }} to {{ ctx.prior_end }}.
+    Trend from {{ ctx.span_start }}.<br>
+    <b>Filter.</b> {{ ctx.class_count }} of 44 official
+    <code>building_class_category</code> values; sale_price below
+    {{ ctx.min_price|money }} excluded. {{ ctx.rows_examined|num }} rows entered
+    these medians.<br>
+    <b>Queried live.</b> Nothing stored. Every figure above was calculated from data
+    fetched from NYC Open Data when this page loaded.
+  </div>
+
+  <form method="post" action="/">
+    <button class="ghost" type="submit">Change region</button>
+  </form>
+</div>
+{% else %}
+<div class="col">
+  <div class="step">Step 1 &middot; Active</div>
+  <h2>Establish the data context</h2>
+  <div class="sub">Pick a borough. Official sales data is retrieved before any
+    question is asked.</div>
+  <form method="post" action="/confirm">
+    <label>Date</label>
+    <input type="text" value="{{ today }}" disabled>
+    <label>Region</label>
+    <select name="borough">
+      {% for b in boroughs %}
+        {% if b.available %}
+      <option value="{{ b.code }}"{% if b.selected %} selected{% endif %}>{{ b.name }}</option>
+        {% else %}
+      <option value="{{ b.code }}" disabled>{{ b.name }} &mdash; not available in V1</option>
+        {% endif %}
+      {% endfor %}
+    </select>
+    <button type="submit">Confirm</button>
+  </form>
+  {% if error %}<div class="err">{{ error }}</div>{% endif %}
+</div>
+{% endif %}
+
+{# ---------------------------- column two ---------------------------- #}
+{% if ctx %}
+<div class="col">
+  <div class="step">Step 2 &middot; Active</div>
+  <h2>Ask a question</h2>
+  <div class="sub">Anything. Whether prices will rise, whether a mayor's term
+    mattered, what happens to housing after a war ends.</div>
+  <form>
+    <label>Question</label>
+    <textarea rows="4"
+      placeholder="Will Brooklyn prices rise next year?">{{ question }}</textarea>
+    <button type="submit" disabled>Research &mdash; not wired yet</button>
+  </form>
+  <div class="note">The research pipeline is the next build step. This column is
+    where the locked keywords, their reasoning paths and the historical evidence
+    will appear.</div>
+</div>
+{% else %}
+<div class="col off">
+  <div class="step">Step 2 &middot; Waiting</div>
+  <h2>Ask a question</h2>
+  <div class="sub">Available once a region is confirmed.</div>
+  <form>
+    <label>Question</label>
+    <textarea rows="4" disabled></textarea>
+    <button disabled>Research</button>
+  </form>
+</div>
+{% endif %}
+
+</div>
+
+<div class="motto">AI explores. Evidence verifies. Humans decide.</div>
+
+</div>
+</body>
+</html>
