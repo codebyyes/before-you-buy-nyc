@@ -272,6 +272,40 @@ against the current artifact before A12 is closed.
 
 ---
 
+## A15 — 第 9 節開頭補一段：這道閘門為什麼存在（108 新增，802 口述的專案史）
+
+第 9 節目前解釋的是「為什麼審查範圍要窄」，沒有記錄**為什麼會有審查者**。那段
+歷史只存在 802 的記憶裡（2026-10-09 凌晨口述），現在寫下來：
+
+> ### Why there is a second model at all
+>
+> The first substantive response this project received from a language model
+> was that it could not be built. The objection was specific: a model asked to
+> research a question will talk itself into an answer — it reasons toward
+> something plausible and then presents the reasoning as a finding.
+>
+> That objection is the reason this section exists. The design did not add a
+> reviewer for general safety; it added a gate against one named failure mode,
+> identified before any code was written. The explorer is still allowed to
+> reason toward whatever it likes, because that is where its value is. What it
+> is not allowed to do is be the one who decides that its reasoning has become
+> a result.
+>
+> The objection was correct, and it was later measured: given a question with
+> no real event behind it, the explorer produced plausible event names for
+> things that never happened (section 17). The architecture was already shaped
+> for that behaviour because a critic had described it in advance.
+
+**802 的評語值得一併記下：「我覺得他還是有他的用處。」** 那個模型的價值不在於
+它說對了（它說做不成，結果做成了），而在於它**精確命名了失敗模式**。這跟這個
+產品對 Explorer 的要求是同一件事 —— 不要求它說對，只要求它指出一個方向。
+
+⚠️ 要不要在規格裡點名是哪個模型，由 802 決定。上面的寫法沒有點名。點名更誠實，
+但這份規格會隨投稿公開，而比賽是 Nebius × NVIDIA 辦的 —— 這是觀感問題，不是
+事實問題，所以交給他判斷。
+
+---
+
 ## A12 — 清掉規格書裡編造的示意數字
 
 801 提出第 14 節那組，108 照要求掃過全文，**另外找到三處**。
