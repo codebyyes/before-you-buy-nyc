@@ -21,6 +21,7 @@ from datetime import date, datetime, timedelta
 
 from flask import Flask, jsonify, render_template, request
 
+import evidence
 import explorer
 
 # ---------------------------------------------------------------------------
@@ -237,6 +238,14 @@ def pct_change(before, after):
     return round((after - before) / before * 100, 2)
 
 
+def months_between(start, end):
+    """Whole months from start up to end."""
+    n = (end.year - start.year) * 12 + (end.month - start.month)
+    if end.day < start.day:
+        n -= 1
+    return max(n, 0)
+
+
 def window(sales, start, end):
     """Prices with start <= sale_date < end."""
     return [p for (d, p, _c) in sales if start <= d < end]
@@ -328,6 +337,55 @@ def build_context(borough, borough_name):
         "rolling_label": ROLLING,
         "min_price": MIN_PRICE,
         "class_count": len(RESIDENTIAL),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Measuring an event - spec section 14.
+#
+# Twelve months before the event date against twelve months after it. The
+# model supplied the date and nothing else; every number below is computed
+# here, from the same official rows the first column is built from.
+# ---------------------------------------------------------------------------
+
+MEASURE_MONTHS = 12
+
+
+def earliest_measurable(coverage):
+    """The first date with a complete twelve-month window behind it."""
+    return add_months(coverage["annual_min"], MEASURE_MONTHS)
+
+
+def measure_event(sales, when, coverage):
+    """Median and count on each side of an event date.
+
+    The window after the event is cut short when the data does not reach that
+    far. A short window is reported as short, with the months actually elapsed,
+    rather than being presented as a year (spec section 14 on incomplete
+    windows). Comparing six months against twelve and calling it a year is the
+    misreading that rule exists to prevent.
+    """
+    data_end = coverage["latest"] + timedelta(days=1)
+    pre_start = add_months(when, -MEASURE_MONTHS)
+    post_end_full = add_months(when, MEASURE_MONTHS)
+    post_end = min(post_end_full, data_end)
+
+    pre_median, pre_count = median_of(window(sales, pre_start, when))
+    post_median, post_count = median_of(window(sales, when, post_end))
+    elapsed = months_between(when, post_end)
+
+    return {
+        "pre_start": pre_start.isoformat(),
+        "pre_end": (when - timedelta(days=1)).isoformat(),
+        "pre_median": pre_median,
+        "pre_count": pre_count,
+        "post_start": when.isoformat(),
+        "post_end": (post_end - timedelta(days=1)).isoformat(),
+        "post_median": post_median,
+        "post_count": post_count,
+        "change": pct_change(pre_median, post_median),
+        "months_after": elapsed,
+        "complete": post_end >= post_end_full,
     }
 
 
@@ -438,6 +496,35 @@ app.jinja_env.filters["num"] = num
 app.jinja_env.filters["signed"] = signed
 
 
+# ---------------------------------------------------------------------------
+# Search budget.
+#
+# One search credit per keyword, and the monthly allowance has to last through
+# the judging period. This stops a single visitor emptying it in one sitting.
+#
+# Be clear about what it is not: the count lives in memory, and the free
+# instance sleeps after fifteen idle minutes, so it resets often and is no
+# defence against someone returning over days. It catches the realistic case -
+# one person holding the button down - and nothing more. A real limit needs
+# stored state, which section 15 says this version does not have.
+# ---------------------------------------------------------------------------
+
+CREDIT_BUDGET = int(os.environ.get("SEARCH_CREDIT_BUDGET", "300"))
+_spent = [0]
+
+
+def take_budget(n):
+    if CREDIT_BUDGET <= 0:
+        return True, ""
+    if _spent[0] + n > CREDIT_BUDGET:
+        return False, ("This instance has used its search allowance for now "
+                       "(%d of %d credits since it last started). No search "
+                       "was run, so nothing here is a finding about the "
+                       "historical record." % (_spent[0], CREDIT_BUDGET))
+    _spent[0] += n
+    return True, ""
+
+
 def borough_options(selected=None):
     return [
         {
@@ -518,6 +605,154 @@ def explore():
         out["rollup"] = out["state"]
     out["rollup_label"] = explorer.STATE_LABEL.get(out["rollup"], out["rollup"])
     return jsonify(out)
+
+
+@app.route("/evidence", methods=["POST"])
+def evidence_route():
+    """Request two of two: the locked keywords go out, measured findings come back.
+
+    The browser sends the keywords back rather than the server holding them,
+    because nothing is stored between requests (spec section 15). That makes
+    the lock a property of the interface, not of the transport: these are the
+    keywords the reader was shown and could not edit, and they are the ones
+    searched. A crafted request could send something else, and would only be
+    lying to itself - there is no shared state to corrupt and nothing is kept.
+    """
+    payload = request.get_json(silent=True) or {}
+    borough = (payload.get("borough") or "").strip()
+    raw = payload.get("directions")
+
+    def incomplete(reason):
+        return jsonify({
+            "ok": False,
+            "rollup": explorer.RESEARCH_INCOMPLETE,
+            "rollup_label": explorer.STATE_LABEL[explorer.RESEARCH_INCOMPLETE],
+            "reason": reason,
+            "directions": [],
+        })
+
+    if borough not in AVAILABLE_BOROUGHS:
+        return incomplete("That region is not available in V1.")
+    if not isinstance(raw, list) or not raw:
+        return incomplete("No research directions were submitted.")
+
+    directions = []
+    for item in raw[:explorer.MAX_DIRECTIONS]:
+        if not isinstance(item, dict):
+            continue
+        keyword = explorer.clean(item.get("keyword"), 160)
+        if keyword:
+            directions.append({"keyword": keyword,
+                               "path": explorer.clean(item.get("path"), 300)})
+    if not directions:
+        return incomplete("No research directions were submitted.")
+
+    allowed, note = take_budget(len(directions))
+    if not allowed:
+        return incomplete(note)
+
+    # Search and date every direction. Costs one search credit per keyword.
+    try:
+        found = evidence.gather(directions)
+    except Exception as exc:
+        return incomplete("The search layer failed (%s: %s)."
+                          % (type(exc).__name__, exc))
+
+    dated = [d for d in found if d.get("event")]
+
+    # Official data for every event window, in one fetch. The windows overlap
+    # heavily, so the union span is barely larger than the widest single one,
+    # and section 15 allows nearby periods in one analysis to be combined into
+    # fewer calls. This is a better-written query, not a cache.
+    coverage = None
+    sales = []
+    fetch_error = None
+    if dated:
+        try:
+            coverage = coverage_info()
+            floor = earliest_measurable(coverage)
+            data_end = coverage["latest"] + timedelta(days=1)
+            inrange = [d["event"]["date"] for d in dated
+                       if floor <= d["event"]["date"] < data_end]
+            if inrange:
+                span_start = add_months(min(inrange), -MEASURE_MONTHS)
+                span_end = min(add_months(max(inrange), MEASURE_MONTHS), data_end)
+                sales = parse_rows(fetch_span(coverage, borough,
+                                              span_start, span_end))
+        except Exception as exc:
+            fetch_error = ("NYC Open Data could not be reached (%s: %s), so the "
+                           "price movement could not be measured."
+                           % (type(exc).__name__, exc))
+
+    out = []
+    for d in found:
+        row = {"keyword": d["keyword"], "path": d.get("path", "")}
+        if d.get("state") == explorer.RESEARCH_INCOMPLETE:
+            row.update(state=explorer.RESEARCH_INCOMPLETE, reason=d.get("reason", ""))
+            out.append(row)
+            continue
+        if not d.get("event"):
+            row.update(state=explorer.NO_EVIDENCE,
+                       sources_searched=d.get("sources_searched", 0))
+            out.append(row)
+            continue
+
+        ev = d["event"]
+        row["event"] = {
+            "event": ev["event"],
+            "date": ev["date"].isoformat(),
+            "date_basis": ev["date_basis"],
+            "source_url": ev["source_url"],
+            "source_type": ev["source_type"],
+            "source_count": ev["source_count"],
+        }
+
+        if fetch_error or coverage is None:
+            row.update(state=explorer.RESEARCH_INCOMPLETE, reason=fetch_error or "")
+            out.append(row)
+            continue
+
+        floor = earliest_measurable(coverage)
+        data_end = coverage["latest"] + timedelta(days=1)
+        if ev["date"] < floor or ev["date"] >= data_end:
+            # Real, sourced, dated - and outside what this data can measure.
+            # Saying "no evidence found" here would be a claim about history
+            # made to cover a limit of ours (spec section 10).
+            row.update(
+                state=explorer.EVENT_OUTSIDE_MEASURABLE_RANGE,
+                reason=("The measurable range runs from %s to %s. A complete "
+                        "twelve-month window before the event must exist in "
+                        "the dataset, and the dataset begins %s."
+                        % (floor.isoformat(), coverage["latest"].isoformat(),
+                           coverage["annual_min"].isoformat())),
+            )
+            out.append(row)
+            continue
+
+        row["measure"] = measure_event(sales, ev["date"], coverage)
+        row["state"] = explorer.RESULT
+        out.append(row)
+
+    body = {
+        "ok": True,
+        "directions": out,
+        "labels": explorer.STATE_LABEL,
+        "rollup": explorer.rollup(out),
+    }
+    body["rollup_label"] = explorer.STATE_LABEL.get(body["rollup"], body["rollup"])
+    if coverage:
+        body["coverage"] = {
+            "annual": ANNUAL,
+            "rolling": ROLLING,
+            "annual_min": coverage["annual_min"].isoformat(),
+            "annual_max": coverage["annual_max"].isoformat(),
+            "latest": coverage["latest"].isoformat(),
+            "measurable_from": earliest_measurable(coverage).isoformat(),
+            "rows_examined": len(sales),
+            "min_price": MIN_PRICE,
+            "class_count": len(RESIDENTIAL),
+        }
+    return jsonify(body)
 
 
 if __name__ == "__main__":

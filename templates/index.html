@@ -155,7 +155,7 @@ tr.total td.num.chg{color:var(--fig-change)}
   font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
   word-break:break-word}
 .path{color:var(--mute);font-size:12.5px;line-height:1.5}
-.chip{display:inline-block;margin-top:8px;font-size:11px;letter-spacing:.07em;
+.chip{display:inline-block;margin-top:11px;font-size:11px;letter-spacing:.07em;
   text-transform:uppercase;color:var(--locked);border:1px solid var(--line);
   border-radius:20px;padding:3px 10px}
 .chip.inc{color:#8a3b26;border-color:#e0b4a4;background:#fdf2ed}
@@ -165,6 +165,40 @@ tr.total td.num.chg{color:var(--fig-change)}
 .rollup b{color:#3d382c;font-weight:600}
 .rollup.inc{background:#fdf2ed;border-color:#e0b4a4;color:#8a3b26}
 .rollup.inc b{color:#6f2f1e}
+.topnote{margin-bottom:4px;margin-top:14px}
+
+/* ---- the finding under a keyword ---- */
+.ev{margin-top:11px;padding-top:11px;border-top:1px dashed var(--rule)}
+.ev .row+.row{margin-top:6px}
+.evt{font-size:13px;color:var(--ink);line-height:1.45}
+.dt{font-size:13px;color:var(--ink);
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.basis{font-size:12px;color:var(--mute);line-height:1.5;font-style:italic}
+.src{font-size:12px;line-height:1.5}
+.src a{color:var(--fig-median);word-break:break-all}
+.src .kind{color:var(--mute)}
+/* The measurement. Same colour per kind of figure as the first column:
+   blue is a median, ink is a count, plum is a year-on-year change, and none
+   of them says whether the number is good news. */
+table.meas{width:100%;border-collapse:collapse;margin-top:10px}
+table.meas th{font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--locked);font-weight:600;text-align:left;padding:0 0 6px;
+  border-bottom:1px solid var(--rule)}
+table.meas th.num{text-align:right;padding-left:12px}
+table.meas td{padding:6px 0;border-bottom:1px solid var(--rule);font-size:12.5px;
+  color:var(--mute)}
+table.meas td.num{text-align:right;padding-left:12px;white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+table.meas td.med{color:var(--fig-median);font-weight:600}
+table.meas td.cnt{color:var(--fig-count)}
+table.meas tr.chg td{border-bottom:0;border-top:1px solid var(--line);
+  padding-top:8px;font-weight:600;color:#3d382c}
+table.meas tr.chg td.num{color:var(--fig-change)}
+.win{font-size:11.5px;color:var(--mute);margin-top:7px;line-height:1.5}
+.flag{font-size:12px;color:#8a3b26;background:#fdf2ed;border:1px solid #e0b4a4;
+  border-radius:7px;padding:9px 11px;margin-top:10px;line-height:1.5}
+.plain{font-size:12.5px;color:var(--mute);margin-top:9px;line-height:1.5}
 </style>
 </head>
 <body>
@@ -323,7 +357,7 @@ tr.total td.num.chg{color:var(--fig-change)}
 
 {# ---------------------------- column two ---------------------------- #}
 {% if ctx %}
-<div class="col" id="col2">
+<div class="col" id="col2" data-borough="{{ ctx.borough_code }}">
   <div class="step" id="step2">Step 2 &middot; Active</div>
   <h2>Ask a question</h2>
   <div class="sub">Anything. Whether prices will rise, whether a mayor's term
@@ -347,14 +381,13 @@ tr.total td.num.chg{color:var(--fig-change)}
   </div>
 
   <div class="busy" id="busy" hidden>Deciding where to look</div>
-  <div class="note" id="elapsed" hidden><span id="secs">0</span>s. The explorer
-    reasons before it answers, which usually takes twenty to forty seconds. No
-    search is running and no search credit is being spent &mdash; this step only
-    decides where to look.</div>
+  <div class="note" id="elapsed" hidden><span id="secs">0</span>s.
+    <span id="whywait"></span></div>
 
   <div id="out" hidden>
     <h3>Research directions</h3>
     <div class="sub" id="dirsub"></div>
+    <div id="topnote" hidden></div>
     <ul class="dirs" id="dirs"></ul>
   </div>
 
@@ -380,37 +413,70 @@ tr.total td.num.chg{color:var(--fig-change)}
 </div>
 
 <script>
-/* Request one of two. The question goes out, research directions come back,
-   and they settle before any evidence exists - that is the lock in section 8,
-   shown rather than explained.
+/* Two requests, one after the other, both ordinary POSTs.
 
-   Everything the model produced is written with textContent. It is text from a
-   language model, not markup, and it is never treated as markup. */
+     1. /explore   the question goes out, the keywords come back and settle
+     2. /evidence  the browser sends them straight back, the findings arrive
+
+   The gap between them is the point. The keywords are on screen, fixed, before
+   any evidence exists, so a reader watches the lock happen instead of being
+   told about it (section 8). No streaming, no polling, no socket.
+
+   Everything either model produced is written with textContent. It is text
+   from a language model, not markup, and it is never treated as markup. */
 (function () {
   var form = document.getElementById('askform');
   if (!form) return;
 
-  var q      = document.getElementById('question');
-  var ask    = document.getElementById('ask');
-  var busy   = document.getElementById('busy');
-  var asked  = document.getElementById('asked');
-  var out    = document.getElementById('out');
-  var dirs   = document.getElementById('dirs');
-  var dirsub = document.getElementById('dirsub');
-  var roll   = document.getElementById('rollup');
-  var step2  = document.getElementById('step2');
+  var col2    = document.getElementById('col2');
+  var q       = document.getElementById('question');
+  var ask     = document.getElementById('ask');
+  var busy    = document.getElementById('busy');
+  var asked   = document.getElementById('asked');
+  var out     = document.getElementById('out');
+  var dirs    = document.getElementById('dirs');
+  var dirsub  = document.getElementById('dirsub');
+  var topnote = document.getElementById('topnote');
+  var roll    = document.getElementById('rollup');
+  var step2   = document.getElementById('step2');
   var elapsed = document.getElementById('elapsed');
-  var secs   = document.getElementById('secs');
-  var ticker = null;
+  var secs    = document.getElementById('secs');
+  var why     = document.getElementById('whywait');
+  var ticker  = null;
+  var NS      = 'http://www.w3.org/2000/svg';
 
   function show(el, on) { el.hidden = !on; }
 
+  function money(n) {
+    if (n === null || n === undefined) return '—';
+    try { return '$' + Number(n).toLocaleString('en-US'); }
+    catch (e) { return '$' + n; }
+  }
+
+  function count(n) {
+    if (n === null || n === undefined) return '—';
+    try { return Number(n).toLocaleString('en-US'); }
+    catch (e) { return String(n); }
+  }
+
+  function signed(v) {
+    if (v === null || v === undefined) return '—';
+    return (v >= 0 ? '+' : '') + Number(v).toFixed(2) + '%';
+  }
+
+  function stop(s) {
+    s = (s || '').trim();
+    return s && !/[.!?}\]]$/.test(s) ? s + '.' : s;
+  }
+
   /* A count of seconds, so a long wait reads as a long wait rather than as a
      page that has stopped responding. */
-  function startClock() {
+  function startClock(reason) {
     var t0 = Date.now();
     secs.textContent = '0';
+    why.textContent = reason;
     show(elapsed, true);
+    if (ticker) clearInterval(ticker);
     ticker = setInterval(function () {
       secs.textContent = String(Math.round((Date.now() - t0) / 1000));
     }, 1000);
@@ -421,15 +487,100 @@ tr.total td.num.chg{color:var(--fig-change)}
     show(elapsed, false);
   }
 
-  function note(cls, strong, rest) {
-    roll.className = 'rollup' + (cls ? ' ' + cls : '');
-    roll.textContent = '';
-    var b = document.createElement('b');
-    b.textContent = strong;
-    roll.appendChild(b);
-    roll.appendChild(document.createTextNode(' ' + rest));
-    show(roll, true);
+  function working(on, label) {
+    busy.textContent = label || busy.textContent;
+    show(busy, on);
   }
+
+  function setNote(el, cls, strong, rest) {
+    el.className = 'rollup' + (cls ? ' ' + cls : '');
+    el.textContent = '';
+    if (strong) {
+      var b = document.createElement('b');
+      b.textContent = strong;
+      el.appendChild(b);
+      el.appendChild(document.createTextNode(' '));
+    }
+    el.appendChild(document.createTextNode(rest));
+    show(el, true);
+  }
+
+  /* ---- small builders ------------------------------------------------- */
+
+  function row(label, cls, text) {
+    var r = document.createElement('div');
+    r.className = 'row';
+    var l = document.createElement('div');
+    l.className = 'rl';
+    l.textContent = label;
+    var v = document.createElement('div');
+    v.className = cls;
+    v.textContent = text;
+    r.appendChild(l);
+    r.appendChild(v);
+    return r;
+  }
+
+  function magnifier() {
+    var svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 16 16');
+    svg.setAttribute('aria-hidden', 'true');
+    var c = document.createElementNS(NS, 'circle');
+    c.setAttribute('cx', '7'); c.setAttribute('cy', '7'); c.setAttribute('r', '4.6');
+    var h = document.createElementNS(NS, 'line');
+    h.setAttribute('x1', '10.5'); h.setAttribute('y1', '10.5');
+    h.setAttribute('x2', '14.2'); h.setAttribute('y2', '14.2');
+    svg.appendChild(c);
+    svg.appendChild(h);
+    return svg;
+  }
+
+  /* The keyword row: a search field, filled in and locked. */
+  function keywordRow(text) {
+    var r = document.createElement('div');
+    r.className = 'row k';
+    var l = document.createElement('div');
+    l.className = 'rl';
+    l.textContent = 'Keyword';
+    var box = document.createElement('div');
+    box.className = 'kw';
+    var s = document.createElement('span');
+    s.textContent = text;
+    box.appendChild(magnifier());
+    box.appendChild(s);
+    r.appendChild(l);
+    r.appendChild(box);
+    return r;
+  }
+
+  function arrows(text) {
+    /* Typography only. The model writes its arrows as "->", and a line that
+       wraps between the hyphen and the bracket leaves a stray "-" at the end
+       of a phone-width line. One arrow character cannot be split. Nothing
+       else about the path is altered. */
+    return text.replace(/\s*->\s*/g, ' → ');
+  }
+
+  function flag(text) {
+    var d = document.createElement('div');
+    d.className = 'flag';
+    d.textContent = text;
+    return d;
+  }
+
+  function plain(text) {
+    var d = document.createElement('div');
+    d.className = 'plain';
+    d.textContent = text;
+    return d;
+  }
+
+  function host(url) {
+    try { return new URL(url).hostname.replace(/^www\./, ''); }
+    catch (e) { return url; }
+  }
+
+  /* ---- step one -------------------------------------------------------- */
 
   form.addEventListener('submit', function (ev) {
     ev.preventDefault();
@@ -438,54 +589,60 @@ tr.total td.num.chg{color:var(--fig-change)}
 
     ask.disabled = true;
     q.disabled = true;
-    show(busy, true);
+    working(true, 'Deciding where to look');
     show(out, false);
     show(roll, false);
-    startClock();
+    show(topnote, false);
+    startClock('The explorer reasons before it answers, which usually takes '
+             + 'twenty to forty seconds. No search is running and no search '
+             + 'credit is being spent — this step only decides where to look.');
 
-    /* A spinner that never resolves is its own failure state, and an invisible
-       one: the reader cannot tell waiting from broken. fetch() has no timeout
-       of its own, so the request is given a deadline and a request that passes
-       it ends where every other failure ends - RESEARCH_INCOMPLETE, said out
-       loud. The server's own call to the model gives up at 120s; this sits
-       past that so the server's more specific message wins when it arrives. */
+    post('/explore', { question: text }, 150000, renderKeywords, function (msg) {
+      stopClock();
+      working(false);
+      ask.disabled = false;
+      q.disabled = false;
+      setNote(roll, 'inc', 'Research could not be completed.',
+              msg + ' Nothing was searched, so this is not a finding about '
+                  + 'the historical record.');
+    });
+  });
+
+  /* A spinner that never resolves is its own failure state, and an invisible
+     one: the reader cannot tell waiting from broken. fetch() has no timeout of
+     its own, so every request is given a deadline, and one that passes it ends
+     where all other failures end - said out loud, never as an empty result. */
+  function post(url, body, ms, ok, fail) {
     var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
     var timedOut = false;
     var deadline = setTimeout(function () {
       timedOut = true;
       if (ctrl) ctrl.abort();
-    }, 150000);
+    }, ms);
 
     var opts = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: text })
+      body: JSON.stringify(body)
     };
     if (ctrl) opts.signal = ctrl.signal;
 
-    fetch('/explore', opts)
-    .then(function (r) { return r.json(); })
-    .then(function (d) { clearTimeout(deadline); render(d); })
-    .catch(function (err) {
-      /* The request itself failed. That is RESEARCH_INCOMPLETE, and it is
-         never worded as an empty research result. */
-      clearTimeout(deadline);
-      stopClock();
-      show(busy, false);
-      ask.disabled = false;
-      q.disabled = false;
-      note('inc', 'Research could not be completed.',
-           (timedOut
-             ? 'The request ran past 150 seconds and was given up on.'
-             : 'The request did not reach the server (' + err + ').')
-         + ' Nothing was searched, so this is not a finding about the '
-         + 'historical record.');
-    });
-  });
+    fetch(url, opts)
+      .then(function (r) { return r.json(); })
+      .then(function (d) { clearTimeout(deadline); ok(d); })
+      .catch(function (err) {
+        clearTimeout(deadline);
+        fail(timedOut
+          ? 'The request ran past ' + Math.round(ms / 1000) + ' seconds and was given up on.'
+          : 'The request did not reach the server (' + err + ').');
+      });
+  }
 
-  function render(d) {
+  var cards = [];
+
+  function renderKeywords(d) {
     stopClock();
-    show(busy, false);
+    working(false);
 
     document.getElementById('askedtext').textContent = d.question || '';
     show(asked, true);
@@ -496,16 +653,13 @@ tr.total td.num.chg{color:var(--fig-change)}
       ask.disabled = false;
       form.hidden = false;
       show(asked, false);
-      var why = (d.reason || '').trim();
-      if (why && !/[.!?}\]]$/.test(why)) why += '.';
-      note('inc', 'Research could not be completed.',
-           (why ? why + ' ' : '')
-         + 'No research direction was produced, so nothing was searched. This '
-         + 'is not evidence that the historical record is empty.');
+      setNote(roll, 'inc', 'Research could not be completed.',
+              stop(d.reason) + ' No research direction was produced, so nothing '
+            + 'was searched. This is not evidence that the historical record '
+            + 'is empty.');
       return;
     }
 
-    step2.innerHTML = '';
     step2.textContent = 'Step 2 · Locked';
 
     var list = d.directions || [];
@@ -514,70 +668,13 @@ tr.total td.num.chg{color:var(--fig-change)}
                            : ' keywords, each with the reasoning that produced it. ')
       + 'They are fixed from here on: the search may only look inside them.';
 
-    /* One labelled line. */
-    function row(label, cls, text) {
-      var r = document.createElement('div');
-      r.className = 'row';
-      var l = document.createElement('div');
-      l.className = 'rl';
-      l.textContent = label;
-      var v = document.createElement('div');
-      v.className = cls;
-      v.textContent = text;
-      r.appendChild(l);
-      r.appendChild(v);
-      return r;
-    }
-
-    var NS = 'http://www.w3.org/2000/svg';
-
-    function magnifier() {
-      var svg = document.createElementNS(NS, 'svg');
-      svg.setAttribute('viewBox', '0 0 16 16');
-      svg.setAttribute('aria-hidden', 'true');
-      var c = document.createElementNS(NS, 'circle');
-      c.setAttribute('cx', '7'); c.setAttribute('cy', '7'); c.setAttribute('r', '4.6');
-      var h = document.createElementNS(NS, 'line');
-      h.setAttribute('x1', '10.5'); h.setAttribute('y1', '10.5');
-      h.setAttribute('x2', '14.2'); h.setAttribute('y2', '14.2');
-      svg.appendChild(c);
-      svg.appendChild(h);
-      return svg;
-    }
-
-    /* The keyword row: a search field, filled in and locked. */
-    function keywordRow(text) {
-      var r = document.createElement('div');
-      r.className = 'row k';
-      var l = document.createElement('div');
-      l.className = 'rl';
-      l.textContent = 'Keyword';
-      var box = document.createElement('div');
-      box.className = 'kw';
-      var s = document.createElement('span');
-      s.textContent = text;
-      box.appendChild(magnifier());
-      box.appendChild(s);
-      r.appendChild(l);
-      r.appendChild(box);
-      return r;
-    }
-
     dirs.textContent = '';
+    cards = [];
     list.forEach(function (item) {
       var li = document.createElement('li');
       li.className = 'dir';
-
       li.appendChild(keywordRow(item.keyword));
-
-      if (item.path) {
-        /* Typography only. The model writes its arrows as "->", and a line
-           that wraps between the hyphen and the bracket leaves a stray "-"
-           at the end of a phone-width line. One arrow character cannot be
-           split. Nothing else about the path is altered. */
-        li.appendChild(row('Reasoning', 'path',
-                           item.path.replace(/\s*->\s*/g, ' → ')));
-      }
+      if (item.path) li.appendChild(row('Reasoning', 'path', arrows(item.path)));
 
       var chip = document.createElement('span');
       chip.className = 'chip';
@@ -585,19 +682,222 @@ tr.total td.num.chg{color:var(--fig-change)}
       li.appendChild(chip);
 
       dirs.appendChild(li);
+      cards.push({ li: li, chip: chip });
     });
     show(out, true);
 
-    note('', 'No search has run yet.',
-         'Each keyword above will carry four more things: the event it '
-       + 'surfaced, the date and the sentence in the source that establishes '
-       + 'that date, a link to the source itself, and the median sale price in '
-       + 'the twelve months before and after - calculated by the program from '
-       + 'NYC Open Data, never by the model. Until those exist, no direction '
-       + 'has reached one of the five end states, and the page says so rather '
-       + 'than leaving the space blank.');
+    setNote(roll, '', 'Searching now.',
+            'Each keyword is being searched across government, news and '
+          + 'statistical sources. Where a dated event is found, the program - '
+          + 'not the model - will calculate the median sale price in the '
+          + 'twelve months before and after that date from NYC Open Data.');
+
+    /* Request two, sent on its own. This is the one that spends search
+       credits: one per keyword. */
+    startClock('One search per keyword, then a reading pass over the sources '
+             + 'to confirm a date, then the price calculation. Sixty to ninety '
+             + 'seconds is normal.');
+    working(true, 'Searching the sources');
+
+    post('/evidence',
+         { borough: col2.getAttribute('data-borough'), directions: list },
+         240000, renderEvidence, function (msg) {
+      stopClock();
+      working(false);
+      setNote(roll, 'inc', 'This analysis is incomplete.',
+              msg + ' The keywords above were fixed, but the search did not '
+                  + 'complete, so nothing below them is a finding about the '
+                  + 'historical record.');
+    });
+  }
+
+  /* ---- step two -------------------------------------------------------- */
+
+  function measurement(m) {
+    var t = document.createElement('table');
+    t.className = 'meas';
+
+    var head = document.createElement('tr');
+    [['', ''], ['Median', 'num'], ['Sales in median', 'num']].forEach(function (h) {
+      var th = document.createElement('th');
+      if (h[1]) th.className = h[1];
+      th.textContent = h[0];
+      head.appendChild(th);
+    });
+    t.appendChild(head);
+
+    function line(label, median, n, cls) {
+      var tr = document.createElement('tr');
+      if (cls) tr.className = cls;
+      var a = document.createElement('td');
+      a.textContent = label;
+      var b = document.createElement('td');
+      b.className = 'num med';
+      b.textContent = money(median);
+      var c = document.createElement('td');
+      c.className = 'num cnt';
+      c.textContent = count(n);
+      tr.appendChild(a); tr.appendChild(b); tr.appendChild(c);
+      return tr;
+    }
+
+    t.appendChild(line('12 months before', m.pre_median, m.pre_count));
+    t.appendChild(line(m.complete ? '12 months after'
+                                  : m.months_after + ' months after',
+                       m.post_median, m.post_count));
+
+    var chg = document.createElement('tr');
+    chg.className = 'chg';
+    var l = document.createElement('td');
+    l.textContent = 'Change';
+    var v = document.createElement('td');
+    v.className = 'num';
+    v.setAttribute('colspan', '2');
+    v.textContent = signed(m.change);
+    chg.appendChild(l); chg.appendChild(v);
+    t.appendChild(chg);
+
+    return t;
+  }
+
+  function renderEvidence(d) {
+    stopClock();
+    working(false);
+
+    if (!d.ok) {
+      setNote(roll, 'inc', 'This analysis is incomplete.',
+              stop(d.reason) + ' The keywords above were fixed, but no search '
+            + 'ran, so nothing here is a finding about the historical record.');
+      return;
+    }
+
+    var list = d.directions || [];
+    var counts = { RESULT: 0, NO_EVIDENCE: 0, RESEARCH_INCOMPLETE: 0,
+                   EVENT_OUTSIDE_MEASURABLE_RANGE: 0 };
+
+    list.forEach(function (item, i) {
+      var card = cards[i];
+      if (!card) return;
+      counts[item.state] = (counts[item.state] || 0) + 1;
+      card.chip.textContent = (d.labels && d.labels[item.state]) || item.state;
+      if (item.state === 'RESEARCH_INCOMPLETE' ||
+          item.state === 'EVENT_OUTSIDE_MEASURABLE_RANGE') {
+        card.chip.className = 'chip inc';
+      }
+
+      var box = document.createElement('div');
+      box.className = 'ev';
+
+      if (item.event) {
+        box.appendChild(row('Event', 'evt', item.event.event));
+        box.appendChild(row('Date', 'dt', item.event.date));
+        if (item.event.date_basis) {
+          box.appendChild(row('Date basis', 'basis', '“'
+                            + item.event.date_basis + '”'));
+        }
+
+        var sr = document.createElement('div');
+        sr.className = 'row';
+        var sl = document.createElement('div');
+        sl.className = 'rl';
+        sl.textContent = 'Source';
+        var sv = document.createElement('div');
+        sv.className = 'src';
+        var a = document.createElement('a');
+        a.href = item.event.source_url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.textContent = host(item.event.source_url);
+        sv.appendChild(a);
+        if (item.event.source_type) {
+          var k = document.createElement('span');
+          k.className = 'kind';
+          k.textContent = ' · ' + item.event.source_type;
+          sv.appendChild(k);
+        }
+        sr.appendChild(sl); sr.appendChild(sv);
+        box.appendChild(sr);
+      }
+
+      if (item.state === 'RESULT' && item.measure) {
+        box.appendChild(measurement(item.measure));
+        var w = document.createElement('div');
+        w.className = 'win';
+        w.textContent = 'Before ' + item.measure.pre_start + ' to '
+          + item.measure.pre_end + '. After ' + item.measure.post_start
+          + ' to ' + item.measure.post_end + '.'
+          + (item.measure.complete ? ''
+             : ' The window after the event is short: the data reaches only '
+             + item.measure.months_after + ' months past the event date, so it '
+             + 'is not comparable with the twelve months before it.');
+        box.appendChild(w);
+      } else if (item.state === 'EVENT_OUTSIDE_MEASURABLE_RANGE') {
+        box.appendChild(flag('The event is real, dated and sourced, and this '
+          + 'system cannot measure it. ' + stop(item.reason)
+          + ' Reporting it as no evidence would be a false statement about the '
+          + 'historical record made to cover a limit of ours.'));
+      } else if (item.state === 'NO_EVIDENCE') {
+        box.appendChild(plain('The search completed and no datable event was '
+          + 'found in the ' + (item.sources_searched || 0)
+          + ' authoritative sources it returned. This direction was searched '
+          + 'and the record did not support it. It is not a statement that '
+          + 'nothing happened.'));
+      } else if (item.state === 'RESEARCH_INCOMPLETE') {
+        box.appendChild(flag('Research could not be completed. '
+          + stop(item.reason) + ' Nothing was searched here, so this is not '
+          + 'evidence that the historical record is empty.'));
+      }
+
+      /* Keyword, reasoning, finding, then the state. The chip classifies what
+         is above it, so it moves below the finding once the finding exists. */
+      card.li.insertBefore(box, card.chip);
+    });
+
+    /* Section 5: every rise and every fall is shown, in the order the
+       explorer produced them. Nothing is ranked, summarised or dropped. */
+    setNote(topnote, '', 'What follows each event, not what caused it.',
+            'These are the price movements recorded in the twelve months after '
+          + 'each dated event. Other things were happening in the same twelve '
+          + 'months, and this system does not claim any event caused any '
+          + 'movement. Every direction is shown, rises and falls alike, in the '
+          + 'order the explorer chose them.');
+
+    var parts = [];
+    if (counts.RESULT) parts.push(counts.RESULT + ' measured');
+    if (counts.NO_EVIDENCE) parts.push(counts.NO_EVIDENCE + ' searched with no datable event');
+    if (counts.EVENT_OUTSIDE_MEASURABLE_RANGE)
+      parts.push(counts.EVENT_OUTSIDE_MEASURABLE_RANGE + ' outside the measurable range');
+    if (counts.RESEARCH_INCOMPLETE)
+      parts.push(counts.RESEARCH_INCOMPLETE + ' not completed');
+
+    var prov = '';
+    if (d.coverage) {
+      prov = ' Measured from NYC Open Data: ' + d.coverage.annual + ' and '
+           + d.coverage.rolling + ', ' + count(d.coverage.rows_examined)
+           + ' rows across these windows, ' + d.coverage.class_count
+           + ' of 44 official property classes, sale_price below '
+           + money(d.coverage.min_price) + ' excluded. Events are measurable '
+           + 'from ' + d.coverage.measurable_from + ' to ' + d.coverage.latest
+           + '. Queried live; nothing stored.';
+    }
+
+    /* Section 10 roll-up: one incomplete direction makes the whole analysis
+       incomplete, and that is said once, at the top, not only beside the
+       direction it happened to. */
+    if (counts.RESEARCH_INCOMPLETE) {
+      setNote(roll, 'inc', 'This analysis is incomplete.',
+              counts.RESEARCH_INCOMPLETE + ' of ' + list.length + ' directions '
+            + 'could not be researched, so what is shown is part of an answer '
+            + 'and not the whole of one. ' + parts.join(', ') + '.' + prov);
+    } else {
+      setNote(roll, '', 'Research complete.',
+              parts.join(', ') + '.' + prov
+            + ' What you do with this is yours to decide: the system draws no '
+            + 'conclusion, makes no recommendation and gives no probability.');
+    }
   }
 })();
 </script>
+
 </body>
 </html>
