@@ -120,12 +120,24 @@ tr.total td.num.chg{color:var(--fig-change)}
   animation:dots 1.2s steps(4,end) infinite}
 @keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
 .dirs{list-style:none;margin-top:8px}
-.dir{border-top:1px solid var(--rule);padding:13px 0}
+.dir{border-top:1px solid var(--rule);padding:14px 0}
 .dir:first-child{border-top:0}
+/* Every line is labelled. Without labels a reader takes the search phrase for
+   the name of an event, and then cannot find the keyword at all - which empties
+   out section 8, since a lock nobody can see is not a lock. */
+.row{display:grid;grid-template-columns:78px minmax(0,1fr);gap:10px;
+  align-items:baseline}
+.row+.row{margin-top:7px}
+.rl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--locked);font-weight:600}
+@media(max-width:560px){
+  .row{grid-template-columns:minmax(0,1fr);gap:3px}
+  .row+.row{margin-top:9px}
+}
 .kw{font-size:13.5px;font-weight:600;color:var(--ink);
   font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
   word-break:break-word}
-.path{color:var(--mute);font-size:12.5px;margin-top:5px;line-height:1.5}
+.path{color:var(--mute);font-size:12.5px;line-height:1.5}
 .chip{display:inline-block;margin-top:8px;font-size:11px;letter-spacing:.07em;
   text-transform:uppercase;color:var(--locked);border:1px solid var(--line);
   border-radius:20px;padding:3px 10px}
@@ -480,29 +492,40 @@ tr.total td.num.chg{color:var(--fig-change)}
     step2.textContent = 'Step 2 · Locked';
 
     var list = d.directions || [];
-    dirsub.textContent = list.length + (list.length === 1
-      ? ' direction. It is fixed now and cannot be edited.'
-      : ' directions. They are fixed now and cannot be edited.');
+    dirsub.textContent = list.length
+      + (list.length === 1 ? ' keyword, with the reasoning that produced it. '
+                           : ' keywords, each with the reasoning that produced it. ')
+      + 'They are fixed from here on: the search may only look inside them.';
+
+    /* One labelled line. */
+    function row(label, cls, text) {
+      var r = document.createElement('div');
+      r.className = 'row';
+      var l = document.createElement('div');
+      l.className = 'rl';
+      l.textContent = label;
+      var v = document.createElement('div');
+      v.className = cls;
+      v.textContent = text;
+      r.appendChild(l);
+      r.appendChild(v);
+      return r;
+    }
 
     dirs.textContent = '';
     list.forEach(function (item) {
       var li = document.createElement('li');
       li.className = 'dir';
 
-      var kw = document.createElement('div');
-      kw.className = 'kw';
-      kw.textContent = item.keyword;
-      li.appendChild(kw);
+      li.appendChild(row('Keyword', 'kw', item.keyword));
 
       if (item.path) {
-        var p = document.createElement('div');
-        p.className = 'path';
         /* Typography only. The model writes its arrows as "->", and a line
            that wraps between the hyphen and the bracket leaves a stray "-"
            at the end of a phone-width line. One arrow character cannot be
            split. Nothing else about the path is altered. */
-        p.textContent = item.path.replace(/\s*->\s*/g, ' → ');
-        li.appendChild(p);
+        li.appendChild(row('Reasoning', 'path',
+                           item.path.replace(/\s*->\s*/g, ' → ')));
       }
 
       var chip = document.createElement('span');
@@ -514,13 +537,14 @@ tr.total td.num.chg{color:var(--fig-change)}
     });
     show(out, true);
 
-    note('', 'Awaiting evidence.',
-         'These are the directions the model chose to search, and the question '
-       + 'it set itself. No search has run, so no direction has reached one of '
-       + 'the five end states yet. The evidence layer is the next build step: '
-       + 'it searches each keyword, confirms a dated event against its source, '
-       + 'and the program - not the model - calculates the median sale price in '
-       + 'the twelve months before and after that date.');
+    note('', 'No search has run yet.',
+         'Each keyword above will carry four more things: the event it '
+       + 'surfaced, the date and the sentence in the source that establishes '
+       + 'that date, a link to the source itself, and the median sale price in '
+       + 'the twelve months before and after - calculated by the program from '
+       + 'NYC Open Data, never by the model. Until those exist, no direction '
+       + 'has reached one of the five end states, and the page says so rather '
+       + 'than leaving the space blank.');
   }
 })();
 </script>
