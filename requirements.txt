@@ -2,6 +2,11 @@
 # `pip freeze` in the deployment environment. The project must stay runnable
 # through the judging period (2026-12-01 to 12-15), so the pins should come
 # from what actually runs there, not from whatever is newest today.
+#
+# The model endpoint is OpenAI-compatible and explorer.py calls it with the
+# standard library, so there is no openai dependency. The SDK's major version
+# moved while this was being built (the deploy log installed 3.x), and a
+# redeploy during judging is not the moment to discover an API change in a
+# package we were using for one POST.
 flask
-openai
 tavily-python

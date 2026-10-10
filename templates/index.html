@@ -38,8 +38,12 @@ header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26p
 h1{font-size:21px;font-weight:600;letter-spacing:-.01em}
 .tag{color:var(--mute);font-size:13px;margin-top:5px}
 .cols{display:grid;grid-template-columns:minmax(0,480px) minmax(0,1fr);gap:22px}
-@media(max-width:860px){.cols{grid-template-columns:1fr}}
-.col{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px}
+/* minmax(0,1fr) rather than 1fr: a grid item defaults to min-width:auto, so a
+   wide table inside it pushes the column past the viewport instead of the
+   table scrolling. */
+@media(max-width:860px){.cols{grid-template-columns:minmax(0,1fr)}}
+.col{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px;
+  min-width:0}
 .col.off{opacity:.42}
 .col.off *{cursor:not-allowed}
 .step{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);
@@ -71,7 +75,16 @@ tr.total td{border-bottom:0;border-top:1px solid var(--line);font-weight:600;pad
 tr.total td.num{color:var(--fig-count)}
 tr.total td.num.lead{color:var(--fig-median)}
 tr.total td.num.chg{color:var(--fig-change)}
-.cat{color:var(--mute);font-size:12px}
+/* break-word, not anywhere: anywhere lets the column shrink below a word and
+   splits APARTMENTS across two lines on a phone. */
+.cat{color:var(--mute);font-size:12px;overflow-wrap:break-word}
+/* Three nowrap numeric columns plus their padding set the table's minimum
+   width. On a narrow phone that minimum is a few pixels wider than the card,
+   and the right-hand column gets clipped, so the padding comes in. */
+@media(max-width:430px){
+  td.num,th.num{padding-left:9px}
+  td{font-size:12.5px}
+}
 .chart{margin-top:10px;background:var(--chart-bg);border:1px solid var(--line);
   border-radius:8px;padding:10px 8px 4px}
 .chart svg{display:block;width:100%;height:auto}
@@ -98,6 +111,31 @@ tr.total td.num.chg{color:var(--fig-change)}
   border-radius:8px;font-size:13px;margin-top:14px}
 .motto{color:var(--mute);font-size:12px;letter-spacing:.04em;margin-top:22px;
   text-align:center}
+
+/* ---- column two: the research directions ---- */
+.asked{background:var(--field);border:1px solid var(--line);border-radius:7px;
+  padding:11px 13px;font-size:14px;color:#3d382c;margin-top:5px}
+.busy{color:var(--mute);font-size:13px;margin-top:16px}
+.busy::after{content:"";display:inline-block;width:1.1em;text-align:left;
+  animation:dots 1.2s steps(4,end) infinite}
+@keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+.dirs{list-style:none;margin-top:8px}
+.dir{border-top:1px solid var(--rule);padding:13px 0}
+.dir:first-child{border-top:0}
+.kw{font-size:13.5px;font-weight:600;color:var(--ink);
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  word-break:break-word}
+.path{color:var(--mute);font-size:12.5px;margin-top:5px;line-height:1.5}
+.chip{display:inline-block;margin-top:8px;font-size:11px;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--locked);border:1px solid var(--line);
+  border-radius:20px;padding:3px 10px}
+.chip.inc{color:#8a3b26;border-color:#e0b4a4;background:#fdf2ed}
+.rollup{border:1px solid var(--line);background:var(--field);border-radius:8px;
+  padding:12px 14px;font-size:12.5px;color:var(--mute);margin-top:16px;
+  line-height:1.55}
+.rollup b{color:#3d382c;font-weight:600}
+.rollup.inc{background:#fdf2ed;border-color:#e0b4a4;color:#8a3b26}
+.rollup.inc b{color:#6f2f1e}
 </style>
 </head>
 <body>
@@ -256,20 +294,38 @@ tr.total td.num.chg{color:var(--fig-change)}
 
 {# ---------------------------- column two ---------------------------- #}
 {% if ctx %}
-<div class="col">
-  <div class="step">Step 2 &middot; Active</div>
+<div class="col" id="col2">
+  <div class="step" id="step2">Step 2 &middot; Active</div>
   <h2>Ask a question</h2>
   <div class="sub">Anything. Whether prices will rise, whether a mayor's term
     mattered, what happens to housing after a war ends.</div>
-  <form>
-    <label>Question</label>
-    <textarea rows="4"
+
+  <form id="askform" action="/explore" method="post">
+    <label for="question">Question</label>
+    <textarea id="question" name="question" rows="4" maxlength="500"
       placeholder="Will Brooklyn prices rise next year?">{{ question }}</textarea>
-    <button type="submit" disabled>Research &mdash; not wired yet</button>
+    <button type="submit" id="ask">Research</button>
   </form>
-  <div class="note">The research pipeline is the next build step. This column is
-    where the locked keywords, their reasoning paths and the historical evidence
-    will appear.</div>
+
+  <noscript>
+    <div class="note">Step 2 needs JavaScript. The keywords have to appear and
+      lock before any evidence exists, and that sequence is the point.</div>
+  </noscript>
+
+  <div id="asked" hidden>
+    <h3>Question</h3>
+    <div class="asked" id="askedtext"></div>
+  </div>
+
+  <div class="busy" id="busy" hidden>Deciding where to look</div>
+
+  <div id="out" hidden>
+    <h3>Research directions</h3>
+    <div class="sub" id="dirsub"></div>
+    <ul class="dirs" id="dirs"></ul>
+  </div>
+
+  <div id="rollup" hidden></div>
 </div>
 {% else %}
 <div class="col off">
@@ -289,5 +345,138 @@ tr.total td.num.chg{color:var(--fig-change)}
 <div class="motto">AI explores. Evidence verifies. Humans decide.</div>
 
 </div>
+
+<script>
+/* Request one of two. The question goes out, research directions come back,
+   and they settle before any evidence exists - that is the lock in section 8,
+   shown rather than explained.
+
+   Everything the model produced is written with textContent. It is text from a
+   language model, not markup, and it is never treated as markup. */
+(function () {
+  var form = document.getElementById('askform');
+  if (!form) return;
+
+  var q      = document.getElementById('question');
+  var ask    = document.getElementById('ask');
+  var busy   = document.getElementById('busy');
+  var asked  = document.getElementById('asked');
+  var out    = document.getElementById('out');
+  var dirs   = document.getElementById('dirs');
+  var dirsub = document.getElementById('dirsub');
+  var roll   = document.getElementById('rollup');
+  var step2  = document.getElementById('step2');
+
+  function show(el, on) { el.hidden = !on; }
+
+  function note(cls, strong, rest) {
+    roll.className = 'rollup' + (cls ? ' ' + cls : '');
+    roll.textContent = '';
+    var b = document.createElement('b');
+    b.textContent = strong;
+    roll.appendChild(b);
+    roll.appendChild(document.createTextNode(' ' + rest));
+    show(roll, true);
+  }
+
+  form.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var text = q.value.trim();
+    if (!text) { q.focus(); return; }
+
+    ask.disabled = true;
+    q.disabled = true;
+    show(busy, true);
+    show(out, false);
+    show(roll, false);
+
+    fetch('/explore', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: text })
+    })
+    .then(function (r) { return r.json(); })
+    .then(render)
+    .catch(function (err) {
+      /* The request itself failed. That is RESEARCH_INCOMPLETE, and it is
+         never worded as an empty research result. */
+      show(busy, false);
+      ask.disabled = false;
+      q.disabled = false;
+      note('inc', 'Research could not be completed.',
+           'The request did not reach the server (' + err + '). This is not a '
+         + 'finding about the historical record - nothing was searched.');
+    });
+  });
+
+  function render(d) {
+    show(busy, false);
+
+    document.getElementById('askedtext').textContent = d.question || '';
+    show(asked, true);
+    form.hidden = true;
+
+    if (!d.ok) {
+      q.disabled = false;
+      ask.disabled = false;
+      form.hidden = false;
+      show(asked, false);
+      var why = (d.reason || '').trim();
+      if (why && !/[.!?}\]]$/.test(why)) why += '.';
+      note('inc', 'Research could not be completed.',
+           (why ? why + ' ' : '')
+         + 'No research direction was produced, so nothing was searched. This '
+         + 'is not evidence that the historical record is empty.');
+      return;
+    }
+
+    step2.innerHTML = '';
+    step2.textContent = 'Step 2 · Locked';
+
+    var list = d.directions || [];
+    dirsub.textContent = list.length + (list.length === 1
+      ? ' direction. It is fixed now and cannot be edited.'
+      : ' directions. They are fixed now and cannot be edited.');
+
+    dirs.textContent = '';
+    list.forEach(function (item) {
+      var li = document.createElement('li');
+      li.className = 'dir';
+
+      var kw = document.createElement('div');
+      kw.className = 'kw';
+      kw.textContent = item.keyword;
+      li.appendChild(kw);
+
+      if (item.path) {
+        var p = document.createElement('div');
+        p.className = 'path';
+        /* Typography only. The model writes its arrows as "->", and a line
+           that wraps between the hyphen and the bracket leaves a stray "-"
+           at the end of a phone-width line. One arrow character cannot be
+           split. Nothing else about the path is altered. */
+        p.textContent = item.path.replace(/\s*->\s*/g, ' → ');
+        li.appendChild(p);
+      }
+
+      var chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.textContent = (d.labels && d.labels[item.state]) || item.state;
+      li.appendChild(chip);
+
+      dirs.appendChild(li);
+    });
+    show(out, true);
+
+    note('', 'Awaiting evidence.',
+         'These are the directions the model chose to search, and the question '
+       + 'it set itself. No search has run, so no direction has reached one of '
+       + 'the five end states yet. The evidence layer is the next build step: '
+       + 'it searches each keyword, confirms a dated event against its source, '
+       + 'and the program - not the model - calculates the median sale price in '
+       + 'the twelve months before and after that date.');
+  }
+})();
+</script>
 </body>
 </html>

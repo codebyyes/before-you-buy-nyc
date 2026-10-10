@@ -2,7 +2,11 @@
 # main.py : Flask routes, NYC Open Data access, all price calculation.
 # Presentation lives in templates/index.html - nothing in this file writes HTML.
 #
-# No AI calls in this file. Running it costs nothing.
+# Every figure on the page is calculated here. No model touches a number
+# (spec section 13). The model calls live in explorer.py, which this file
+# imports but never invokes at import time, so check.py and diag.py still cost
+# nothing to run.
+#
 # Spec sections implemented here: 5 (two-column workflow), 6 (market context),
 # 14 (eligible residential, price basis, transaction counts), 15 (data access),
 # 16 (reproducibility shown on screen).
@@ -15,7 +19,9 @@ import urllib.parse
 import urllib.request
 from datetime import date, datetime, timedelta
 
-from flask import Flask, render_template, request
+from flask import Flask, jsonify, render_template, request
+
+import explorer
 
 # ---------------------------------------------------------------------------
 # Constants - spec section 14
@@ -485,8 +491,33 @@ def confirm():
                           % (type(exc).__name__, exc))
     if not ctx["all_count"]:
         return view(error="No eligible residential transactions were returned "
-                          "for that region. An empty result is a correct result.")
+                          "for that region. Research completed and the record "
+                          "for that region is empty.")
     return view(ctx=ctx)
+
+
+@app.route("/explore", methods=["POST"])
+def explore():
+    """Request one of two: the question goes in, research directions come out.
+
+    This returns JSON rather than a page, so column one is never re-rendered
+    and never re-fetched. The browser holds it; only column two changes. That
+    is also what makes the lock visible - the keywords appear and settle before
+    any evidence exists, which is the one idea in section 8 that is hard to say
+    in words and easy to show.
+
+    No search runs here, so this request spends no Tavily credit.
+    """
+    payload = request.get_json(silent=True) or {}
+    question = payload.get("question") or request.form.get("question") or ""
+    out = explorer.explore(question)
+    out["labels"] = explorer.STATE_LABEL
+    if out.get("ok"):
+        out["rollup"] = explorer.rollup(out["directions"])
+    else:
+        out["rollup"] = out["state"]
+    out["rollup_label"] = explorer.STATE_LABEL.get(out["rollup"], out["rollup"])
+    return jsonify(out)
 
 
 if __name__ == "__main__":
