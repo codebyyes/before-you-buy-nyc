@@ -71,6 +71,13 @@ td.num,th.num{text-align:right;padding-left:16px;white-space:nowrap}
 td.num{color:var(--fig-count)}
 td.num.lead{color:var(--fig-median);font-weight:600}
 td.num.chg{color:var(--fig-change)}
+/* The change sits under the figure it belongs to, in the one colour that
+   means "a year-on-year change" - the same hue for a rise and for a fall,
+   so the colour never says whether the news is good. */
+.sublab{display:block;font-weight:400;letter-spacing:.03em;text-transform:none;
+  color:var(--locked);font-size:10px;margin-top:2px}
+.sub-chg{display:block;color:var(--fig-change);font-weight:600;font-size:11.5px;
+  margin-top:1px;font-variant-numeric:tabular-nums}
 tr.total td{border-bottom:0;border-top:1px solid var(--line);font-weight:600;padding-top:9px}
 tr.total td.num{color:var(--fig-count)}
 tr.total td.num.lead{color:var(--fig-median)}
@@ -128,32 +135,39 @@ tr.total td.num.chg{color:var(--fig-change)}
 .row{display:grid;grid-template-columns:78px minmax(0,1fr);gap:10px;
   align-items:baseline}
 .row+.row{margin-top:7px}
-.rl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--locked);font-weight:600}
-.row.k{align-items:start}
-.row.k .rl{padding-top:12px}
+/* Row labels were 10px in the lightest colour on the page, which on a tablet
+   is close to invisible - the reader who asked twice where the keywords were
+   could see the keyword and not the word naming it. */
+.rl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--mute);font-weight:600}
 @media(max-width:560px){
   .row{grid-template-columns:minmax(0,1fr);gap:3px}
   .row+.row{margin-top:9px}
-  .row.k .rl{padding-top:0}
 }
-/* The keyword is drawn as a filled-in search field that cannot be edited,
-   because that is what it is. The question above it is already a locked box,
-   so the column reads question locked, then keywords locked, and the lock in
-   section 8 needs no explaining.
-   Not green: measured against the olive already on this card (#8a6a28), every
-   candidate green came out at deltaE 11.8-14.3 in normal vision and 3.4-4.9
-   under protanopia - the same near-miss the validator caught between blue and
-   teal earlier. Form carries this, not hue. */
-.kw{display:flex;gap:9px;align-items:flex-start;
-  background:var(--field);border:1.5px solid var(--line);border-radius:7px;
-  padding:9px 11px}
-.kw svg{flex:0 0 auto;width:14px;height:14px;margin-top:3px;
-  stroke:var(--mute);fill:none;stroke-width:2;
+/* The keyword heads its own block rather than sitting in a labelled row with
+   everything else. It is the thing the whole block is about, so the eye should
+   land on it first and not have to be told where to look.
+   Drawn as a filled-in search field that cannot be edited, because that is
+   what it is: the question above is already a locked box, so the column reads
+   question locked, then searches locked, and section 8 needs no explaining.
+   Not green, though green was asked for: measured against the olive already on
+   this card (#8a6a28), every candidate came out at deltaE 11.8-14.3 in normal
+   vision and 3.4-4.9 under protanopia - below the floor, the same near-miss
+   the validator caught between blue and teal earlier. The bar, the box and the
+   size carry it instead, and those survive grayscale and translation. */
+.kwhead{border-left:4px solid var(--accent);background:var(--field);
+  border:1.5px solid var(--line);border-left:4px solid var(--accent);
+  border-radius:7px;padding:10px 13px}
+.kwn{font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--accent);font-weight:600;margin-bottom:6px}
+.kwline{display:flex;gap:9px;align-items:flex-start}
+.kwline svg{flex:0 0 auto;width:15px;height:15px;margin-top:3px;
+  stroke:var(--ink);fill:none;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round}
-.kw span{font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.4;
+.kwline span{font-size:15px;font-weight:600;color:var(--ink);line-height:1.38;
   font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
   word-break:break-word}
+.dir .row:first-of-type{margin-top:10px}
 .path{color:var(--mute);font-size:12.5px;line-height:1.5}
 .chip{display:inline-block;margin-top:11px;font-size:11px;letter-spacing:.07em;
   text-transform:uppercase;color:var(--locked);border:1px solid var(--line);
@@ -221,26 +235,34 @@ table.meas tr.chg td.num{color:var(--fig-change)}
   <h2>{{ ctx.borough }}</h2>
   <div class="sub">Median sale price, 12 months to {{ ctx.cur_end }}</div>
 
+  {# Three columns, not four. Each figure carries its own change underneath it,
+     so the median and the sample behind it can be read together: a median that
+     moved while the sample shrank is a different reading from one that moved
+     while the sample held. The count change is in transactions rather than
+     percent, and the header says "sales in median" because that is what it
+     counts - section 14 is explicit that this is not a measure of market
+     activity and must not be written as though it were. #}
   <table>
     <tr>
       <th>Official property class</th>
-      <th class="num">Median</th>
-      <th class="num">Sales</th>
-      <th class="num">vs prior year</th>
+      <th class="num">Median<span class="sublab">vs prior year</span></th>
+      <th class="num">Sales in median<span class="sublab">vs prior year</span></th>
     </tr>
     {% for c in ctx.classes %}
     <tr>
       <td class="cat">{{ c.category }}</td>
-      <td class="num lead fixed">{{ c.median|money }}</td>
-      <td class="num fixed">{{ c.count|num }}</td>
-      <td class="num chg fixed">{{ c.change|signed }}</td>
+      <td class="num lead fixed">{{ c.median|money }}<span
+        class="sub-chg">{{ c.change|signed }}</span></td>
+      <td class="num fixed">{{ c.count|num }}<span
+        class="sub-chg">{{ c.count_change|signed_num }}</span></td>
     </tr>
     {% endfor %}
     <tr class="total">
       <td>All eligible residential</td>
-      <td class="num lead fixed">{{ ctx.all_median|money }}</td>
-      <td class="num fixed">{{ ctx.all_count|num }}</td>
-      <td class="num chg fixed">{{ ctx.all_change|signed }}</td>
+      <td class="num lead fixed">{{ ctx.all_median|money }}<span
+        class="sub-chg">{{ ctx.all_change|signed }}</span></td>
+      <td class="num fixed">{{ ctx.all_count|num }}<span
+        class="sub-chg">{{ ctx.all_count_change|signed_num }}</span></td>
     </tr>
   </table>
 
@@ -535,22 +557,22 @@ table.meas tr.chg td.num{color:var(--fig-change)}
     return svg;
   }
 
-  /* The keyword row: a search field, filled in and locked. */
-  function keywordRow(text) {
-    var r = document.createElement('div');
-    r.className = 'row k';
-    var l = document.createElement('div');
-    l.className = 'rl';
-    l.textContent = 'Keyword';
+  /* The keyword heads its block: a search field, filled in and locked. */
+  function keywordHead(text, n, total) {
     var box = document.createElement('div');
-    box.className = 'kw';
+    box.className = 'kwhead';
+    var cap = document.createElement('div');
+    cap.className = 'kwn';
+    cap.textContent = 'Search keyword ' + n + ' of ' + total;
+    var line = document.createElement('div');
+    line.className = 'kwline';
     var s = document.createElement('span');
     s.textContent = text;
-    box.appendChild(magnifier());
-    box.appendChild(s);
-    r.appendChild(l);
-    r.appendChild(box);
-    return r;
+    line.appendChild(magnifier());
+    line.appendChild(s);
+    box.appendChild(cap);
+    box.appendChild(line);
+    return box;
   }
 
   function arrows(text) {
@@ -670,10 +692,10 @@ table.meas tr.chg td.num{color:var(--fig-change)}
 
     dirs.textContent = '';
     cards = [];
-    list.forEach(function (item) {
+    list.forEach(function (item, i) {
       var li = document.createElement('li');
       li.className = 'dir';
-      li.appendChild(keywordRow(item.keyword));
+      li.appendChild(keywordHead(item.keyword, i + 1, list.length));
       if (item.path) li.appendChild(row('Reasoning', 'path', arrows(item.path)));
 
       var chip = document.createElement('span');

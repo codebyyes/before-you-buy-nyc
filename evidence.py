@@ -47,15 +47,44 @@ SEARCH_DEPTH = "advanced"
 # produced directions. Concurrency is for latency only and changes no total.
 WORKERS = 8
 
-# Verified 2026-10-08. "Do not guess. Do not use your own knowledge." is the
-# whole point: the model is reading sources here, not recalling. An event it
-# cannot date is returned as not found, which is a real research result.
-DATE_PROMPT = """From the sources below, identify ONE specific dated event.
+# Based on the prompt verified 2026-10-08, with two rules added on 2026-10-11
+# after it returned a wrong finding against live data. This version has not yet
+# been through the same testing as the original - re-verify before the entry.
+#
+# What went wrong. The keyword was "Brooklyn downtown luxury condo oversupply
+# 2021-2022". The search returned an Attorney General filing, and the model
+# reported an event dated 2008-08-01 whose basis was the words
+# "as-of-august-1-2010" inside a PDF filename. Wrong decade, wrong borough,
+# and not an event at all - the as-of date of a document.
+#
+# The cause was structural, not a lapse: the keyword was never passed in, so
+# the model was asked to find a date, with nothing to say which date mattered.
+# Any document has dates in it. Section 8 says the explorer may only look for
+# answers inside the question it set; the reader of the sources has to be told
+# what that question was, or the constraint only exists on paper.
+#
+# "Do not guess. Do not use your own knowledge." is the other half: the model
+# is reading sources here, not recalling. Finding nothing is a real result.
+DATE_PROMPT = """From the sources below, identify ONE specific dated event that
+the SEARCH TERM was looking for.
 
 Rules:
+- The event must be what the search term was looking for. If the sources are
+  about a different subject, a different place, or a different period than the
+  search term asked for, return {"found": false}.
+- It must be an event: something that happened on a day. A decision, a vote, a
+  ruling, an announcement, a rate change, a filing, a disaster, a launch.
+- A document's own date is not an event. The date a report was published, the
+  "as of" date of an assessment, the vintage of a dataset, a date that appears
+  only in a filename - none of these are events. If that is all the sources
+  offer, return {"found": false}.
 - The date must be stated or clearly derivable from the source text or URL.
 - If no date can be confirmed, return {"found": false}.
 - Do not guess. Do not use your own knowledge.
+
+Returning {"found": false} is a correct and useful answer. A direction that was
+searched and yielded nothing is recorded as exactly that. Never stretch a
+source to fit the search term.
 
 Output ONLY valid JSON:
 {"found": true, "event": "...", "date": "YYYY-MM-DD", "date_basis": "...",
@@ -151,11 +180,11 @@ def search(keyword):
 # ---------------------------------------------------------------------------
 
 
-def sources_block(hits):
-    parts = []
+def sources_block(keyword, hits):
+    parts = ["SEARCH TERM: " + keyword, ""]
     for i, h in enumerate(hits, 1):
         parts.append("[%d] %s\nURL: %s\n%s" % (i, h["title"], h["url"], h["content"]))
-    return "\n\n".join(parts)
+    return "\n".join(parts[:2]) + "\n" + "\n\n".join(parts[2:])
 
 
 def valid_date(text):
@@ -173,17 +202,22 @@ def valid_date(text):
         return None
 
 
-def extract_event(hits):
-    """One dated event from the sources, or None if none can be confirmed.
+def extract_event(keyword, hits):
+    """One dated event matching the keyword, or None if none can be confirmed.
+
+    The keyword goes in with the sources. Without it the model is asked to
+    find a date rather than the right date, and every document has dates in
+    it - which is how a filename reading "as-of-august-1-2010" was once
+    reported as an event.
 
     None means the search completed and the record did not yield a datable
-    event - a real result, kept as NO_EVIDENCE. Raising means we could not
-    look, which is a different thing entirely.
+    event the keyword was looking for - a real result, kept as NO_EVIDENCE.
+    Raising means we could not look, which is a different thing entirely.
     """
     if not hits:
         return None
 
-    text = chat(EXPLORER_MODEL, DATE_PROMPT, sources_block(hits))
+    text = chat(EXPLORER_MODEL, DATE_PROMPT, sources_block(keyword, hits))
     data = extract_json(text)
     if not isinstance(data, dict) or not data.get("found"):
         return None
@@ -253,17 +287,17 @@ def gather(directions):
     with ThreadPoolExecutor(max_workers=min(WORKERS, max(1, len(keywords)))) as pool:
         searched = list(pool.map(one, keywords))
 
-    def date_one(pair):
-        kind, value = pair
+    def date_one(job):
+        keyword, (kind, value) = job
         if kind == "error":
-            return pair
+            return ("error", value)
         try:
-            return ("event", extract_event(value), len(value))
+            return ("event", extract_event(keyword, value), len(value))
         except Unavailable as exc:
             return ("error", str(exc))
 
     with ThreadPoolExecutor(max_workers=min(WORKERS, max(1, len(keywords)))) as pool:
-        dated = list(pool.map(date_one, searched))
+        dated = list(pool.map(date_one, zip(keywords, searched)))
 
     for entry, result in zip(out, dated):
         if result[0] == "error":

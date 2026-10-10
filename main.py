@@ -297,6 +297,11 @@ def build_context(borough, borough_name):
                 "prior_median": prior_med,
                 "prior_count": prior_n,
                 "change": pct_change(prior_med, cur_med),
+                # Transactions, not percent. A median that moved while the
+                # sample behind it shrank is a different reading from one
+                # that moved while the sample held, and the count of
+                # transactions says that more plainly than a rate would.
+                "count_change": cur_n - prior_n,
             }
         )
 
@@ -330,6 +335,7 @@ def build_context(borough, borough_name):
         "all_prior_median": all_prior_med,
         "all_prior_count": all_prior_n,
         "all_change": pct_change(all_prior_med, all_cur_med),
+        "all_count_change": all_cur_n - all_prior_n,
         "trend": trend,
         "span_start": span_start,
         "rows_examined": len(sales),
@@ -488,12 +494,19 @@ def signed(v):
     return ("+%.2f%%" % v) if v >= 0 else ("%.2f%%" % v)
 
 
+def signed_num(v):
+    if v is None:
+        return "-"
+    return ("+%s" % format(v, ",d")) if v >= 0 else ("−%s" % format(-v, ",d"))
+
+
 # ---------------------------------------------------------------------------
 
 app = Flask(__name__)
 app.jinja_env.filters["money"] = money
 app.jinja_env.filters["num"] = num
 app.jinja_env.filters["signed"] = signed
+app.jinja_env.filters["signed_num"] = signed_num
 
 
 # ---------------------------------------------------------------------------
