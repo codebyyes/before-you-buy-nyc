@@ -21,9 +21,14 @@
      and never "this is good news". Do not split a column by sign.
      Change is purple rather than orange because a warm hue beside a
      negative number reads as a warning, which is a verdict again.
-     Validated with the dataviz palette checker (light mode): worst
-     adjacent pair ΔE 21.5 protan / 15.0 tritan / 22.8 normal vision. */
-  --fig-median:#1f6fb2; --fig-count:#b4661f; --fig-change:#7a3f8a;
+     The transaction count is sample size, the least important of the
+     three, so it stays in ink rather than taking a hue off the median.
+     Validated with the dataviz palette checker (light mode). The change
+     colour is plum and not the better-separated brick red, because red
+     beside a negative number reads as bad news; 12.9 is comfortably
+     clear of the floor and the hue stays silent about direction.
+       #1f6fb2 vs #8a3a62 — deutan 12.9 / tritan 22.9 / normal 20.2 */
+  --fig-median:#1f6fb2; --fig-count:#191712; --fig-change:#8a3a62;
 }
 body{background:var(--bg);color:var(--ink);
   font:15px/1.55 ui-sans-serif,-apple-system,"Helvetica Neue",sans-serif;
