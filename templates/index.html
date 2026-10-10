@@ -130,11 +130,28 @@ tr.total td.num.chg{color:var(--fig-change)}
 .row+.row{margin-top:7px}
 .rl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;
   color:var(--locked);font-weight:600}
+.row.k{align-items:start}
+.row.k .rl{padding-top:12px}
 @media(max-width:560px){
   .row{grid-template-columns:minmax(0,1fr);gap:3px}
   .row+.row{margin-top:9px}
+  .row.k .rl{padding-top:0}
 }
-.kw{font-size:13.5px;font-weight:600;color:var(--ink);
+/* The keyword is drawn as a filled-in search field that cannot be edited,
+   because that is what it is. The question above it is already a locked box,
+   so the column reads question locked, then keywords locked, and the lock in
+   section 8 needs no explaining.
+   Not green: measured against the olive already on this card (#8a6a28), every
+   candidate green came out at deltaE 11.8-14.3 in normal vision and 3.4-4.9
+   under protanopia - the same near-miss the validator caught between blue and
+   teal earlier. Form carries this, not hue. */
+.kw{display:flex;gap:9px;align-items:flex-start;
+  background:var(--field);border:1.5px solid var(--line);border-radius:7px;
+  padding:9px 11px}
+.kw svg{flex:0 0 auto;width:14px;height:14px;margin-top:3px;
+  stroke:var(--mute);fill:none;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+.kw span{font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.4;
   font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
   word-break:break-word}
 .path{color:var(--mute);font-size:12.5px;line-height:1.5}
@@ -512,12 +529,46 @@ tr.total td.num.chg{color:var(--fig-change)}
       return r;
     }
 
+    var NS = 'http://www.w3.org/2000/svg';
+
+    function magnifier() {
+      var svg = document.createElementNS(NS, 'svg');
+      svg.setAttribute('viewBox', '0 0 16 16');
+      svg.setAttribute('aria-hidden', 'true');
+      var c = document.createElementNS(NS, 'circle');
+      c.setAttribute('cx', '7'); c.setAttribute('cy', '7'); c.setAttribute('r', '4.6');
+      var h = document.createElementNS(NS, 'line');
+      h.setAttribute('x1', '10.5'); h.setAttribute('y1', '10.5');
+      h.setAttribute('x2', '14.2'); h.setAttribute('y2', '14.2');
+      svg.appendChild(c);
+      svg.appendChild(h);
+      return svg;
+    }
+
+    /* The keyword row: a search field, filled in and locked. */
+    function keywordRow(text) {
+      var r = document.createElement('div');
+      r.className = 'row k';
+      var l = document.createElement('div');
+      l.className = 'rl';
+      l.textContent = 'Keyword';
+      var box = document.createElement('div');
+      box.className = 'kw';
+      var s = document.createElement('span');
+      s.textContent = text;
+      box.appendChild(magnifier());
+      box.appendChild(s);
+      r.appendChild(l);
+      r.appendChild(box);
+      return r;
+    }
+
     dirs.textContent = '';
     list.forEach(function (item) {
       var li = document.createElement('li');
       li.className = 'dir';
 
-      li.appendChild(row('Keyword', 'kw', item.keyword));
+      li.appendChild(keywordRow(item.keyword));
 
       if (item.path) {
         /* Typography only. The model writes its arrows as "->", and a line
