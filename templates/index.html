@@ -7,8 +7,14 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#12120f; --panel:#1a1a16; --line:#2e2e27;
-  --ink:#eceae2; --mute:#8d897c; --accent:#c8a96a; --locked:#55524a;
+  --bg:#f7f5ef; --panel:#ffffff; --line:#e2ddcd;
+  --ink:#191712; --mute:#6a6454; --accent:#8a6a28; --locked:#a9a390;
+  --field:#fbfaf6; --rule:#efebdf;
+  /* Chart. The data line is the heaviest element on the page; the grid is
+     almost invisible on purpose. Tonal separation is what makes a reader
+     look at the line instead of sliding past it. */
+  --chart-bg:#fbfaf6; --chart-grid:#e8e2d1; --chart-line:#4f3a0c;
+  --chart-axis:#6a6454;
 }
 body{background:var(--bg);color:var(--ink);
   font:15px/1.55 ui-sans-serif,-apple-system,"Helvetica Neue",sans-serif;
@@ -30,34 +36,43 @@ h3{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--mute
   font-weight:500;margin:22px 0 2px}
 .sub{color:var(--mute);font-size:13px;margin-bottom:16px}
 label{display:block;font-size:12px;color:var(--mute);margin:14px 0 5px}
-select,input[type=text],textarea{width:100%;background:#0f0f0c;color:var(--ink);
+select,input[type=text],textarea{width:100%;background:var(--field);color:var(--ink);
   border:1px solid var(--line);border-radius:7px;padding:10px 11px;font:inherit}
 select:disabled,textarea:disabled,input:disabled{color:var(--locked)}
-button{margin-top:16px;background:var(--accent);color:#1a1509;border:0;border-radius:7px;
+button{margin-top:16px;background:var(--accent);color:#ffffff;border:0;border-radius:7px;
   padding:10px 18px;font:600 14px/1 inherit;cursor:pointer}
 button.ghost{background:none;color:var(--mute);border:1px solid var(--line)}
-button:disabled{background:#3a382f;color:var(--locked);cursor:not-allowed}
+button:disabled{background:#edeadf;color:var(--locked);cursor:not-allowed}
 .fixed{font-variant-numeric:tabular-nums;
   font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 table{width:100%;border-collapse:collapse;margin-top:6px}
 th{text-align:left;font-size:11px;letter-spacing:.07em;text-transform:uppercase;
   color:var(--mute);font-weight:500;padding:0 0 7px;border-bottom:1px solid var(--line)}
-td{padding:7px 0;border-bottom:1px solid #232320;font-size:13px}
+td{padding:7px 0;border-bottom:1px solid var(--rule);font-size:13px}
 td.num,th.num{text-align:right;padding-left:16px;white-space:nowrap}
 tr.total td{border-bottom:0;border-top:1px solid var(--line);font-weight:600;padding-top:9px}
 .cat{color:var(--mute);font-size:12px}
-.chart{margin-top:10px;background:#0f0f0c;border:1px solid var(--line);
+.chart{margin-top:10px;background:var(--chart-bg);border:1px solid var(--line);
   border-radius:8px;padding:10px 8px 4px}
 .chart svg{display:block;width:100%;height:auto}
+.chart .grid{stroke:var(--chart-grid);stroke-width:1}
+.chart .axis{fill:var(--chart-axis);font-size:10px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.chart .line{fill:none;stroke:var(--chart-line);stroke-width:2.5;
+  stroke-linejoin:round;stroke-linecap:round}
+.chart .dash{stroke:var(--chart-line);stroke-width:2.5;stroke-dasharray:4 3;
+  stroke-linecap:round}
+.chart .dot{fill:var(--chart-line)}
+.chart .dot-open{fill:var(--chart-bg);stroke:var(--chart-line);stroke-width:2.5}
 .qt{width:100%;border-collapse:collapse;margin-top:12px}
-.qt td{padding:4px 0;border-bottom:1px solid #1f1f1c;font-size:12px;color:var(--mute)}
-.qt td.q{color:#b4b0a3}
+.qt td{padding:4px 0;border-bottom:1px solid var(--rule);font-size:12px;color:var(--mute)}
+.qt td.q{color:#3d382c}
 .qt tr:last-child td{border-bottom:0}
 .note{color:var(--mute);font-size:12px;margin-top:14px;line-height:1.5}
 .prov{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);
   color:var(--mute);font-size:11.5px;line-height:1.65}
-.prov b{color:#b4b0a3;font-weight:500}
-.err{background:#2a1a16;border:1px solid #5b3328;color:#e8c4b8;padding:13px 15px;
+.prov b{color:#3d382c;font-weight:500}
+.err{background:#fdf2ed;border:1px solid #e0b4a4;color:#8a3b26;padding:13px 15px;
   border-radius:8px;font-size:13px;margin-top:14px}
 .motto{color:var(--mute);font-size:12px;letter-spacing:.04em;margin-top:22px;
   text-align:center}
@@ -114,30 +129,26 @@ tr.total td{border-bottom:0;border-top:1px solid var(--line);font-weight:600;pad
     <svg viewBox="0 0 {{ chart.w }} {{ chart.h }}" role="img"
          aria-label="Median sale price by quarter, all eligible residential">
       {% for g in chart.grid %}
-      <line x1="{{ chart.pl }}" y1="{{ g.y }}" x2="{{ chart.pr }}" y2="{{ g.y }}"
-            stroke="#232320" stroke-width="1"/>
-      <text x="{{ chart.label_x }}" y="{{ g.y + 3 }}" fill="#8d897c" font-size="10"
-            text-anchor="end"
-            font-family="ui-monospace,Menlo,monospace">{{ g.label }}</text>
+      <line class="grid" x1="{{ chart.pl }}" y1="{{ g.y }}"
+            x2="{{ chart.pr }}" y2="{{ g.y }}"/>
+      <text class="axis" x="{{ chart.label_x }}" y="{{ g.y + 3 }}"
+            text-anchor="end">{{ g.label }}</text>
       {% endfor %}
 
       {% if chart.solid %}
-      <polyline fill="none" stroke="#c8a96a" stroke-width="2" stroke-linejoin="round"
-                points="{{ chart.solid }}"/>
+      <polyline class="line" points="{{ chart.solid }}"/>
       {% endif %}
 
       {% if chart.dash %}
-      <line x1="{{ chart.dash.x1 }}" y1="{{ chart.dash.y1 }}"
-            x2="{{ chart.dash.x2 }}" y2="{{ chart.dash.y2 }}"
-            stroke="#c8a96a" stroke-width="2" stroke-dasharray="4 3"/>
+      <line class="dash" x1="{{ chart.dash.x1 }}" y1="{{ chart.dash.y1 }}"
+            x2="{{ chart.dash.x2 }}" y2="{{ chart.dash.y2 }}"/>
       {% endif %}
 
       {% for m in chart.markers %}
         {% if m.partial %}
-        <circle cx="{{ m.x }}" cy="{{ m.y }}" r="4" fill="#0f0f0c"
-                stroke="#c8a96a" stroke-width="2"/>
+        <circle class="dot-open" cx="{{ m.x }}" cy="{{ m.y }}" r="4.5"/>
         {% else %}
-        <circle cx="{{ m.x }}" cy="{{ m.y }}" r="4" fill="#c8a96a"/>
+        <circle class="dot" cx="{{ m.x }}" cy="{{ m.y }}" r="4.5"/>
         {% endif %}
         <circle cx="{{ m.x }}" cy="{{ m.y }}" r="12" fill="transparent">
           <title>{{ m.title }}</title>
@@ -145,9 +156,8 @@ tr.total td{border-bottom:0;border-top:1px solid var(--line);font-weight:600;pad
       {% endfor %}
 
       {% for t in chart.xticks %}
-      <text x="{{ t.x }}" y="{{ t.y }}" fill="#8d897c" font-size="10"
-            text-anchor="{{ t.anchor }}"
-            font-family="ui-monospace,Menlo,monospace">{{ t.label }}</text>
+      <text class="axis" x="{{ t.x }}" y="{{ t.y }}"
+            text-anchor="{{ t.anchor }}">{{ t.label }}</text>
       {% endfor %}
     </svg>
   </div>
