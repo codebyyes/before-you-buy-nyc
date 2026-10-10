@@ -318,6 +318,10 @@ tr.total td.num.chg{color:var(--fig-change)}
   </div>
 
   <div class="busy" id="busy" hidden>Deciding where to look</div>
+  <div class="note" id="elapsed" hidden><span id="secs">0</span>s. The explorer
+    reasons before it answers, which usually takes twenty to forty seconds. No
+    search is running and no search credit is being spent &mdash; this step only
+    decides where to look.</div>
 
   <div id="out" hidden>
     <h3>Research directions</h3>
@@ -366,8 +370,27 @@ tr.total td.num.chg{color:var(--fig-change)}
   var dirsub = document.getElementById('dirsub');
   var roll   = document.getElementById('rollup');
   var step2  = document.getElementById('step2');
+  var elapsed = document.getElementById('elapsed');
+  var secs   = document.getElementById('secs');
+  var ticker = null;
 
   function show(el, on) { el.hidden = !on; }
+
+  /* A count of seconds, so a long wait reads as a long wait rather than as a
+     page that has stopped responding. */
+  function startClock() {
+    var t0 = Date.now();
+    secs.textContent = '0';
+    show(elapsed, true);
+    ticker = setInterval(function () {
+      secs.textContent = String(Math.round((Date.now() - t0) / 1000));
+    }, 1000);
+  }
+
+  function stopClock() {
+    if (ticker) { clearInterval(ticker); ticker = null; }
+    show(elapsed, false);
+  }
 
   function note(cls, strong, rest) {
     roll.className = 'rollup' + (cls ? ' ' + cls : '');
@@ -389,27 +412,50 @@ tr.total td.num.chg{color:var(--fig-change)}
     show(busy, true);
     show(out, false);
     show(roll, false);
+    startClock();
 
-    fetch('/explore', {
+    /* A spinner that never resolves is its own failure state, and an invisible
+       one: the reader cannot tell waiting from broken. fetch() has no timeout
+       of its own, so the request is given a deadline and a request that passes
+       it ends where every other failure ends - RESEARCH_INCOMPLETE, said out
+       loud. The server's own call to the model gives up at 120s; this sits
+       past that so the server's more specific message wins when it arrives. */
+    var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+    var timedOut = false;
+    var deadline = setTimeout(function () {
+      timedOut = true;
+      if (ctrl) ctrl.abort();
+    }, 150000);
+
+    var opts = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question: text })
-    })
+    };
+    if (ctrl) opts.signal = ctrl.signal;
+
+    fetch('/explore', opts)
     .then(function (r) { return r.json(); })
-    .then(render)
+    .then(function (d) { clearTimeout(deadline); render(d); })
     .catch(function (err) {
       /* The request itself failed. That is RESEARCH_INCOMPLETE, and it is
          never worded as an empty research result. */
+      clearTimeout(deadline);
+      stopClock();
       show(busy, false);
       ask.disabled = false;
       q.disabled = false;
       note('inc', 'Research could not be completed.',
-           'The request did not reach the server (' + err + '). This is not a '
-         + 'finding about the historical record - nothing was searched.');
+           (timedOut
+             ? 'The request ran past 150 seconds and was given up on.'
+             : 'The request did not reach the server (' + err + ').')
+         + ' Nothing was searched, so this is not a finding about the '
+         + 'historical record.');
     });
   });
 
   function render(d) {
+    stopClock();
     show(busy, false);
 
     document.getElementById('askedtext').textContent = d.question || '';
