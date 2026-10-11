@@ -728,7 +728,9 @@ def evidence_route():
     if not directions:
         return incomplete("No research directions were submitted.")
 
-    allowed, note = take_budget(len(directions))
+    # Two credits per search, not one. Counting directions here spent the
+    # allowance at half the rate it was actually going out.
+    allowed, note = take_budget(len(directions) * evidence.CREDITS_PER_SEARCH)
     if not allowed:
         return incomplete(note)
 

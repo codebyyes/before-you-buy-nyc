@@ -57,15 +57,22 @@ TRUSTED = [
     "gothamist.com",
 ]
 
-# Ten rather than five. A Tavily credit is charged per search, not per result
-# - 47 credits across about 47 searches confirms it on the account - so the
-# extra five sources are free, and the one page carrying the dated sentence is
+# Ten rather than five. Credits are charged per search, not per result, so the
+# extra five sources are free and the page carrying the dated sentence is
 # often not in the first five.
+#
+# An advanced search costs TWO credits, measured cleanly on the account: 47 to
+# 55 across one question of four searches. An earlier estimate of one came
+# from dividing a rough total by a half-remembered history and was wrong in
+# the direction that flattered the budget.
 MAX_RESULTS = 10
-SEARCH_DEPTH = "advanced"
+SEARCH_DEPTH = "advanced"   # basic is 1 credit and returned betting
+                            # sites and crypto news; not an option
+CREDITS_PER_SEARCH = 2
 
-# One search per keyword, so a question costs as many credits as the explorer
-# produced directions. Concurrency is for latency only and changes no total.
+# One search per direction, so a question costs twice as many credits as the
+# explorer produced directions: a ten-record question is twenty credits.
+# Concurrency is for latency only and changes no total.
 WORKERS = 8
 
 # Based on the prompt verified 2026-10-08, with two rules added on 2026-10-11
