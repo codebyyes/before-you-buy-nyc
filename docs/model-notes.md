@@ -23,14 +23,25 @@ Two questions, same evening, same borough, same model, same prompts:
 | "Does a hurricane hitting Florida affect home prices in the Bronx?" | 2 | **All one step.** `hurricane Florida -> Hurricane Irma landfall September 2017`, and four more like it |
 | "Does extreme weather elsewhere in the country affect Bronx home prices?" | 3 | **All three steps with mechanisms.** `migration -> Puerto Rican evacuees -> NYC shelter announcement` |
 
-Naming a category of event ("hurricane Florida") invites enumeration, and
-enumeration is arguably the correct response to it. Giving an abstract
-category ("extreme weather elsewhere") forces a chain.
+The sharper statement, and the one to keep: **what drives the depth is how
+much semantic distance the question leaves open.** Give the model a bridge and
+it walks the bridge; leave the gap and it builds one.
 
-In the second run the model named `migration` as a keyword — a concept that
-appears nowhere in the question — and then built a path from Hurricane Maria
-through Puerto Rican displacement to New York City housing. That is the
-behaviour section 7 of the spec exists to allow.
+"Extreme weather elsewhere affects Bronx prices" already contains the leap —
+the reader made it. So two of those three-step paths are elaboration rather
+than reasoning: `extreme weather -> Hurricane Harvey -> the declaration about
+Hurricane Harvey` names an instance and then an official act about that
+instance. It looks like a chain and is mostly specification.
+
+"More people are wearing black; does that have anything to do with home
+prices?" supplies no link at all. Clothing to protest is a real semantic jump
+and nobody handed it over.
+
+One qualification, because the rule is not absolute: inside the bridged
+question the model still named `migration` as a keyword — a concept appearing
+nowhere in the question — and built `migration -> Puerto Rican evacuees -> NYC
+shelter announcement`. It walked the bridge it was given and put up a second
+one beside it. Section 7 of the spec exists to allow exactly that.
 
 **Consequence for anyone evaluating this model: a single question tells you
 about that question, not about the model.**
@@ -83,6 +94,10 @@ Four observations, all pointing the same way:
 
 The Gowanus rezoning is real, and the model found and quoted it correctly on
 2026-10-08 when reading sources rather than recalling them.
+
+One competing explanation is ruled out: `esd.ny.gov`, where the 2026-10-08
+source was found, **is** in `TRUSTED` in `evidence.py`. The allowlist did not
+shut that page out.
 
 **The mechanism is confirmed in code. The model's actual behaviour is not
 observed, because the build container cannot reach Nebius or Tavily.** Do not
