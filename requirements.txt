@@ -9,4 +9,3 @@
 # redeploy during judging is not the moment to discover an API change in a
 # package we were using for one POST.
 flask
-tavily-python
