@@ -367,7 +367,7 @@ occurred against live data.
 | --- | --- | --- |
 | `RESULT` | Dated, sourced, measurable, and it passed the gate | Event, date, date basis, source link, and the before-and-after medians |
 | `NO_EVIDENCE` | The search ran and the sources held no datable event | How many sources were searched, and that this does not mean nothing happened |
-| `RESEARCH_INCOMPLETE` | We could not look: missing key, exhausted quota, timeout, unreachable service, unreachable reviewer | The failure, worded for the step it happened at, and the original error |
+| `RESEARCH_INCOMPLETE` | The research could not be completed: missing key, exhausted quota, timeout, unreachable service, unreachable reviewer — or a reply from the extraction step this system cannot use | The failure, worded for the step it happened at, and the original error |
 | `EVENT_OUTSIDE_MEASURABLE_RANGE` | The event is real and dated but falls before 2017-01-01 | The event in full, plus why this data cannot measure it |
 | `EVIDENCE_FOUND_BUT_WITHHELD` | It did not pass presentation review within two revisions | The failure categories and their count, never the blocked text |
 
@@ -378,10 +378,20 @@ finishing and the evidence layer starting.
 Two rules hold the set together.
 
 **No failure may be reported as an empty result.** `NO_EVIDENCE` says this
-search found nothing; `RESEARCH_INCOMPLETE` says we could not look. An
-exhausted quota is a fact about us, not a fact about the historical record. The
-test suite scans every reason string to confirm that no failure path has
-acquired "no evidence" wording.
+search found nothing; `RESEARCH_INCOMPLETE` says the research could not be
+completed. An exhausted quota is a fact about us, not a fact about the
+historical record. The test suite scans every reason string to confirm that no
+failure path has acquired "no evidence" wording.
+
+The line is drawn at who is speaking. `NO_EVIDENCE` is reached one way only:
+the extraction step read the sources and reported that they held no datable
+event. Every other outcome of that step — a reply that is not a result object,
+an event returned without its date or its source, a source address that was
+not among the pages the search returned — is this system coming back empty,
+not the record. The sources may well have held something; we never learned
+what. Those end as `RESEARCH_INCOMPLETE`, which also makes the whole analysis
+incomplete, because a direction we dropped is a direction the reader did not
+get an answer on.
 
 **One incomplete direction makes the whole analysis incomplete,** and it is
 said once at the top rather than only in the margin of the direction it belongs

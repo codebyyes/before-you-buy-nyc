@@ -346,6 +346,61 @@ check("max_tokens is generous enough for a reasoning model",
       sent["body"]["max_tokens"] >= 2048)
 check("timeout set", sent["timeout"] == ex.TIMEOUT)
 
+print("\nonly the record speaking is an empty record")
+# An unusable reply from the extraction step is our step coming back empty,
+# not the historical record coming back empty. Each of these once returned
+# None and was displayed as "the record did not support it", which is a claim
+# about history we had no standing to make.
+import evidence as evd
+
+HITS = [{"title": "City Council vote", "url": "https://council.nyc.gov/a",
+         "content": "The Council approved it on November 23, 2021."}]
+
+
+def replies(text):
+    def fake(model, system, user, max_tokens=ex.MAX_TOKENS):
+        return text
+    return fake
+
+
+GOOD = {"found": True, "event": "The Council approved the rezoning.",
+        "date": "2021-11-23", "date_basis": "stated in the source",
+        "source_url": "https://council.nyc.gov/a", "source_type": "Government"}
+
+
+def extracting(payload):
+    evd.chat = replies(payload if isinstance(payload, str) else json.dumps(payload))
+    try:
+        return ("event", evd.extract_event("rezoning", HITS))
+    except ex.Unavailable as exc:
+        return ("incomplete", str(exc))
+
+
+kind, value = extracting(GOOD)
+check("a complete answer is still a finding", kind == "event" and value is not None)
+
+kind, _ = extracting({"found": False})
+check("the model reading the sources and reporting nothing is NO_EVIDENCE",
+      kind == "event" and _ is None)
+
+kind, said = extracting(dict(GOOD, date=""))
+check("an event without its date is not an empty record", kind == "incomplete", said)
+
+kind, said = extracting(dict(GOOD, source_url="https://example.com/made-up"))
+check("a source address the search never returned is not an empty record",
+      kind == "incomplete", said)
+
+kind, said = extracting("[1, 2, 3]")
+check("a reply that is not a result object is not an empty record",
+      kind == "incomplete", said)
+
+for probe in (dict(GOOD, date=""), dict(GOOD, source_url="https://example.com/x"),
+              "[1, 2, 3]"):
+    _k, said = extracting(probe)
+    leaked = [w for w in APOLOGY if w in said.lower()]
+    check("its wording avoids apology and does not read as no evidence",
+          not leaked and "no evidence" not in said.lower(), said)
+
 print()
 if fails:
     print("FAILED %d check(s): %s" % (len(fails), ", ".join(fails)))

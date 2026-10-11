@@ -238,16 +238,35 @@ def extract_event(keyword, hits):
     it - which is how a filename reading "as-of-august-1-2010" was once
     reported as an event.
 
-    None means the search completed and the record did not yield a datable
-    event the keyword was looking for - a real result, kept as NO_EVIDENCE.
-    Raising means we could not look, which is a different thing entirely.
+    None means one thing only: the search completed and the model, having
+    read the sources, reported that they held no datable event the keyword
+    was looking for. That is a real result, kept as NO_EVIDENCE.
+
+    Raising means the research could not be completed. That covers not
+    reaching the service at all, and it also covers reaching it and getting
+    back an answer this step cannot use - an unreadable reply, an event
+    without its date or source, a source address that is not one of the
+    pages the search returned. In each of those the sources may well have
+    held something; we simply never learned what. Calling that an empty
+    record would be reporting our own step as a fact about history.
     """
     if not hits:
         return None
 
     text = chat(EXPLORER_MODEL, DATE_PROMPT, sources_block(keyword, hits))
     data = extract_json(text)
-    if not isinstance(data, dict) or not data.get("found"):
+
+    # A reply we cannot read is not a statement about the record. Only the
+    # model saying "found: false" means the sources held nothing datable;
+    # everything else below is our own step coming back unusable, and that
+    # ends as RESEARCH_INCOMPLETE. Reporting it as NO_EVIDENCE would put words
+    # in the historical record's mouth that we never had the standing to say.
+    if not isinstance(data, dict):
+        raise Unavailable(
+            "The extraction step returned a response that was not a result "
+            "object, so the sources it read could not be judged.")
+
+    if not data.get("found"):
         return None
 
     when = valid_date(data.get("date"))
@@ -257,9 +276,13 @@ def extract_event(keyword, hits):
     kind = clean(data.get("source_type"), 40)
 
     # Section 14: the date has to be confirmable, and section 11: the finding
-    # has to carry a source. Missing either one is not a finding.
+    # has to carry a source. Missing either one is not a finding - but it is
+    # also not an empty record. The model said it found something and then
+    # handed back an incomplete answer, so what the sources held is unknown.
     if not when or not event or not url:
-        return None
+        raise Unavailable(
+            "The extraction step reported an event without its date, its "
+            "description or its source address, so it could not be shown.")
 
     # The model may paraphrase a URL. Only a URL that actually came back from
     # the search is allowed to be displayed as the source.
@@ -269,7 +292,10 @@ def extract_event(keyword, hits):
         if not match:
             match = next((h["url"] for h in hits if h["url"] in url), None)
         if not match:
-            return None
+            raise Unavailable(
+                "The extraction step returned a source address that was not "
+                "among the pages the search returned, so the event it "
+                "reported could not be traced to one of them.")
         url = match
 
     if kind not in SOURCE_TYPES:
