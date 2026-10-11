@@ -193,6 +193,10 @@ check("the gate is told not to judge truth",
 check("and not to reopen whether the direction was worth taking",
       "worth taking" in ex.REVIEWER_PROMPT)
 check("revisions are capped at two", ex.MAX_REVISIONS == 2)
+check("the reviewer gets a reasoning model's token budget, not a verdict's",
+      "max_tokens=MAX_TOKENS" in open("explorer.py").read()
+      and ex.MAX_TOKENS >= 2048,
+      "Nano reasons before it answers; a small budget comes back empty")
 check("a revision may not fetch anything new",
       "do not search for anything" in ex.REVISE_PROMPT)
 

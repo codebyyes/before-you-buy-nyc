@@ -980,6 +980,8 @@ table.meas tr.chg td.num{color:var(--fig-change)}
         box.appendChild(sr);
       }
 
+      var after = document.createElement('div');
+
       if (item.state === 'RESULT' && item.measure) {
         box.appendChild(measurement(item.measure));
         var w = document.createElement('div');
@@ -993,12 +995,12 @@ table.meas tr.chg td.num{color:var(--fig-change)}
              + 'is not comparable with the twelve months before it.');
         box.appendChild(w);
       } else if (item.state === 'EVENT_OUTSIDE_MEASURABLE_RANGE') {
-        box.appendChild(flag('The event is real, dated and sourced, and this '
+        after.appendChild(flag('The event is real, dated and sourced, and this '
           + 'system cannot measure it. ' + stop(item.reason)
           + ' Reporting it as no evidence would be a false statement about the '
           + 'historical record made to cover a limit of ours.'));
       } else if (item.state === 'NO_EVIDENCE') {
-        box.appendChild(plain('The search completed and no datable event was '
+        after.appendChild(plain('The search completed and no datable event was '
           + 'found in the ' + (item.sources_searched || 0)
           + ' authoritative sources it returned. This direction was searched '
           + 'and the record did not support it. It is not a statement that '
@@ -1007,7 +1009,7 @@ table.meas tr.chg td.num{color:var(--fig-change)}
         /* Not a failure. A finding that claimed causation where the evidence
            established only sequence is one the gate is supposed to stop, so
            this is written as the gate working, never as an apology. */
-        box.appendChild(plain('Evidence was found here. '
+        after.appendChild(plain('Evidence was found here. '
           + stop(item.reason)
           + ' It was rewritten '
           + (item.revisions === 1 ? 'once'
@@ -1016,9 +1018,26 @@ table.meas tr.chg td.num{color:var(--fig-change)}
           + 'a finding is worded, not on whether the event happened. Showing '
           + 'text that failed the check would be a way around the check.'));
       } else if (item.state === 'RESEARCH_INCOMPLETE') {
-        box.appendChild(flag('Research could not be completed. '
-          + stop(item.reason) + ' Nothing was searched here, so this is not '
-          + 'evidence that the historical record is empty.'));
+        /* Where it stopped decides what can honestly be said. A search that
+           failed means nothing was looked at; a review that failed means the
+           event above was found and sourced and only the check did not run.
+           Printing "nothing was searched" under a sourced event would
+           contradict the page's own evidence. */
+        if (item.failed_at === 'review') {
+          after.appendChild(flag('The search completed and found the event '
+            + 'above, with its source. ' + stop(item.reason)
+            + ' Because the check did not run, the price movement is not '
+            + 'shown: output that has not been through presentation review '
+            + 'is not published. The event itself stands as found.'));
+        } else if (item.failed_at === 'measure') {
+          after.appendChild(flag('The search completed and found the event '
+            + 'above, with its source. ' + stop(item.reason)
+            + ' The event stands as found; only the measurement is missing.'));
+        } else {
+          after.appendChild(flag('Research could not be completed. '
+            + stop(item.reason) + ' Nothing was searched here, so this is not '
+            + 'evidence that the historical record is empty.'));
+        }
       }
 
       /* The record reads: what was found, then where the search set out
@@ -1026,6 +1045,9 @@ table.meas tr.chg td.num{color:var(--fig-change)}
          slot reserved above the provenance rows. */
       card.slot.textContent = '';
       card.slot.appendChild(box);
+      /* The status sentence goes after the route that produced it, so a
+         record reads: what was found, how it was reached, where it stands. */
+      if (after.childNodes.length) card.li.insertBefore(after, card.chip);
     });
 
     /* Section 5: every rise and every fall is shown, in the order the
@@ -1047,6 +1069,10 @@ table.meas tr.chg td.num{color:var(--fig-change)}
       parts.push(counts.EVIDENCE_FOUND_BUT_WITHHELD + ' withheld by review');
     if (counts.RESEARCH_INCOMPLETE)
       parts.push(counts.RESEARCH_INCOMPLETE + ' not completed');
+    var afterSearch = list.filter(function (x) {
+      return x.state === 'RESEARCH_INCOMPLETE' && x.failed_at &&
+             x.failed_at !== 'search';
+    }).length;
 
     /* What the gate is and is not. Passing it means a finding was worded
        within its evidence, not that the finding is true - and the sentence
@@ -1078,10 +1104,15 @@ table.meas tr.chg td.num{color:var(--fig-change)}
        direction it happened to. */
     if (counts.RESEARCH_INCOMPLETE) {
       setNote(roll, 'inc', 'This analysis is incomplete.',
-              counts.RESEARCH_INCOMPLETE + ' of ' + list.length + ' directions '
-            + 'could not be researched, so what is shown is part of an answer '
-            + 'and not the whole of one. ' + parts.join(' \u00b7 ') + '.'
-            + gate + prov);
+              counts.RESEARCH_INCOMPLETE + ' of ' + list.length
+            + ' directions did not finish'
+            + (afterSearch
+                ? ' (' + afterSearch + ' of them after the search had already '
+                  + 'found an event, so the event stands and only what comes '
+                  + 'after it is missing)'
+                : '')
+            + ', so what is shown is part of an answer and not the whole of '
+            + 'one. ' + parts.join(' \u00b7 ') + '.' + gate + prov);
     } else {
       setNote(roll, '', 'Research complete.',
               parts.join(' \u00b7 ') + '.' + gate + prov

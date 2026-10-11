@@ -531,8 +531,12 @@ def review(event, path, measure):
     """
     failures = []
     for attempt in range(MAX_REVISIONS + 1):
+        # Nano reasons before it answers too. The verdict is four tokens, the
+        # thinking in front of it is not, and a budget sized for the verdict
+        # comes back empty - which is exactly the trap the handover warns
+        # about on its first page, and which this call fell into at 256.
         verdict = chat(REVIEWER_MODEL, REVIEWER_PROMPT,
-                       finding_text(event, path, measure), max_tokens=256)
+                       finding_text(event, path, measure), max_tokens=MAX_TOKENS)
         passed, failures = parse_verdict(verdict)
         if passed:
             return True, event, path, [], attempt

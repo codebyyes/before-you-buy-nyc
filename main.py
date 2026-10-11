@@ -756,7 +756,8 @@ def evidence_route():
         row = {"query": d["query"], "path": d.get("path", ""),
                "from": d.get("from", [])}
         if d.get("state") == explorer.RESEARCH_INCOMPLETE:
-            row.update(state=explorer.RESEARCH_INCOMPLETE, reason=d.get("reason", ""))
+            row.update(state=explorer.RESEARCH_INCOMPLETE, failed_at="search",
+                       reason=d.get("reason", ""))
             out.append(row)
             continue
         if not d.get("event"):
@@ -776,7 +777,8 @@ def evidence_route():
         }
 
         if fetch_error or coverage is None:
-            row.update(state=explorer.RESEARCH_INCOMPLETE, reason=fetch_error or "")
+            row.update(state=explorer.RESEARCH_INCOMPLETE, failed_at="measure",
+                       reason=fetch_error or "")
             out.append(row)
             continue
 
@@ -807,7 +809,14 @@ def evidence_route():
             # The reviewer could not be reached. That is research that did not
             # complete, not a finding that was blocked - the two must never be
             # displayed as each other.
+            #
+            # `failed_at` matters as much as the state. The search succeeded
+            # here and the event is on the page with its source; saying
+            # "nothing was searched" under it would contradict the evidence
+            # printed directly above, which is the one kind of sentence this
+            # project exists to prevent.
             row.update(state=explorer.RESEARCH_INCOMPLETE,
+                       failed_at="review",
                        reason="The presentation review could not be run (%s)."
                               % exc)
             out.append(row)
