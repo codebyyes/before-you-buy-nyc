@@ -5,71 +5,24 @@
 
 ---
 
-## 動作一：Reviewer 閘門（最後一塊）
+## ✅ 動作一完成：Reviewer 閘門（2026-10-11）
 
-規格第 9 節 + 修訂 A10。**不花 Tavily，只多一次便宜的模型呼叫。**
+`explorer.py` 的 `REVIEWER_PROMPT` / `review()` / `withheld_reason()`，
+接在 `main.py` 的 `/evidence` 路由，`measure_event()` 之後、`RESULT` 之前。
+只有要變成 `RESULT` 的才過閘門，其餘四種狀態不經過。
 
-### 接在哪
+- 五個固定問題，**不准加第六個、不准改成開放式複查**
+- 只用 Nano（`REVIEWER_MODEL`，大小寫跟 Explorer 不同）
+- 最多退回兩次。退回時 Explorer **只能改措辭** —— 日期、來源、數字都是
+  程式和證據產生的，改寫碰不到
+- 兩次還是 FAIL → `EVIDENCE_FOUND_BUT_WITHHELD`，顯示**數量和失敗類別**，
+  不顯示被擋下的內容
+- 🔴 **Reviewer 自己呼叫失敗不是 withheld，是 `RESEARCH_INCOMPLETE`** ——
+  沒審成跟審過不給是兩件事
+- 🔴 **文案不道歉。** `test_explorer.py` 有一條掃 sorry / unfortunately /
+  unable / apolog / regret / fail，任何一個出現就不過
 
-`main.py` 的 `/evidence` 路由，`measure_event()` 算完、`row["state"] =
-RESULT` 之前。只有 `RESULT` 需要過閘門，其他四種狀態不用。
-
-### 用哪個模型
-
-```python
-explorer.REVIEWER_MODEL   # "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B"
-```
-
-⚠️ 大小寫跟 Explorer 那個不一樣（前面重複 NVIDIA），不要憑印象打。
-已驗證 Nano 夠用，不需要換大模型。
-
-### 它查什麼（五個固定問題，不要加也不要改）
-
-1. Does every presented event carry an identifiable source?
-2. Is causal language used where only sequence is established?
-3. Does the result contain a conclusion, prediction, recommendation or
-   probability?
-4. Is the observation window stated?
-5. Is the claim stronger than the underlying evidence?
-
-🔴 **它不問「事件是不是真的」，也不問「這個方向值不值得查」。** 開放式複查等於
-把實質判斷還給模型，而窄範圍正是為了防這件事（A10 明文）。第五題問的是
-「這句話有沒有講得比證據多」，不是「這件事是不是真的」。
-
-### 已驗證的行為
-
-拿一句故意藏四個違規的歷史陳述（用了 "caused"、做了預測、沒來源、沒寫觀察
-期間）給它，它回 `FAIL` 然後 `1 2 3 4`。四個字，沒有多話。**對一個閘門來說
-那是正確行為**，不要因為「回答太簡短」就去改提示詞。
-
-解析時要容忍 `PASS` / `FAIL` 前後的空白和大小寫，失敗編號可能用空白或逗號分隔。
-
-### 退回機制
-
-最多**兩次**。退回的時候，Explorer **只能用已經取得的證據**改寫 ——
-不准重新搜尋、不准補事件、不准換日期。兩次之後還是 FAIL：
-
-```
-state = explorer.EVIDENCE_FOUND_BUT_WITHHELD
-```
-
-**只顯示被擋下的數量和失敗的題號類別，不顯示被擋下的內容。** 把沒過閘門的
-東西放出來，等於繞過閘門。
-
-🔴 **文案不能寫成道歉。** 這是閘門正常運作，不是系統故障。一個宣稱因果而
-證據只有先後的發現，**本來就該被擋**。801 糾正過 108 一次，不要再犯。
-措辭往「審查沒通過，所以不呈現」寫，不要往「很抱歉無法提供」寫。
-
-### 失敗處理
-
-Reviewer 呼叫本身失敗（逾時、額度、連不上）**不是** withheld，是
-`RESEARCH_INCOMPLETE` —— 我們沒審成，不是審過不給。
-
-### 測試
-
-`test_explorer.py` 的方式照抄：stub `explorer.chat`，離線驗
-`PASS` / `FAIL 1 2 3 4` / 亂回 / 呼叫失敗 四條路徑，不花半毛錢。
-加一條掃描：withheld 的文案裡不准出現 "sorry"、"unfortunately"、"unable"。
+五種狀態現在在同一頁上都看得到（本地 harness 已驗）。
 
 ---
 

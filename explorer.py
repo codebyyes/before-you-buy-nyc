@@ -151,6 +151,78 @@ Output ONLY valid JSON, no other text:
  "recurring":false,
  "directions":[{"from":["..."],"path":"... -> ... -> ...","query":"..."}]}"""
 
+# ---------------------------------------------------------------------------
+# The presentation gate - spec section 9, amendment A10.
+#
+# Why there is a second model at all: the first substantive response this
+# project got from a language model was that it could not be built, because a
+# model asked to research a question will talk itself into an answer. This
+# gate exists against that one named failure mode, not for general safety.
+#
+# The explorer is still allowed to reason toward whatever it likes. What it is
+# not allowed to do is be the one who decides that its reasoning has become a
+# result.
+#
+# The five questions are fixed. Do not add a sixth and do not reword them into
+# an open-ended check: an open re-check hands substantive judgement back to a
+# model, which is exactly what the narrow scope prevents. In particular the
+# reviewer is never asked whether the event is real or whether the direction
+# was worth taking. Question 5 asks whether a sentence claims more than its
+# evidence carries, not whether the underlying event is true.
+#
+# Questions 1 and 4 are guaranteed by construction here - the interface always
+# prints a source and always prints the window. They are still asked, because
+# the gate checks the presentation as a reader meets it, not as the programmer
+# believes it to be.
+#
+# Observed behaviour, verified 2026-10-08: given a statement containing four
+# deliberate violations it returned FAIL followed by "1 2 3 4". Four tokens and
+# no elaboration. For a gate that is correct behaviour - do not "improve" the
+# prompt because the answers look terse.
+# ---------------------------------------------------------------------------
+
+REVIEWER_PROMPT = """You check how a finding is presented. You do not check
+whether it is true.
+
+Answer these five questions about the text below:
+
+1. Does every presented event carry an identifiable source?
+2. Is causal language used where only sequence is established?
+3. Does the result contain a conclusion, prediction, recommendation or
+   probability?
+4. Is the observation window stated?
+5. Is the claim stronger than the underlying evidence?
+
+A finding fails if 1 or 4 is answered no, or if 2, 3 or 5 is answered yes.
+
+Do not consider whether the event really happened, whether the research
+direction was worth taking, or whether the figures are interesting. Those are
+not yours to judge.
+
+Reply with one word, PASS or FAIL. If FAIL, follow it with the numbers of the
+questions that failed, separated by spaces. Nothing else."""
+
+# Revisions are capped at two. The explorer may rewrite how it said something;
+# it may not go and find something else to say.
+MAX_REVISIONS = 2
+
+REVISE_PROMPT = """A presentation review rejected the text below on the
+numbered grounds listed. Rewrite it so that it passes.
+
+1. Every event must carry an identifiable source.
+2. No causal language where only sequence is established. Write what followed,
+   not what caused.
+3. No conclusion, prediction, recommendation or probability.
+4. The observation window must be stated.
+5. No claim stronger than the evidence carries.
+
+You may only use the evidence already given to you. Do not add an event, do
+not change the date, do not search for anything, do not introduce a figure
+that is not already here. You are changing how this is said, nothing else.
+
+Output ONLY valid JSON, no other text:
+{"event":"...","path":"... -> ... -> ..."}"""
+
 MAX_QUESTION_CHARS = 500
 # Ceilings against a runaway response, not selection rules. The model decides
 # how many keywords and directions a question warrants; these only stop a
@@ -392,6 +464,119 @@ def explore(question, region="", data_from="", data_to=""):
         return dict(base, ok=False, state=RESEARCH_INCOMPLETE, reason=str(exc))
 
     return dict(base, ok=True, **plan)
+
+
+# ---------------------------------------------------------------------------
+# Running the gate
+# ---------------------------------------------------------------------------
+
+QUESTION_NAMES = {
+    1: "an event without an identifiable source",
+    2: "causal language where only sequence is established",
+    3: "a conclusion, prediction, recommendation or probability",
+    4: "no observation window stated",
+    5: "a claim stronger than the evidence",
+}
+
+
+def parse_verdict(text):
+    """PASS, or FAIL and which questions. Anything else is not a verdict."""
+    head = (text or "").strip()
+    upper = head.upper()
+    if upper.startswith("PASS"):
+        return True, []
+    if not upper.startswith("FAIL"):
+        raise Unavailable("The reviewer did not answer PASS or FAIL.")
+    numbers = []
+    for token in upper[4:].replace(",", " ").split():
+        if token.isdigit() and 1 <= int(token) <= 5 and int(token) not in numbers:
+            numbers.append(int(token))
+    # A FAIL with no numbers is still a FAIL. The gate is not asked to justify
+    # itself, and a verdict without a reason is not a reason to let it through.
+    return False, numbers
+
+
+def finding_text(event, path, measure):
+    """The finding as the reader meets it, which is what the gate judges."""
+    lines = [
+        "EVENT: %s" % event.get("event", ""),
+        "DATE: %s" % event.get("date", ""),
+        "DATE BASIS: %s" % event.get("date_basis", ""),
+        "SOURCE: %s (%s)" % (event.get("source_url", ""),
+                             event.get("source_type", "unstated")),
+        "RESEARCH PATH: %s" % path,
+    ]
+    if measure:
+        lines.append(
+            "MEASURED: median sale price %s in the %s months before the event "
+            "date and %s in the %s after it, a change of %s. Window before: "
+            "%s to %s. Window after: %s to %s."
+            % (measure.get("pre_median"), 12, measure.get("post_median"),
+               ("%s" % measure.get("months_after")),
+               ("%s%%" % measure.get("change")),
+               measure.get("pre_start"), measure.get("pre_end"),
+               measure.get("post_start"), measure.get("post_end")))
+    return "\n".join(lines)
+
+
+def review(event, path, measure):
+    """Run the gate, revising at most twice.
+
+    Returns (passed, event, path, failures, revisions).
+
+    A finding that still fails is withheld, which is the gate working. A
+    reviewer that cannot be reached is a different thing entirely and raises,
+    so the caller can record it as research that did not complete rather than
+    as a finding that was blocked.
+    """
+    failures = []
+    for attempt in range(MAX_REVISIONS + 1):
+        verdict = chat(REVIEWER_MODEL, REVIEWER_PROMPT,
+                       finding_text(event, path, measure), max_tokens=256)
+        passed, failures = parse_verdict(verdict)
+        if passed:
+            return True, event, path, [], attempt
+        if attempt == MAX_REVISIONS:
+            break
+
+        grounds = ", ".join(str(n) for n in failures) or "unspecified"
+        revised = chat(
+            EXPLORER_MODEL,
+            REVISE_PROMPT,
+            "REJECTED ON: %s\n\n%s" % (grounds, finding_text(event, path, measure)),
+        )
+        try:
+            data = extract_json(revised)
+        except Unavailable:
+            break
+        if not isinstance(data, dict):
+            break
+        new_event = clean(data.get("event"), 240)
+        new_path = clean(data.get("path"), 400)
+        if not new_event:
+            break
+        # Only the wording changes. The date, the source and every figure stay
+        # exactly as the evidence and the program produced them.
+        event = dict(event, event=new_event)
+        path = new_path or path
+
+    return False, event, path, failures, MAX_REVISIONS
+
+
+def withheld_reason(failures):
+    """What was wrong, without reproducing what was blocked.
+
+    The count and the category are shown; the text is not. Publishing output
+    that failed the gate would be a way around the gate.
+    """
+    named = [QUESTION_NAMES[n] for n in failures if n in QUESTION_NAMES]
+    if not named:
+        return ("Presentation review did not pass it within the permitted "
+                "revisions.")
+    if len(named) == 1:
+        return "Presentation review found " + named[0] + "."
+    return ("Presentation review found " + ", ".join(named[:-1]) + " and "
+            + named[-1] + ".")
 
 
 # ---------------------------------------------------------------------------

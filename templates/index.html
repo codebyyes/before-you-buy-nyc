@@ -925,7 +925,8 @@ table.meas tr.chg td.num{color:var(--fig-change)}
 
     var list = d.directions || [];
     var counts = { RESULT: 0, NO_EVIDENCE: 0, RESEARCH_INCOMPLETE: 0,
-                   EVENT_OUTSIDE_MEASURABLE_RANGE: 0 };
+                   EVENT_OUTSIDE_MEASURABLE_RANGE: 0,
+                   EVIDENCE_FOUND_BUT_WITHHELD: 0 };
 
     list.forEach(function (item, i) {
       var card = cards[i];
@@ -994,6 +995,18 @@ table.meas tr.chg td.num{color:var(--fig-change)}
           + ' authoritative sources it returned. This direction was searched '
           + 'and the record did not support it. It is not a statement that '
           + 'nothing happened.'));
+      } else if (item.state === 'EVIDENCE_FOUND_BUT_WITHHELD') {
+        /* Not a failure. A finding that claimed causation where the evidence
+           established only sequence is one the gate is supposed to stop, so
+           this is written as the gate working, never as an apology. */
+        box.appendChild(plain('Evidence was found here. '
+          + stop(item.reason)
+          + ' It was rewritten '
+          + (item.revisions === 1 ? 'once'
+             : item.revisions === 2 ? 'twice' : item.revisions + ' times')
+          + ' and still did not pass, so it is not shown. The check is on how '
+          + 'a finding is worded, not on whether the event happened. Showing '
+          + 'text that failed the check would be a way around the check.'));
       } else if (item.state === 'RESEARCH_INCOMPLETE') {
         box.appendChild(flag('Research could not be completed. '
           + stop(item.reason) + ' Nothing was searched here, so this is not '
@@ -1021,6 +1034,8 @@ table.meas tr.chg td.num{color:var(--fig-change)}
     if (counts.NO_EVIDENCE) parts.push(counts.NO_EVIDENCE + ' searched with no datable event');
     if (counts.EVENT_OUTSIDE_MEASURABLE_RANGE)
       parts.push(counts.EVENT_OUTSIDE_MEASURABLE_RANGE + ' outside the measurable range');
+    if (counts.EVIDENCE_FOUND_BUT_WITHHELD)
+      parts.push(counts.EVIDENCE_FOUND_BUT_WITHHELD + ' withheld by review');
     if (counts.RESEARCH_INCOMPLETE)
       parts.push(counts.RESEARCH_INCOMPLETE + ' not completed');
 

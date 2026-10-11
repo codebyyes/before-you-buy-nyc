@@ -184,6 +184,96 @@ check("RESEARCH_INCOMPLETE label is the specified wording",
 check("NO_EVIDENCE label says 'in the sources searched'",
       "sources searched" in ex.STATE_LABEL[ex.NO_EVIDENCE])
 
+print("\nthe presentation gate")
+check("five questions, not four and not six",
+      all(("%d." % n) in ex.REVIEWER_PROMPT for n in range(1, 6))
+      and "6." not in ex.REVIEWER_PROMPT)
+check("the gate is told not to judge truth",
+      "You do not check\nwhether it is true" in ex.REVIEWER_PROMPT)
+check("and not to reopen whether the direction was worth taking",
+      "worth taking" in ex.REVIEWER_PROMPT)
+check("revisions are capped at two", ex.MAX_REVISIONS == 2)
+check("a revision may not fetch anything new",
+      "do not search for anything" in ex.REVISE_PROMPT)
+
+for text, want in [("PASS", (True, [])), ("pass\n", (True, [])),
+                   ("FAIL 1 2 3 4", (False, [1, 2, 3, 4])),
+                   ("FAIL\n2 5", (False, [2, 5])),
+                   ("FAIL 2, 3", (False, [2, 3])),
+                   ("FAIL", (False, [])),
+                   ("FAIL 9 2 2", (False, [2]))]:
+    check("verdict %r" % text, ex.parse_verdict(text) == want)
+for bad in ["maybe", "", "I think it is fine"]:
+    try:
+        ex.parse_verdict(bad)
+        check("rejects non-verdict %r" % bad, False)
+    except ex.Unavailable:
+        check("rejects non-verdict %r" % bad, True)
+
+EVENT = {"event": "Gowanus rezoning approved", "date": "2021-11-23",
+         "date_basis": "approved by the City Council on November 23, 2021",
+         "source_url": "https://nyc.gov/x", "source_type": "Government"}
+MEASURE = {"pre_median": 899000, "post_median": 960000, "change": 6.79,
+           "months_after": 12, "pre_start": "2020-11-23",
+           "pre_end": "2021-11-22", "post_start": "2021-11-23",
+           "post_end": "2022-11-22"}
+
+used = []
+
+
+def scripted(replies):
+    it = iter(replies)
+    def fake(model, system, user, max_tokens=ex.MAX_TOKENS):
+        used.append(model)
+        return next(it)
+    return fake
+
+
+ex.chat = scripted(["PASS"])
+ok, ev, _p, _f, n = ex.review(EVENT, "a -> b", MEASURE)
+check("a clean finding passes with no revision", ok and n == 0)
+check("the reviewer model is the one used", used[0] == ex.REVIEWER_MODEL)
+
+ex.chat = scripted(["FAIL 2",
+                    json.dumps({"event": "Rezoning approved", "path": "a -> b"}),
+                    "PASS"])
+ok, ev, _p, _f, n = ex.review(EVENT, "a -> b", MEASURE)
+check("one rewrite can save a finding", ok and n == 1)
+check("the rewrite changed the wording", ev["event"] != EVENT["event"])
+check("the rewrite did not touch the date", ev["date"] == EVENT["date"])
+check("nor the source", ev["source_url"] == EVENT["source_url"])
+
+ex.chat = scripted(["FAIL 2 5", json.dumps({"event": "x", "path": "p"}),
+                    "FAIL 2 5", json.dumps({"event": "y", "path": "p"}),
+                    "FAIL 2 5"])
+ok, _ev, _p, qfails, n = ex.review(EVENT, "a -> b", MEASURE)
+check("two rewrites and no more", (not ok) and n == ex.MAX_REVISIONS)
+check("the failing questions are reported", qfails == [2, 5])
+
+print("\nthe gate working is not an apology")
+APOLOGY = ["sorry", "unfortunately", "unable", "apolog", "regret", "fail"]
+for fs in ([1], [2], [3], [4], [5], [2, 3, 5], []):
+    said = ex.withheld_reason(fs).lower()
+    leaked = [w for w in APOLOGY if w in said]
+    check("reason for %s avoids apology wording" % (fs or "no numbers",),
+          not leaked, said)
+check("a withheld reason names the category",
+      "causal language" in ex.withheld_reason([2]))
+
+
+def unreachable(model, system, user, max_tokens=ex.MAX_TOKENS):
+    raise ex.Unavailable("The model endpoint returned HTTP 429.")
+
+
+ex.chat = unreachable
+try:
+    ex.review(EVENT, "a -> b", MEASURE)
+    check("an unreachable reviewer raises rather than withholding", False)
+except ex.Unavailable:
+    check("an unreachable reviewer raises rather than withholding", True)
+
+ex.chat = real_chat
+
 print("\nroll-up")
 check("one incomplete makes the analysis incomplete",
       ex.rollup([{"state": ex.RESULT}, {"state": ex.RESEARCH_INCOMPLETE}]) == ex.RESEARCH_INCOMPLETE)

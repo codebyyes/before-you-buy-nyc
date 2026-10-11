@@ -797,7 +797,35 @@ def evidence_route():
             out.append(row)
             continue
 
-        row["measure"] = measure_event(sales, ev["date"], coverage)
+        measure = measure_event(sales, ev["date"], coverage)
+
+        # The gate. It judges how this is said, never whether it is true.
+        try:
+            passed, gated, path, failures, revisions = explorer.review(
+                row["event"], row["path"], measure)
+        except explorer.Unavailable as exc:
+            # The reviewer could not be reached. That is research that did not
+            # complete, not a finding that was blocked - the two must never be
+            # displayed as each other.
+            row.update(state=explorer.RESEARCH_INCOMPLETE,
+                       reason="The presentation review could not be run (%s)."
+                              % exc)
+            out.append(row)
+            continue
+
+        row["event"] = gated
+        row["path"] = path
+        row["revisions"] = revisions
+        if not passed:
+            # The gate operating correctly. The finding existed; it did not
+            # pass review, so the category is shown and the content is not.
+            row.update(state=explorer.EVIDENCE_FOUND_BUT_WITHHELD,
+                       reason=explorer.withheld_reason(failures))
+            row.pop("event", None)
+            out.append(row)
+            continue
+
+        row["measure"] = measure
         row["state"] = explorer.RESULT
         out.append(row)
 
