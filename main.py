@@ -52,7 +52,21 @@ ALL_BOROUGHS = [
     ("4", "Queens"),
     ("5", "Staten Island"),
 ]
-AVAILABLE_BOROUGHS = ["3"]  # V1 ships one borough. Spec section 3.
+# All five. The data layer was always parameterised by borough and the five
+# share one dataset, so this was a one-line change the whole time - which is
+# exactly why it should have been put to 802 as a choice rather than left
+# looking like a limit. A product called Before You Buy NYC that offers one
+# borough is answering a question nobody asked it.
+#
+# This overrides the V1 one-borough scope (spec section 3). That rule existed
+# to stop scope growing before the interface existed; the interface is now
+# finished and the reason has expired. 802's call, 2026-10-11.
+#
+# Only Brooklyn has been verified against the live API. The other four are
+# enabled on the strength of sharing the same datasets and code path, and are
+# to be checked one Confirm at a time - which costs nothing, because the first
+# column calls neither model nor search.
+AVAILABLE_BOROUGHS = ["1", "2", "3", "4", "5"]
 
 PAGE = 50000  # Socrata per-request maximum
 TIMEOUT = 90
