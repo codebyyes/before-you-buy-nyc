@@ -30,6 +30,10 @@ def check(name, cond, detail=""):
 print("prompt integrity")
 check("CRITICAL paragraph present", "CRITICAL: You are searching for PAST EVENTS" in ex.EXPLORER_PROMPT)
 check("distant-path example present", "Black clothing -> protest movements" in ex.EXPLORER_PROMPT)
+check("relevance rule present", "has to arrive at housing in that region" in ex.EXPLORER_PROMPT)
+check("a question may still start anywhere",
+      "the weather, what people wear, a war" in ex.EXPLORER_PROMPT,
+      "the relevance rule must not forbid distant questions")
 check("bare JSON instruction present", 'Output ONLY valid JSON, no other text:' in ex.EXPLORER_PROMPT)
 check("no padding instruction present", "Do not pad." in ex.EXPLORER_PROMPT)
 check("explorer model id lowercase", ex.EXPLORER_MODEL == "nvidia/nemotron-3-super-120b-a12b")
@@ -169,7 +173,8 @@ def fake_urlopen(req, timeout=None):
 
 
 ex.urllib.request.urlopen = fake_urlopen
-r = ex.explore("Will Brooklyn prices rise next year?")
+r = ex.explore("Will Brooklyn prices rise next year?",
+               region="Brooklyn", data_from="2017-01-01", data_to="2026-08-31")
 check("call succeeds through the real transport", r["ok"] is True)
 check("endpoint is the region-free token factory url",
       sent["url"] == "https://api.tokenfactory.nebius.com/v1/chat/completions", sent.get("url", ""))
@@ -178,8 +183,12 @@ check("bearer auth header", sent["headers"].get("Authorization".lower(), "").sta
 check("json content type", sent["headers"].get("content-type") == "application/json")
 check("model is the explorer", sent["body"]["model"] == ex.EXPLORER_MODEL)
 check("system message is the verified prompt", sent["body"]["messages"][0]["content"] == ex.EXPLORER_PROMPT)
-check("user message is the question alone",
-      sent["body"]["messages"][1]["content"] == "Will Brooklyn prices rise next year?")
+user_msg = sent["body"]["messages"][1]["content"]
+check("user message carries the question", "Will Brooklyn prices rise next year?" in user_msg)
+check("user message names the region", "REGION: Brooklyn, New York City" in user_msg, user_msg)
+check("user message names the market", "MARKET: residential property sales" in user_msg)
+check("user message names the measurable period",
+      "MEASURABLE PERIOD: 2017-01-01 to 2026-08-31" in user_msg)
 check("max_tokens is generous enough for a reasoning model",
       sent["body"]["max_tokens"] >= 2048)
 check("timeout set", sent["timeout"] == ex.TIMEOUT)

@@ -259,7 +259,15 @@ def by_class(sales, start, end):
     return buckets
 
 
-def quarters_ending(latest, count=12):
+# One point per quarter, five years of them. 802's call, 2026-10-11.
+#
+# Change this one number to change the span. Five years reaches back to 2021 Q4
+# and therefore does not include the 2020 disruption; seven would, at the cost
+# of about another 20,000 rows on the first load.
+TREND_QUARTERS = 20
+
+
+def quarters_ending(latest, count=TREND_QUARTERS):
     """The `count` calendar quarters up to and including the one holding `latest`."""
     anchor = date(latest.year, ((latest.month - 1) // 3) * 3 + 1, 1)
     out = []
@@ -279,7 +287,7 @@ def build_context(borough, borough_name):
     prior_start = add_months(cur_start, -12)
 
     # Three years of quarters, plus the prior-year window, in one fetch.
-    quarters = quarters_ending(latest, 12)
+    quarters = quarters_ending(latest)
     span_start = min(prior_start, quarters[0][0])
     sales = parse_rows(fetch_span(coverage, borough, span_start, cur_end))
 
@@ -338,11 +346,14 @@ def build_context(borough, borough_name):
         "all_count_change": all_cur_n - all_prior_n,
         "trend": trend,
         "span_start": span_start,
+        "measurable_from": earliest_measurable(coverage),
         "rows_examined": len(sales),
         "annual_label": ANNUAL,
         "rolling_label": ROLLING,
         "min_price": MIN_PRICE,
         "class_count": len(RESIDENTIAL),
+        "trend_quarters": len(trend),
+        "trend_years": round(len(trend) / 4),
     }
 
 
@@ -404,7 +415,7 @@ def measure_event(sales, when, coverage):
 # a non-zero axis, and the axis range is printed so nothing is hidden.
 # ---------------------------------------------------------------------------
 
-CHART = {"w": 448, "h": 176, "pl": 78, "pr": 436, "pt": 14, "pb": 130}
+CHART = {"w": 448, "h": 198, "pl": 78, "pr": 436, "pt": 14, "pb": 138}
 
 
 def chart_geometry(trend):
@@ -459,19 +470,28 @@ def chart_geometry(trend):
             }
         )
 
-    ticks = [i for i in range(n) if i % 3 == 0 and i < n - 3] + [n - 1]
-    g["xticks"] = [
-        {
-            "x": px(i),
-            "y": g["pb"] + 20,
-            "anchor": "end" if i == n - 1 else ("start" if i == 0 else "middle"),
-            "label": trend[i]["label"] + ("*" if trend[i]["partial"] else ""),
-        }
-        for i in ticks
+    # A mark under every quarter, so the reader can see that each point is one
+    # quarter and count them. Twenty labels would not fit, and four spaced
+    # labels read as if the points were years apart, which is what made the
+    # old axis confusing.
+    g["ticks"] = [
+        {"x": px(i), "y1": g["pb"] + 3, "y2": g["pb"] + 8} for i in range(n)
+    ]
+
+    # The year, once, under its first quarter. Q1 may not be the first point
+    # on the chart, so the span is stated in words under the chart instead of
+    # labelling a partial year here.
+    g["xlabels"] = [
+        {"x": px(i), "y": g["pb"] + 23, "label": str(q["label"][:4])}
+        for i, q in enumerate(trend)
+        if q["label"].endswith("Q1")
     ]
 
     g["axis_lo"] = money(int(lo))
     g["axis_hi"] = money(int(hi))
+    g["first_label"] = trend[0]["label"]
+    g["last_label"] = trend[-1]["label"]
+    g["points"] = n
     return g
 
 
@@ -625,7 +645,17 @@ def explore():
     """
     payload = request.get_json(silent=True) or {}
     question = payload.get("question") or request.form.get("question") or ""
-    out = explorer.explore(question)
+    # Region and window come from the page rather than a fresh coverage query,
+    # which would add four HTTP calls to a step that is meant to be the quick
+    # one. They are context for the model and nothing else - no figure is
+    # computed from them, so a tampered value can only produce worse keywords.
+    region = explorer.clean(payload.get("region"), 40)
+    out = explorer.explore(
+        question,
+        region=region if region in dict(ALL_BOROUGHS).values() else "",
+        data_from=explorer.clean(payload.get("data_from"), 10),
+        data_to=explorer.clean(payload.get("data_to"), 10),
+    )
     out["labels"] = explorer.STATE_LABEL
     if out.get("ok"):
         out["rollup"] = explorer.rollup(out["directions"])

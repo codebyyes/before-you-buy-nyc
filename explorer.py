@@ -63,7 +63,23 @@ STATE_LABEL = {
 # ---------------------------------------------------------------------------
 # The explorer prompt.
 #
-# Verified 2026-10-08 against the live model. Do not edit without re-testing.
+# Based on the prompt verified 2026-10-08, with the relevance paragraph added
+# on 2026-10-11 after a live run left the subject entirely. That addition has
+# not been through the same testing - re-verify before the entry.
+#
+# What went wrong. The question was "why does autumn, the third quarter, sell
+# best", typed by someone looking at a chart of Brooklyn house prices. All
+# five directions came back about retail: UK retail sales, earnings calls,
+# back-to-school shopping, Amazon Prime Day. The pipeline then measured
+# Brooklyn house prices around Prime Day 2022 and presented it with a source,
+# a date basis and two medians.
+#
+# "Sells best" is ambiguous on its own, and on its own was all the model got.
+# The region, the market and the data window were known to the system and
+# passed to nothing - the same shape of mistake as the extractor. A step
+# cannot obey a constraint it was never told about. The context now goes in
+# with the question, and the paragraph below requires a direction to arrive at
+# housing in the named region.
 #
 # The CRITICAL paragraph must not be removed. Without it the model returns
 # current conditions ("Brooklyn housing inventory 2025") instead of dated past
@@ -91,6 +107,13 @@ Bad: "current mortgage rate outlook" (no event, no date)
 
 Good: "New York State eviction moratorium announcements"
 Bad: "Brooklyn housing inventory 2025" (a condition, not an event)
+
+Every direction must be able to end in an event that plausibly bears on
+residential property prices in the region given with the question. A question
+can start anywhere - the weather, what people wear, a war - but the direction
+you set out from it has to arrive at housing in that region. If a direction
+would only surface events in another market, another industry or another
+city, do not give it.
 
 For each direction, give:
 - keyword: a short search phrase likely to surface dated historical events
@@ -241,7 +264,25 @@ def parse_directions(payload):
 # ---------------------------------------------------------------------------
 
 
-def explore(question):
+def ask_block(question, region, data_from, data_to):
+    """What the explorer is given: the question, and what it is a question about.
+
+    The question alone is not enough. "Why does autumn sell best" is about
+    retail to anyone who has not been told otherwise, and the person asking it
+    was looking at a chart of house prices at the time.
+    """
+    lines = []
+    if region:
+        lines.append("REGION: %s, New York City" % region)
+    lines.append("MARKET: residential property sales")
+    if data_from and data_to:
+        lines.append("MEASURABLE PERIOD: %s to %s" % (data_from, data_to))
+    lines.append("")
+    lines.append("QUESTION: " + question)
+    return "\n".join(lines)
+
+
+def explore(question, region="", data_from="", data_to=""):
     """Question in, research directions out.
 
     Returns a dict the interface can render directly:
@@ -264,7 +305,8 @@ def explore(question):
                     reason="No question was submitted.")
 
     try:
-        text = chat(EXPLORER_MODEL, EXPLORER_PROMPT, question)
+        text = chat(EXPLORER_MODEL, EXPLORER_PROMPT,
+                    ask_block(question, region, data_from, data_to))
         directions = parse_directions(extract_json(text))
     except Unavailable as exc:
         return dict(base, ok=False, state=RESEARCH_INCOMPLETE, reason=str(exc))
