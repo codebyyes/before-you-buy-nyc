@@ -6,8 +6,39 @@ Submissions close 2026-10-30; our own target is 2026-10-15.
 **Track:** Best Apps and Agents
 
 Verify the exact field list against the live form — this file covers the
-fields the hackathon rules name (spec section 20), not necessarily every box
-Devpost shows.
+fields the hackathon rules name, not necessarily every box Devpost shows.
+
+## Confirmed from the rules, 2026-10-11
+
+Read from the hackathon page and its Official Rules.
+
+| | |
+| --- | --- |
+| Submission closes | 2026-10-30, 10:00 PT (Taipei 10-31, 01:00) |
+| Judging | 2026-12-01 09:00 PT to 12-15 12:00 PT |
+| Winners announced | on or around 2027-01-11 |
+| Core requirement | Runs on Nebius Token Factory or AI Cloud, and uses at least one NVIDIA open source model — we do both, with two Nemotrons |
+
+Prizes we are positioned for: **Best Use of Tavily, $3,000** (Tavily is called
+live at request time, which is the condition) and **Most Valuable Feedback,
+$100 × 10 winners plus a swag pack** (the feedback section below). Track
+winner is an NVIDIA Jetson Orin Nano; grand prizes are $20,000 / $10,000 /
+$6,000.
+
+Judging criteria, in the sponsor's words: **Technological Implementation**,
+**Design** (whether it is a complete, coherent product rather than a proof of
+concept), **Potential Impact**, **Quality of the Idea**. The Design criterion
+is why all five boroughs are enabled rather than one — a single borough reads
+as a proof of concept, whatever the specification originally said.
+
+Requirements already satisfied: public repo, Apache-2.0 licence detected by
+GitHub, README with setup and run instructions, working demo URL, and the
+explanation of where the NVIDIA models and Token Factory were used. Still owed
+by 802: the demo video and the submission itself.
+
+Two requirements confirmed **not** to apply: the project was begun after the
+submission period opened, so no "significant updates" summary is needed; and
+802 did not attend an in-person Builders & Brews event, so no city is selected.
 
 ---
 
