@@ -927,11 +927,19 @@ table.meas tr.chg td.num{color:var(--fig-change)}
     var counts = { RESULT: 0, NO_EVIDENCE: 0, RESEARCH_INCOMPLETE: 0,
                    EVENT_OUTSIDE_MEASURABLE_RANGE: 0,
                    EVIDENCE_FOUND_BUT_WITHHELD: 0 };
+    /* Counted from the server's record of the gate having run, never inferred
+       from a finding's state. If the two ever disagree, this line reports the
+       smaller, truer number instead of the flattering one. */
+    var reviewed = 0, passedReview = 0;
 
     list.forEach(function (item, i) {
       var card = cards[i];
       if (!card) return;
       counts[item.state] = (counts[item.state] || 0) + 1;
+      if (item.reviewed === true) {
+        reviewed += 1;
+        if (item.review_passed === true) passedReview += 1;
+      }
       card.chip.textContent = (d.labels && d.labels[item.state]) || item.state;
       if (item.state === 'RESEARCH_INCOMPLETE' ||
           item.state === 'EVENT_OUTSIDE_MEASURABLE_RANGE') {
@@ -1031,6 +1039,7 @@ table.meas tr.chg td.num{color:var(--fig-change)}
 
     var parts = [];
     if (counts.RESULT) parts.push(counts.RESULT + ' measured');
+    if (passedReview) parts.push(passedReview + ' passed presentation review');
     if (counts.NO_EVIDENCE) parts.push(counts.NO_EVIDENCE + ' searched with no datable event');
     if (counts.EVENT_OUTSIDE_MEASURABLE_RANGE)
       parts.push(counts.EVENT_OUTSIDE_MEASURABLE_RANGE + ' outside the measurable range');
@@ -1038,6 +1047,20 @@ table.meas tr.chg td.num{color:var(--fig-change)}
       parts.push(counts.EVIDENCE_FOUND_BUT_WITHHELD + ' withheld by review');
     if (counts.RESEARCH_INCOMPLETE)
       parts.push(counts.RESEARCH_INCOMPLETE + ' not completed');
+
+    /* What the gate is and is not. Passing it means a finding was worded
+       within its evidence, not that the finding is true - and the sentence
+       says so, because "passed review" invites the other reading. */
+    var gate = '';
+    if (reviewed) {
+      gate = ' Presentation review checks how a finding is worded against its '
+           + 'evidence. It does not check whether the event is true, and '
+           + 'passing it is not a finding of accuracy.';
+      if (d.reviewer_model && d.explorer_model) {
+        gate += ' Explored with ' + d.explorer_model + ', reviewed with '
+              + d.reviewer_model + ', both on Nebius Token Factory.';
+      }
+    }
 
     var prov = '';
     if (d.coverage) {
@@ -1057,10 +1080,11 @@ table.meas tr.chg td.num{color:var(--fig-change)}
       setNote(roll, 'inc', 'This analysis is incomplete.',
               counts.RESEARCH_INCOMPLETE + ' of ' + list.length + ' directions '
             + 'could not be researched, so what is shown is part of an answer '
-            + 'and not the whole of one. ' + parts.join(', ') + '.' + prov);
+            + 'and not the whole of one. ' + parts.join(' \u00b7 ') + '.'
+            + gate + prov);
     } else {
       setNote(roll, '', 'Research complete.',
-              parts.join(', ') + '.' + prov
+              parts.join(' \u00b7 ') + '.' + gate + prov
             + ' What you do with this is yours to decide: the system draws no '
             + 'conclusion, makes no recommendation and gives no probability.');
     }

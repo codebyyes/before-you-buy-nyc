@@ -816,6 +816,13 @@ def evidence_route():
         row["event"] = gated
         row["path"] = path
         row["revisions"] = revisions
+        # Marked on the one code path where the gate actually ran, and read
+        # back by the interface rather than inferred from the state. A summary
+        # that counts RESULT rows and calls them reviewed is correct only by
+        # coincidence today, and would quietly become false the first time a
+        # result reached RESULT by any other route.
+        row["reviewed"] = True
+        row["review_passed"] = bool(passed)
         if not passed:
             # The gate operating correctly. The finding existed; it did not
             # pass review, so the category is shown and the content is not.
@@ -834,6 +841,8 @@ def evidence_route():
         "directions": out,
         "labels": explorer.STATE_LABEL,
         "rollup": explorer.rollup(out),
+        "explorer_model": explorer.EXPLORER_MODEL,
+        "reviewer_model": explorer.REVIEWER_MODEL,
     }
     body["rollup_label"] = explorer.STATE_LABEL.get(body["rollup"], body["rollup"])
     if coverage:
