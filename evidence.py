@@ -265,6 +265,10 @@ def extract_event(keyword, hits):
 def gather(directions):
     """Search and date every direction, in parallel.
 
+    A direction is searched by its `query`, which is the phrase the explorer
+    composed at the far end of its path. The keywords it set out from travel
+    with it and are what the reader checks the finding against.
+
     Returns the same list, each entry carrying one of:
 
         {"event": {...}}                    a dated, sourced event
@@ -275,29 +279,29 @@ def gather(directions):
     Nothing here is measured and nothing here is ranked. The directions come
     back in the order the explorer gave them.
     """
-    keywords = [d["keyword"] for d in directions]
+    queries = [d["query"] for d in directions]
     out = [dict(d) for d in directions]
 
-    def one(keyword):
+    def one(query):
         try:
-            return ("hits", search(keyword))
+            return ("hits", search(query))
         except Unavailable as exc:
             return ("error", str(exc))
 
-    with ThreadPoolExecutor(max_workers=min(WORKERS, max(1, len(keywords)))) as pool:
-        searched = list(pool.map(one, keywords))
+    with ThreadPoolExecutor(max_workers=min(WORKERS, max(1, len(queries)))) as pool:
+        searched = list(pool.map(one, queries))
 
     def date_one(job):
-        keyword, (kind, value) = job
+        query, (kind, value) = job
         if kind == "error":
             return ("error", value)
         try:
-            return ("event", extract_event(keyword, value), len(value))
+            return ("event", extract_event(query, value), len(value))
         except Unavailable as exc:
             return ("error", str(exc))
 
-    with ThreadPoolExecutor(max_workers=min(WORKERS, max(1, len(keywords)))) as pool:
-        dated = list(pool.map(date_one, zip(keywords, searched)))
+    with ThreadPoolExecutor(max_workers=min(WORKERS, max(1, len(queries)))) as pool:
+        dated = list(pool.map(date_one, zip(queries, searched)))
 
     for entry, result in zip(out, dated):
         if result[0] == "error":

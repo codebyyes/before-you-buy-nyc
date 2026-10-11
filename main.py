@@ -661,6 +661,7 @@ def explore():
         out["rollup"] = explorer.rollup(out["directions"])
     else:
         out["rollup"] = out["state"]
+    out["credits"] = len(out.get("directions") or [])
     out["rollup_label"] = explorer.STATE_LABEL.get(out["rollup"], out["rollup"])
     return jsonify(out)
 
@@ -698,10 +699,18 @@ def evidence_route():
     for item in raw[:explorer.MAX_DIRECTIONS]:
         if not isinstance(item, dict):
             continue
-        keyword = explorer.clean(item.get("keyword"), 160)
-        if keyword:
-            directions.append({"keyword": keyword,
-                               "path": explorer.clean(item.get("path"), 300)})
+        query = explorer.clean(item.get("query"), 200)
+        if not query:
+            continue
+        origins = item.get("from")
+        if isinstance(origins, str):
+            origins = [origins]
+        directions.append({
+            "query": query,
+            "path": explorer.clean(item.get("path"), 400),
+            "from": [explorer.clean(o, 60) for o in (origins or [])
+                     [:explorer.MAX_KEYWORDS] if explorer.clean(o, 60)],
+        })
     if not directions:
         return incomplete("No research directions were submitted.")
 
@@ -744,7 +753,8 @@ def evidence_route():
 
     out = []
     for d in found:
-        row = {"keyword": d["keyword"], "path": d.get("path", "")}
+        row = {"query": d["query"], "path": d.get("path", ""),
+               "from": d.get("from", [])}
         if d.get("state") == explorer.RESEARCH_INCOMPLETE:
             row.update(state=explorer.RESEARCH_INCOMPLETE, reason=d.get("reason", ""))
             out.append(row)

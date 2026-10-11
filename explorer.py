@@ -96,11 +96,28 @@ EXPLORER_PROMPT = """You decide what to research about a question on New York Ci
 
 You do NOT answer the question. You do NOT predict. You decide where to look.
 
+FIRST, name the concepts the question is really about. These are the keywords.
+Keep each one SHORT - one or two words, the way a person would say it out
+loud, not a search phrase. "interest rates", "umbrellas", "school districts".
+Decide how many the question warrants. Do not pad.
+
+The keywords are then FIXED, and they are the whole of what you may work from.
+Every direction you set out must start from one or more of them, and may
+combine two or three of them. You may travel a long way from a keyword. You
+may not start anywhere else. If an idea occurs to you while working that is
+not among the keywords, you cannot use it.
+
 CRITICAL: You are searching for PAST EVENTS, not current conditions. Every
 direction must be able to surface a specific, dated event that already happened
 between 2017 and today - a policy decision, a rate change, a crisis, a ruling,
 a disaster, a programme launch. The system measures what happened in the 12
 months after each event, so an event with no date is useless.
+
+A keyword has no date. An event does. The path is how you get from one to the
+other: "umbrellas" has no date, but a particular storm that flooded the city
+does. Travel until you reach something that happened on a day. If a keyword
+cannot be walked to any dated event, leave it out of the directions - it
+stays in the keyword list, and that is an honest record of where you looked.
 
 Good: "Federal Reserve emergency rate cuts historical"
 Bad: "current mortgage rate outlook" (no event, no date)
@@ -108,28 +125,38 @@ Bad: "current mortgage rate outlook" (no event, no date)
 Good: "New York State eviction moratorium announcements"
 Bad: "Brooklyn housing inventory 2025" (a condition, not an event)
 
-Every direction must be able to end in an event that plausibly bears on
-residential property prices in the region given with the question. A question
-can start anywhere - the weather, what people wear, a war - but the direction
-you set out from it has to arrive at housing in that region. If a direction
-would only surface events in another market, another industry or another
-city, do not give it.
+Every direction must end in an event that plausibly bears on residential
+property prices in the region given with the question. A question can start
+anywhere - the weather, what people wear, a war - but the direction you set
+out from it has to arrive at housing in that region. If a direction would only
+surface events in another market, another industry or another city, do not
+give it.
 
 For each direction, give:
-- keyword: a short search phrase likely to surface dated historical events
-- path: the chain of reasoning that led you there, as terms joined by arrows
+- from: which of your keywords it starts from, one or more, copied exactly
+- path: the route from those keywords to the event, as terms joined by arrows
+- query: the search phrase you want run, which may be long and specific
 
-A path may be distant. "Black clothing -> protest movements -> market
-instability" is valid if you believe it is worth searching. Do not filter out
-unusual directions.
+A path may be distant. From the keyword "black clothing", the path
+"Black clothing -> protest movements -> market instability" is valid if you
+believe it is worth searching. Do not filter out unusual directions.
 
-Decide how many directions the question warrants. Do not pad.
+If the question is about something that recurs rather than something that
+happened - a season, a yearly pattern, a busy period - say so in "recurring"
+and still give what directions you can. Individual dated events inside those
+seasons can be measured; the cycle itself cannot.
 
 Output ONLY valid JSON, no other text:
-{"directions":[{"keyword":"...","path":"... -> ... -> ..."}]}"""
+{"keywords":["...","..."],
+ "recurring":false,
+ "directions":[{"from":["..."],"path":"... -> ... -> ...","query":"..."}]}"""
 
 MAX_QUESTION_CHARS = 500
-MAX_DIRECTIONS = 12  # a ceiling against a runaway response, not a selection rule
+# Ceilings against a runaway response, not selection rules. The model decides
+# how many keywords and directions a question warrants; these only stop a
+# malformed reply from costing a hundred searches.
+MAX_DIRECTIONS = 12
+MAX_KEYWORDS = 10
 
 # ---------------------------------------------------------------------------
 # Transport
@@ -239,24 +266,77 @@ def clean(value, limit):
     return " ".join(value.split())[:limit]
 
 
-def parse_directions(payload):
-    raw = payload.get("directions") if isinstance(payload, dict) else None
+def parse_plan(payload):
+    """The keyword set, and the directions that start from it.
+
+    The lock is checked here, not merely asked for in the prompt. A direction
+    that starts from something outside the keyword list is dropped, because
+    that is the one failure the lock exists to prevent: seeing A and setting
+    off after B. A rule enforced only by instruction is a rule the next model
+    gets to reinterpret.
+    """
+    if not isinstance(payload, dict):
+        raise Unavailable("The model's response was not an object.")
+
+    keywords = []
+    seen = set()
+    for k in (payload.get("keywords") or [])[:MAX_KEYWORDS]:
+        k = clean(k, 60)
+        if k and k.casefold() not in seen:
+            seen.add(k.casefold())
+            keywords.append(k)
+    if not keywords:
+        raise Unavailable("The model named no keywords for the question.")
+
+    index = {k.casefold(): k for k in keywords}
+
+    raw = payload.get("directions")
     if not isinstance(raw, list):
         raise Unavailable("The model's response contained no directions.")
 
     out = []
+    outside = 0
     for item in raw[:MAX_DIRECTIONS]:
         if not isinstance(item, dict):
             continue
-        keyword = clean(item.get("keyword"), 160)
-        path = clean(item.get("path"), 300)
-        if not keyword:
+        query = clean(item.get("query"), 200)
+        path = clean(item.get("path"), 400)
+        if not query:
             continue
-        out.append({"keyword": keyword, "path": path, "state": PENDING})
+
+        origins = item.get("from")
+        if isinstance(origins, str):
+            origins = [origins]
+        kept = []
+        strayed = False
+        for o in (origins or [])[:MAX_KEYWORDS]:
+            o = clean(o, 60)
+            if not o:
+                continue
+            if o.casefold() in index:
+                kept.append(index[o.casefold()])
+            else:
+                strayed = True
+        if not kept or strayed:
+            # Started somewhere it never declared, so it is not inside the
+            # question it set itself (spec section 8).
+            outside += 1
+            continue
+
+        out.append({"from": kept, "path": path, "query": query,
+                    "state": PENDING})
 
     if not out:
-        raise Unavailable("The model returned directions in an unreadable form.")
-    return out
+        raise Unavailable("No research direction started from the keywords the "
+                          "model named, so nothing could be searched inside "
+                          "the question it set itself.")
+
+    return {
+        "keywords": keywords,
+        "directions": out,
+        "dropped_outside_keywords": outside,
+        "recurring": bool(payload.get("recurring")),
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -307,11 +387,11 @@ def explore(question, region="", data_from="", data_to=""):
     try:
         text = chat(EXPLORER_MODEL, EXPLORER_PROMPT,
                     ask_block(question, region, data_from, data_to))
-        directions = parse_directions(extract_json(text))
+        plan = parse_plan(extract_json(text))
     except Unavailable as exc:
         return dict(base, ok=False, state=RESEARCH_INCOMPLETE, reason=str(exc))
 
-    return dict(base, ok=True, directions=directions)
+    return dict(base, ok=True, **plan)
 
 
 # ---------------------------------------------------------------------------

@@ -165,19 +165,36 @@ tr.total td.num.chg{color:var(--fig-change)}
    vision and 3.4-4.9 under protanopia - below the floor, the same near-miss
    the validator caught between blue and teal earlier. Form carries it, and
    form survives grayscale. */
-.kwhead{background:var(--tray);border:1.5px solid var(--line);
-  border-left:5px solid var(--accent);border-radius:8px;padding:11px 13px 12px}
-.kwn{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;
+/* The lock: one line of short concepts for the whole question, shown once.
+   Five long search phrases were not a lock anyone could hold in their head,
+   which is why three readings in a row failed to find it. A handful of words
+   can be held, and every record below can be checked against them in a
+   couple of seconds. That check is the whole of section 8. */
+.lock{background:var(--tray);border:1.5px solid var(--line);
+  border-left:5px solid var(--accent);border-radius:8px;
+  padding:11px 13px 12px;margin-top:4px}
+.lockcap{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;
   color:var(--accent);font-weight:700;margin-bottom:8px}
-.kwline{display:flex;gap:9px;align-items:flex-start}
-.kwline svg{flex:0 0 auto;width:16px;height:16px;margin-top:5px;
-  stroke:var(--ink);fill:none;stroke-width:2;
-  stroke-linecap:round;stroke-linejoin:round}
-.words{display:flex;flex-wrap:wrap;gap:5px}
+.words{display:flex;flex-wrap:wrap;gap:6px}
 .words b{background:var(--panel);border:1px solid var(--line);border-radius:5px;
-  padding:3px 8px;font-size:14px;font-weight:600;color:var(--ink);
+  padding:4px 10px;font-size:14.5px;font-weight:600;color:var(--ink);
   line-height:1.35;word-break:break-word;
   font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.recn{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--accent);font-weight:700;margin-bottom:9px}
+.from{display:flex;flex-wrap:wrap;gap:5px}
+.from b{background:var(--tray);border:1px solid var(--line);border-radius:4px;
+  padding:2px 7px;font-size:12.5px;font-weight:600;color:#3d382c;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.query{color:var(--locked);font-size:11.5px;margin-top:5px;line-height:1.5;
+  word-break:break-word;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+/* An SVG with no size fills its container, and with no fill rule it fills it
+   black. Both are set here because the element moved and left its old rule
+   behind. */
+.query svg{display:inline-block;width:11px;height:11px;vertical-align:-1px;
+  margin-right:2px;stroke:var(--locked);fill:none;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
 .dir .row:first-of-type{margin-top:10px}
 .path{color:var(--mute);font-size:12.5px;line-height:1.5}
 .chip{display:inline-block;margin-top:11px;font-size:11px;letter-spacing:.07em;
@@ -193,8 +210,10 @@ tr.total td.num.chg{color:var(--fig-change)}
 .topnote{margin-bottom:4px;margin-top:14px}
 
 /* ---- the finding under a keyword ---- */
-.ev{margin-top:11px;padding-top:11px;border-top:1px dashed var(--rule)}
+.ev{margin-bottom:12px}
 .ev .row+.row{margin-top:6px}
+.prov-block{border-top:1px dashed var(--rule);padding-top:11px;margin-top:12px}
+.prov-block .row+.row{margin-top:7px}
 .evt{font-size:13px;color:var(--ink);line-height:1.45}
 .dt{font-size:13px;color:var(--ink);
   font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
@@ -429,9 +448,11 @@ table.meas tr.chg td.num{color:var(--fig-change)}
     <span id="whywait"></span></div>
 
   <div id="out" hidden>
-    <h3>Research directions</h3>
-    <div class="sub" id="dirsub"></div>
+    <h3>Keywords</h3>
+    <div class="lock" id="lock"></div>
+    <div class="sub" id="dirsub" style="margin-top:9px"></div>
     <div id="topnote" hidden></div>
+    <h3 id="rech">Historical records</h3>
     <ul class="dirs" id="dirs"></ul>
   </div>
 
@@ -480,6 +501,7 @@ table.meas tr.chg td.num{color:var(--fig-change)}
   var out     = document.getElementById('out');
   var dirs    = document.getElementById('dirs');
   var dirsub  = document.getElementById('dirsub');
+  var lock    = document.getElementById('lock');
   var topnote = document.getElementById('topnote');
   var roll    = document.getElementById('rollup');
   var step2   = document.getElementById('step2');
@@ -579,34 +601,69 @@ table.meas tr.chg td.num{color:var(--fig-change)}
     return svg;
   }
 
-  /* The keyword heads its block: every word in its own box, on one tray,
-     behind one magnifier. The boxes make it findable; the tray keeps it
-     honest, because the words went out as a single query. */
-  function keywordHead(text, n, total) {
-    var box = document.createElement('div');
-    box.className = 'kwhead';
-
+  /* The lock, drawn once: the concepts the whole question is allowed to work
+     from, each in its own box. */
+  function drawLock(keywords) {
+    lock.textContent = '';
     var cap = document.createElement('div');
-    cap.className = 'kwn';
-    cap.textContent = 'Search keyword ' + n + ' of ' + total;
-
-    var line = document.createElement('div');
-    line.className = 'kwline';
-    line.appendChild(magnifier());
-
+    cap.className = 'lockcap';
+    cap.textContent = keywords.length === 1 ? '1 keyword, fixed'
+                                            : keywords.length + ' keywords, fixed';
     var words = document.createElement('div');
     words.className = 'words';
-    text.split(/\s+/).forEach(function (w) {
-      if (!w) return;
+    keywords.forEach(function (k) {
       var chip = document.createElement('b');
-      chip.textContent = w;
+      chip.textContent = k;
       words.appendChild(chip);
     });
-    line.appendChild(words);
+    lock.appendChild(cap);
+    lock.appendChild(words);
+  }
 
-    box.appendChild(cap);
-    box.appendChild(line);
-    return box;
+  /* Which keywords a record set out from, as chips, so it can be checked
+     against the line above without reading a sentence. */
+  function fromRow(list) {
+    var r = document.createElement('div');
+    r.className = 'row';
+    var l = document.createElement('div');
+    l.className = 'rl';
+    l.textContent = 'From';
+    var v = document.createElement('div');
+    v.className = 'from';
+    list.forEach(function (k) {
+      var chip = document.createElement('b');
+      chip.textContent = k;
+      v.appendChild(chip);
+    });
+    r.appendChild(l);
+    r.appendChild(v);
+    return r;
+  }
+
+  /* The path, with the phrase actually sent to the search engine under it.
+     The path is the route that was taken, not the deliberation behind it;
+     the query is what can be re-run by anyone who wants to check. */
+  function pathRow(path, query) {
+    var r = document.createElement('div');
+    r.className = 'row';
+    var l = document.createElement('div');
+    l.className = 'rl';
+    l.textContent = 'Path';
+    var v = document.createElement('div');
+    var p = document.createElement('div');
+    p.className = 'path';
+    p.textContent = arrows(path || '');
+    v.appendChild(p);
+    if (query) {
+      var q = document.createElement('div');
+      q.className = 'query';
+      q.appendChild(magnifier());
+      q.appendChild(document.createTextNode(' searched: ' + query));
+      v.appendChild(q);
+    }
+    r.appendChild(l);
+    r.appendChild(v);
+    return r;
   }
 
   function arrows(text) {
@@ -724,19 +781,52 @@ table.meas tr.chg td.num{color:var(--fig-change)}
     step2.textContent = 'Step 2 · Locked';
 
     var list = d.directions || [];
-    dirsub.textContent = list.length
-      + (list.length === 1 ? ' keyword, with the reasoning that produced it. '
-                           : ' keywords, each with the reasoning that produced it. ')
-      + 'They are fixed from here on: the search may only look inside them. '
-      + 'Each keyword is shown word by word, and went out as one search.';
+    drawLock(d.keywords || []);
+
+    dirsub.textContent =
+      'These are the concepts the model decided the question is about, and it '
+    + 'chose how many. Every record below starts from one or more of them. It '
+    + 'may travel a long way from a keyword and may combine two or three, but '
+    + 'it may not set out from anything else - a direction that did was '
+    + 'dropped before any search ran'
+    + (d.dropped_outside_keywords
+        ? ' (' + d.dropped_outside_keywords + ' was).'
+        : '.');
+
+    if (d.recurring) {
+      var rn = document.createElement('div');
+      rn.className = 'rollup';
+      var rb = document.createElement('b');
+      rb.textContent = 'This question is about something that recurs.';
+      rn.appendChild(rb);
+      rn.appendChild(document.createTextNode(
+        ' A season or a yearly pattern has no date, and this system measures '
+      + 'the twelve months on either side of a date. What follows are '
+      + 'individual dated events that happened inside those periods. They are '
+      + 'not an explanation of the cycle itself.'));
+      lock.parentNode.insertBefore(rn, dirsub.nextSibling);
+    }
 
     dirs.textContent = '';
     cards = [];
     list.forEach(function (item, i) {
       var li = document.createElement('li');
       li.className = 'dir';
-      li.appendChild(keywordHead(item.keyword, i + 1, list.length));
-      if (item.path) li.appendChild(row('Reasoning', 'path', arrows(item.path)));
+
+      var head = document.createElement('div');
+      head.className = 'recn';
+      head.textContent = 'Record ' + (i + 1) + ' of ' + list.length;
+      li.appendChild(head);
+
+      /* The finding goes here when it arrives, above the provenance. */
+      var slot = document.createElement('div');
+      li.appendChild(slot);
+
+      var prov = document.createElement('div');
+      prov.className = 'prov-block';
+      prov.appendChild(fromRow(item.from || []));
+      prov.appendChild(pathRow(item.path, item.query));
+      li.appendChild(prov);
 
       var chip = document.createElement('span');
       chip.className = 'chip';
@@ -744,7 +834,7 @@ table.meas tr.chg td.num{color:var(--fig-change)}
       li.appendChild(chip);
 
       dirs.appendChild(li);
-      cards.push({ li: li, chip: chip });
+      cards.push({ li: li, chip: chip, slot: slot });
     });
     show(out, true);
 
@@ -910,9 +1000,11 @@ table.meas tr.chg td.num{color:var(--fig-change)}
           + 'evidence that the historical record is empty.'));
       }
 
-      /* Keyword, reasoning, finding, then the state. The chip classifies what
-         is above it, so it moves below the finding once the finding exists. */
-      card.li.insertBefore(box, card.chip);
+      /* The record reads: what was found, then where the search set out
+         from, then what followed, then the state. The finding goes into the
+         slot reserved above the provenance rows. */
+      card.slot.textContent = '';
+      card.slot.appendChild(box);
     });
 
     /* Section 5: every rise and every fall is shown, in the order the

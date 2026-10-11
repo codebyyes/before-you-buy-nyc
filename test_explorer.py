@@ -40,36 +40,85 @@ check("explorer model id lowercase", ex.EXPLORER_MODEL == "nvidia/nemotron-3-sup
 check("reviewer model id mixed case", ex.REVIEWER_MODEL == "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B")
 
 print("\nparsing")
-good = '{"directions":[{"keyword":"Federal Reserve emergency rate cuts historical","path":"rates -> mortgages -> prices"}]}'
-d = ex.parse_directions(ex.extract_json(good))
-check("bare JSON parses", len(d) == 1 and d[0]["state"] == ex.PENDING)
+GOOD = json.dumps({
+    "keywords": ["interest rates", "umbrellas", "school districts"],
+    "recurring": False,
+    "directions": [
+        {"from": ["umbrellas"], "path": "umbrellas -> rainfall -> flooding",
+         "query": "Hurricane Ida September 2021 New York City flooding"},
+        {"from": ["interest rates", "school districts"],
+         "path": "rates -> borrowing -> family moves",
+         "query": "Federal Reserve rate decision September 2019"},
+    ],
+})
 
-fenced = "```json\n" + good + "\n```"
-check("fenced JSON parses", len(ex.parse_directions(ex.extract_json(fenced))) == 1)
+plan = ex.parse_plan(ex.extract_json(GOOD))
+check("bare JSON parses", len(plan["directions"]) == 2)
+check("keywords come back in order", plan["keywords"][0] == "interest rates")
+check("every direction starts pending",
+      all(d["state"] == ex.PENDING for d in plan["directions"]))
+check("a direction may combine keywords", plan["directions"][1]["from"] ==
+      ["interest rates", "school districts"])
 
-thought = "<think>I should consider rates.</think>\n" + good
-check("reasoning wrapper tolerated", len(ex.parse_directions(ex.extract_json(thought))) == 1)
+check("fenced JSON parses",
+      len(ex.parse_plan(ex.extract_json("```json\n" + GOOD + "\n```"))["directions"]) == 2)
+check("reasoning wrapper tolerated",
+      len(ex.parse_plan(ex.extract_json("<think>hmm</think>\n" + GOOD))["directions"]) == 2)
 
+print("\nthe lock is enforced here, not only asked for in the prompt")
+strayed = json.dumps({
+    "keywords": ["interest rates"],
+    "directions": [
+        {"from": ["interest rates"], "path": "p", "query": "fed rate cut 2019"},
+        {"from": ["crypto"], "path": "p", "query": "bitcoin crash 2022"},
+        {"from": ["interest rates", "crypto"], "path": "p", "query": "both"},
+    ],
+})
+plan = ex.parse_plan(ex.extract_json(strayed))
+check("a direction from outside the keywords is dropped",
+      len(plan["directions"]) == 1, str(plan["directions"]))
+check("so is one that mixes an outside concept in",
+      plan["directions"][0]["query"] == "fed rate cut 2019")
+check("and the count of dropped directions is reported",
+      plan["dropped_outside_keywords"] == 2)
+check("keyword matching ignores case", len(ex.parse_plan(ex.extract_json(json.dumps({
+    "keywords": ["Interest Rates"],
+    "directions": [{"from": ["interest rates"], "path": "p", "query": "q"}],
+})))["directions"]) == 1)
+check("recurring is carried through", ex.parse_plan(ex.extract_json(json.dumps({
+    "keywords": ["autumn"], "recurring": True,
+    "directions": [{"from": ["autumn"], "path": "p", "query": "q"}],
+})))["recurring"] is True)
+
+print("\nmalformed plans are refused, never half-accepted")
 for bad, why in [
     ("not json at all", "prose"),
-    ('{"directions":[]}', "empty list"),
-    ('{"directions":"nope"}', "wrong type"),
-    ('{"other":1}', "missing key"),
-    ('{"directions":[{"path":"a -> b"}]}', "no keyword"),
+    ('{"keywords":["a"],"directions":[]}', "no directions"),
+    ('{"keywords":[],"directions":[{"from":["a"],"path":"p","query":"q"}]}', "no keywords"),
+    ('{"directions":[{"from":["a"],"path":"p","query":"q"}]}', "keywords missing"),
+    ('{"keywords":["a"],"directions":"nope"}', "wrong type"),
+    ('{"keywords":["a"],"directions":[{"from":["a"],"path":"p"}]}', "no query"),
+    ('{"keywords":["a"],"directions":[{"path":"p","query":"q"}]}', "no origin"),
 ]:
     try:
-        ex.parse_directions(ex.extract_json(bad))
+        ex.parse_plan(ex.extract_json(bad))
         check("rejects " + why, False)
     except ex.Unavailable:
         check("rejects " + why, True)
 
-long_kw = json.dumps({"directions": [{"keyword": "x" * 900, "path": "y" * 900}]})
-d = ex.parse_directions(ex.extract_json(long_kw))
-check("truncates long fields", len(d[0]["keyword"]) == 160 and len(d[0]["path"]) == 300)
+longer = json.dumps({"keywords": ["k" * 900],
+                     "directions": [{"from": ["k" * 900], "path": "y" * 900,
+                                     "query": "q" * 900}]})
+plan = ex.parse_plan(ex.extract_json(longer))
+check("truncates long fields",
+      len(plan["keywords"][0]) == 60 and len(plan["directions"][0]["path"]) == 400
+      and len(plan["directions"][0]["query"]) == 200)
 
-many = json.dumps({"directions": [{"keyword": "k%d" % i, "path": "p"} for i in range(40)]})
+many = json.dumps({"keywords": ["k"],
+                   "directions": [{"from": ["k"], "path": "p", "query": "q%d" % i}
+                                  for i in range(40)]})
 check("caps runaway direction count",
-      len(ex.parse_directions(ex.extract_json(many))) == ex.MAX_DIRECTIONS)
+      len(ex.parse_plan(ex.extract_json(many))["directions"]) == ex.MAX_DIRECTIONS)
 
 print("\nfailure paths all land on RESEARCH_INCOMPLETE")
 os.environ.pop("NEBIUS_API_KEY", None)
@@ -91,9 +140,10 @@ def stub(text):
 
 real_chat = ex.chat
 
-ex.chat = stub(good)
+ex.chat = stub(GOOD)
 r = ex.explore("Did the mayor do a good job?")
-check("happy path -> ok", r["ok"] is True and len(r["directions"]) == 1)
+check("happy path -> ok", r["ok"] is True and len(r["directions"]) == 2)
+check("happy path -> the keyword set comes back", r["keywords"][0] == "interest rates")
 check("happy path -> every direction pending",
       all(x["state"] == ex.PENDING for x in r["directions"]))
 
@@ -169,7 +219,7 @@ def fake_urlopen(req, timeout=None):
     sent["headers"] = {k.lower(): v for k, v in req.header_items()}
     sent["body"] = json.loads(req.data.decode("utf-8"))
     sent["timeout"] = timeout
-    return FakeResp(json.dumps({"choices": [{"message": {"content": good}}]}).encode())
+    return FakeResp(json.dumps({"choices": [{"message": {"content": GOOD}}]}).encode())
 
 
 ex.urllib.request.urlopen = fake_urlopen
