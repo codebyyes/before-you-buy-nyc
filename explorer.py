@@ -100,6 +100,7 @@ FIRST, name the concepts the question is really about. These are the keywords.
 Keep each one SHORT - one or two words, the way a person would say it out
 loud, not a search phrase. "interest rates", "umbrellas", "school districts".
 Decide how many the question warrants. Do not pad.
+Give at most ten directions. Three strong ones beat ten weak ones.
 
 The keywords are then FIXED, and they are the whole of what you may work from.
 Every direction you set out must start from one or more of them, and may
@@ -107,17 +108,29 @@ combine two or three of them. You may travel a long way from a keyword. You
 may not start anywhere else. If an idea occurs to you while working that is
 not among the keywords, you cannot use it.
 
-CRITICAL: You are searching for PAST EVENTS, not current conditions. Every
-direction must be able to surface a specific, dated event that already happened
-between 2017 and today - a policy decision, a rate change, a crisis, a ruling,
-a disaster, a programme launch. The system measures what happened in the 12
-months after each event, so an event with no date is useless.
+A keyword may be used by several directions, by one, or by none. If one
+concept is where the question really lives, set out from it three or four
+times along different routes. If another turns out to lead nowhere, leave it
+unused - it stays in the keyword list, which is an honest record of where you
+considered looking. Never pair them off one for one.
 
-A keyword has no date. An event does. The path is how you get from one to the
-other: "umbrellas" has no date, but a particular storm that flooded the city
-does. Travel until you reach something that happened on a day. If a keyword
-cannot be walked to any dated event, leave it out of the directions - it
-stays in the keyword list, and that is an honest record of where you looked.
+CRITICAL: You are searching for PAST EVENTS, not current conditions and not
+trends. Every direction must end at a specific thing that somebody did on a
+particular day, between 2017 and today - an announcement, a vote, a signing,
+a ruling, a purchase, a cancellation, an opening, a closure, a rate decision,
+a disaster. The system measures the 12 months on either side of that day, so
+anything without a day is useless to it.
+
+A trend is not an event. "Hiring grew", "prices rose", "talent surged",
+"the market cooled" all describe something spread over months, and no search
+will return a date for them. If your path ends at a trend, you have stopped
+one step too early: keep going until you reach the occasion that can be named.
+
+  Stopped too early: "Brooklyn tech employment growth 2018"
+  Gone far enough:   "Amazon HQ2 Long Island City announcement November 2018"
+
+  Stopped too early: "AI talent influx raising rents"
+  Gone far enough:   "Google Hudson Square campus purchase announcement"
 
 Good: "Federal Reserve emergency rate cuts historical"
 Bad: "current mortgage rate outlook" (no event, no date)
@@ -125,12 +138,18 @@ Bad: "current mortgage rate outlook" (no event, no date)
 Good: "New York State eviction moratorium announcements"
 Bad: "Brooklyn housing inventory 2025" (a condition, not an event)
 
-Every direction must end in an event that plausibly bears on residential
-property prices in the region given with the question. A question can start
-anywhere - the weather, what people wear, a war - but the direction you set
-out from it has to arrive at housing in that region. If a direction would only
-surface events in another market, another industry or another city, do not
-give it.
+The event itself may have happened anywhere - another borough, Washington,
+another country - as long as it plausibly bears on residential property
+prices in the region given with the question. A campus announced in Queens
+moves prices in Brooklyn; a rate decision is made in Washington and is felt
+everywhere. What must connect to the region is the consequence, not the
+address of the event.
+
+The query is read by a search engine against English-language government,
+news and statistical sources, so WRITE EVERY QUERY IN ENGLISH, whatever
+language the question was asked in. Name the thing you expect to find in it -
+the body, the company, the programme, the place, the year. Keywords and paths
+stay in the language of the question, because those are for the reader.
 
 For each direction, give:
 - from: which of your keywords it starts from, one or more, copied exactly
@@ -227,8 +246,11 @@ MAX_QUESTION_CHARS = 500
 # Ceilings against a runaway response, not selection rules. The model decides
 # how many keywords and directions a question warrants; these only stop a
 # malformed reply from costing a hundred searches.
-MAX_DIRECTIONS = 12
-MAX_KEYWORDS = 10
+# Ten records is 802's cap, 2026-10-11. The model decides how many it wants
+# within that; "Do not pad" stays, because padding is how the weak directions
+# that find nothing get in.
+MAX_DIRECTIONS = 10
+MAX_KEYWORDS = 12
 
 # ---------------------------------------------------------------------------
 # Transport

@@ -29,18 +29,39 @@ TIMEOUT = 60
 # and crypto news for a housing question, and for the wrong event at that.
 # The domain list and the advanced depth are both required, not tuning.
 TRUSTED = [
+    # Federal
     "federalreserve.gov",
-    "nyc.gov",
+    "census.gov",
+    "bls.gov",
+    "hud.gov",
+    "federalregister.gov",
+    "gao.gov",
+    # New York State and City
     "ny.gov",
+    "nyc.gov",
+    "hcr.ny.gov",
+    "comptroller.nyc.gov",
+    "council.nyc.gov",
+    "dos.ny.gov",
+    "esd.ny.gov",
+    # Press of record
     "reuters.com",
     "apnews.com",
     "nytimes.com",
     "wsj.com",
-    "census.gov",
-    "bls.gov",
+    "bloomberg.com",
+    # New York business and local press, which cover the city's own decisions
+    # in more detail than the national wires do
+    "crainsnewyork.com",
+    "thecity.nyc",
+    "gothamist.com",
 ]
 
-MAX_RESULTS = 5
+# Ten rather than five. A Tavily credit is charged per search, not per result
+# - 47 credits across about 47 searches confirms it on the account - so the
+# extra five sources are free, and the one page carrying the dated sentence is
+# often not in the first five.
+MAX_RESULTS = 10
 SEARCH_DEPTH = "advanced"
 
 # One search per keyword, so a question costs as many credits as the explorer

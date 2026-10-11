@@ -30,10 +30,19 @@ def check(name, cond, detail=""):
 print("prompt integrity")
 check("CRITICAL paragraph present", "CRITICAL: You are searching for PAST EVENTS" in ex.EXPLORER_PROMPT)
 check("distant-path example present", "Black clothing -> protest movements" in ex.EXPLORER_PROMPT)
-check("relevance rule present", "has to arrive at housing in that region" in ex.EXPLORER_PROMPT)
-check("a question may still start anywhere",
-      "the weather, what people wear, a war" in ex.EXPLORER_PROMPT,
-      "the relevance rule must not forbid distant questions")
+check("relevance is about consequence, not the event's address",
+      "What must connect to the region is the consequence" in ex.EXPLORER_PROMPT)
+check("an event elsewhere is still allowed",
+      "may have happened anywhere" in ex.EXPLORER_PROMPT,
+      "a campus announced in Queens moves prices in Brooklyn")
+check("a trend is rejected as well as a condition",
+      "A trend is not an event" in ex.EXPLORER_PROMPT)
+check("queries go out in English whatever the question's language",
+      "WRITE EVERY QUERY IN ENGLISH" in ex.EXPLORER_PROMPT)
+check("keywords and records are not paired off",
+      "Never pair them off one for one" in ex.EXPLORER_PROMPT)
+check("records are capped at ten", ex.MAX_DIRECTIONS == 10)
+check("padding is still forbidden", "Do not pad." in ex.EXPLORER_PROMPT)
 check("bare JSON instruction present", 'Output ONLY valid JSON, no other text:' in ex.EXPLORER_PROMPT)
 check("no padding instruction present", "Do not pad." in ex.EXPLORER_PROMPT)
 check("explorer model id lowercase", ex.EXPLORER_MODEL == "nvidia/nemotron-3-super-120b-a12b")
