@@ -70,6 +70,9 @@ assert "REGION:" in user and "QUESTION:" in user, "explorer did not receive its 
 
 ## 動作二：README 重寫 🔴 最高（這是規則要求）
 
+🟢 **先讀 `docs/spec-en.md`。** 英文產品規格書已經寫好（2026-10-11 20:00），
+README 從那一份裁出來，不要憑記憶重寫。Devpost 文字也從那一份取材。
+
 ⚠️ **比賽規則要求 README 含安裝說明。** 108 一開始漏掉這條。
 現在的 README 只有 31 行，交件前一定要重寫。
 
