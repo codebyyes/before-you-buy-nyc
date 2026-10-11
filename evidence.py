@@ -348,11 +348,14 @@ def gather(directions):
     def date_one(job):
         query, (kind, value) = job
         if kind == "error":
-            return ("error", value)
+            return ("error", value, "search", 0)
         try:
             return ("event", extract_event(query, value), len(value))
         except Unavailable as exc:
-            return ("error", str(exc))
+            # The search ran and returned sources; the reading pass over them
+            # is what came back unusable. Saying "nothing was searched here"
+            # under this would contradict the count of sources we just made.
+            return ("error", str(exc), "extract", len(value))
 
     with ThreadPoolExecutor(max_workers=min(WORKERS, max(1, len(queries)))) as pool:
         dated = list(pool.map(date_one, zip(queries, searched)))
@@ -361,6 +364,8 @@ def gather(directions):
         if result[0] == "error":
             entry["state"] = RESEARCH_INCOMPLETE
             entry["reason"] = result[1]
+            entry["failed_at"] = result[2]
+            entry["sources_searched"] = result[3]
             continue
         event = result[1]
         entry["sources_searched"] = result[2]

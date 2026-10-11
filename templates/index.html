@@ -1033,6 +1033,14 @@ table.meas tr.chg td.num{color:var(--fig-change)}
           after.appendChild(flag('The search completed and found the event '
             + 'above, with its source. ' + stop(item.reason)
             + ' The event stands as found; only the measurement is missing.'));
+        } else if (item.failed_at === 'extract') {
+          after.appendChild(flag('The search completed and returned '
+            + (item.sources_searched || 0) + ' authoritative '
+            + ((item.sources_searched === 1) ? 'source' : 'sources')
+            + ', and the reading pass over them came back in a form this '
+            + 'system cannot use. ' + stop(item.reason)
+            + ' What those sources held is therefore unknown, and this is not '
+            + 'evidence that the historical record is empty.'));
         } else {
           after.appendChild(flag('Research could not be completed. '
             + stop(item.reason) + ' Nothing was searched here, so this is not '

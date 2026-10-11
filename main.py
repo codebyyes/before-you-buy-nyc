@@ -772,7 +772,13 @@ def evidence_route():
         row = {"query": d["query"], "path": d.get("path", ""),
                "from": d.get("from", [])}
         if d.get("state") == explorer.RESEARCH_INCOMPLETE:
-            row.update(state=explorer.RESEARCH_INCOMPLETE, failed_at="search",
+            # Which step stopped decides what can honestly be said about the
+            # sources. A search that never ran looked at nothing; a reading
+            # pass that came back unusable looked at everything and told us
+            # nothing. The two must not share one piece of wording.
+            row.update(state=explorer.RESEARCH_INCOMPLETE,
+                       failed_at=d.get("failed_at", "search"),
+                       sources_searched=d.get("sources_searched", 0),
                        reason=d.get("reason", ""))
             out.append(row)
             continue

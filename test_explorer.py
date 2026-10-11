@@ -401,6 +401,28 @@ for probe in (dict(GOOD, date=""), dict(GOOD, source_url="https://example.com/x"
     check("its wording avoids apology and does not read as no evidence",
           not leaked and "no evidence" not in said.lower(), said)
 
+# Which step stopped has to travel with the failure. A reading pass that came
+# back unusable looked at every source; the page must not say nothing was
+# searched under a direction that searched ten pages.
+evd.search = lambda q: HITS
+evd.chat = replies(json.dumps(dict(GOOD, date="")))
+row = evd.gather([{"query": "rezoning", "path": "a -> b", "from": ["a"]}])[0]
+check("an unusable reading pass is marked as stopping at extraction",
+      row.get("failed_at") == "extract", repr(row.get("failed_at")))
+check("and still reports how many sources were searched",
+      row.get("sources_searched") == len(HITS))
+
+
+def no_search(query):
+    raise ex.Unavailable("The search service could not be reached.")
+
+
+evd.search = no_search
+row = evd.gather([{"query": "rezoning", "path": "a -> b", "from": ["a"]}])[0]
+check("a search that never ran is still marked as stopping at search",
+      row.get("failed_at") == "search", repr(row.get("failed_at")))
+check("and reports no sources searched", row.get("sources_searched") == 0)
+
 print()
 if fails:
     print("FAILED %d check(s): %s" % (len(fails), ", ".join(fails)))
