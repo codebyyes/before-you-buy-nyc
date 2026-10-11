@@ -9,7 +9,7 @@
 :root{
   --bg:#f7f5ef; --panel:#ffffff; --line:#e2ddcd;
   --ink:#191712; --mute:#6a6454; --accent:#8a6a28; --locked:#a9a390;
-  --field:#fbfaf6; --rule:#efebdf;
+  --field:#fbfaf6; --rule:#efebdf; --tray:#f1ece0;
   /* Chart. The data line is the heaviest element on the page; the grid is
      almost invisible on purpose. Tonal separation is what makes a reader
      look at the line instead of sliding past it. */
@@ -153,29 +153,31 @@ tr.total td.num.chg{color:var(--fig-change)}
   .row{grid-template-columns:minmax(0,1fr);gap:3px}
   .row+.row{margin-top:9px}
 }
-/* The keyword heads its own block rather than sitting in a labelled row with
-   everything else. It is the thing the whole block is about, so the eye should
-   land on it first and not have to be told where to look.
-   Drawn as a filled-in search field that cannot be edited, because that is
-   what it is: the question above is already a locked box, so the column reads
-   question locked, then searches locked, and section 8 needs no explaining.
+/* The keyword heads its own block, and every word of it sits in its own box
+   on a tray. Three readers in a row could not find the keyword when it was a
+   line of text, including one who had been told twice where to look. Boxes
+   are what made it legible, and they survive translation and poor eyesight
+   in a way that a label and a font weight did not.
+   The tray and the magnifier do the work the boxes would otherwise undo: one
+   search was run, not one per word, and the line under the heading says so.
    Not green, though green was asked for: measured against the olive already on
    this card (#8a6a28), every candidate came out at deltaE 11.8-14.3 in normal
    vision and 3.4-4.9 under protanopia - below the floor, the same near-miss
-   the validator caught between blue and teal earlier. The bar, the box and the
-   size carry it instead, and those survive grayscale and translation. */
-.kwhead{border-left:4px solid var(--accent);background:var(--field);
-  border:1.5px solid var(--line);border-left:4px solid var(--accent);
-  border-radius:7px;padding:10px 13px}
-.kwn{font-size:11px;letter-spacing:.08em;text-transform:uppercase;
-  color:var(--accent);font-weight:600;margin-bottom:6px}
+   the validator caught between blue and teal earlier. Form carries it, and
+   form survives grayscale. */
+.kwhead{background:var(--tray);border:1.5px solid var(--line);
+  border-left:5px solid var(--accent);border-radius:8px;padding:11px 13px 12px}
+.kwn{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--accent);font-weight:700;margin-bottom:8px}
 .kwline{display:flex;gap:9px;align-items:flex-start}
-.kwline svg{flex:0 0 auto;width:15px;height:15px;margin-top:3px;
+.kwline svg{flex:0 0 auto;width:16px;height:16px;margin-top:5px;
   stroke:var(--ink);fill:none;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round}
-.kwline span{font-size:15px;font-weight:600;color:var(--ink);line-height:1.38;
-  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-  word-break:break-word}
+.words{display:flex;flex-wrap:wrap;gap:5px}
+.words b{background:var(--panel);border:1px solid var(--line);border-radius:5px;
+  padding:3px 8px;font-size:14px;font-weight:600;color:var(--ink);
+  line-height:1.35;word-break:break-word;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 .dir .row:first-of-type{margin-top:10px}
 .path{color:var(--mute);font-size:12.5px;line-height:1.5}
 .chip{display:inline-block;margin-top:11px;font-size:11px;letter-spacing:.07em;
@@ -577,19 +579,31 @@ table.meas tr.chg td.num{color:var(--fig-change)}
     return svg;
   }
 
-  /* The keyword heads its block: a search field, filled in and locked. */
+  /* The keyword heads its block: every word in its own box, on one tray,
+     behind one magnifier. The boxes make it findable; the tray keeps it
+     honest, because the words went out as a single query. */
   function keywordHead(text, n, total) {
     var box = document.createElement('div');
     box.className = 'kwhead';
+
     var cap = document.createElement('div');
     cap.className = 'kwn';
     cap.textContent = 'Search keyword ' + n + ' of ' + total;
+
     var line = document.createElement('div');
     line.className = 'kwline';
-    var s = document.createElement('span');
-    s.textContent = text;
     line.appendChild(magnifier());
-    line.appendChild(s);
+
+    var words = document.createElement('div');
+    words.className = 'words';
+    text.split(/\s+/).forEach(function (w) {
+      if (!w) return;
+      var chip = document.createElement('b');
+      chip.textContent = w;
+      words.appendChild(chip);
+    });
+    line.appendChild(words);
+
     box.appendChild(cap);
     box.appendChild(line);
     return box;
@@ -713,7 +727,8 @@ table.meas tr.chg td.num{color:var(--fig-change)}
     dirsub.textContent = list.length
       + (list.length === 1 ? ' keyword, with the reasoning that produced it. '
                            : ' keywords, each with the reasoning that produced it. ')
-      + 'They are fixed from here on: the search may only look inside them.';
+      + 'They are fixed from here on: the search may only look inside them. '
+      + 'Each keyword is shown word by word, and went out as one search.';
 
     dirs.textContent = '';
     cards = [];
