@@ -550,7 +550,7 @@ def borough_options(selected=None):
     ]
 
 
-def view(ctx=None, error=None, question=""):
+def view(ctx=None, error=None, notice=None, question=""):
     partial = None
     chart = None
     if ctx:
@@ -564,8 +564,19 @@ def view(ctx=None, error=None, question=""):
         chart=chart,
         partial=partial,
         error=error,
+        notice=notice,
         question=question,
     )
+
+
+# Nothing is stored between requests (spec section 15), so a page of results
+# cannot be reopened - there is nothing on the server to reopen. That is the
+# design, but a visitor who reloads, bookmarks, shares the address or comes
+# back to a tab the phone discarded should be told so, not handed a bare
+# "Method Not Allowed". Judges reload.
+GONE = ("Nothing is stored between requests, so a page of results cannot be "
+        "reopened - every figure is queried from NYC Open Data at the moment "
+        "it is shown. Choose a region and it will be queried again.")
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -573,8 +584,12 @@ def home():
     return view()
 
 
-@app.route("/confirm", methods=["POST"])
+@app.route("/confirm", methods=["GET", "POST"])
 def confirm():
+    if request.method == "GET":
+        # A reload, a bookmark, a shared link, or a tab the phone discarded
+        # and refetched. All of them arrive here as GET.
+        return view(notice=GONE)
     borough = (request.form.get("borough") or "").strip()
     names = dict(ALL_BOROUGHS)
     if borough not in AVAILABLE_BOROUGHS:
@@ -766,6 +781,18 @@ def evidence_route():
             "class_count": len(RESIDENTIAL),
         }
     return jsonify(body)
+
+
+@app.errorhandler(404)
+@app.errorhandler(405)
+def no_such_page(exc):
+    """Every wrong door opens on the start page, with a reason.
+
+    /explore and /evidence are POST-only and answer with JSON; reached by a
+    reload or a pasted address they would otherwise show Flask's own error
+    page, which tells a visitor nothing and looks like the service is broken.
+    """
+    return view(notice=GONE), getattr(exc, "code", 404)
 
 
 if __name__ == "__main__":

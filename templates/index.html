@@ -116,6 +116,11 @@ tr.total td.num.chg{color:var(--fig-change)}
 .prov b{color:#3d382c;font-weight:500}
 .err{background:#fdf2ed;border:1px solid #e0b4a4;color:#8a3b26;padding:13px 15px;
   border-radius:8px;font-size:13px;margin-top:14px}
+/* Not an error. Reaching a results address again is the storage rule working,
+   so it is said in the page's ordinary voice, not in the warning colours. */
+.notice{background:var(--field);border:1px solid var(--line);color:var(--mute);
+  padding:13px 15px;border-radius:8px;font-size:13px;margin-top:14px;
+  line-height:1.55}
 .motto{color:var(--mute);font-size:12px;letter-spacing:.04em;margin-top:22px;
   text-align:center}
 
@@ -373,6 +378,7 @@ table.meas tr.chg td.num{color:var(--fig-change)}
     </select>
     <button type="submit">Confirm</button>
   </form>
+  {% if notice %}<div class="notice">{{ notice }}</div>{% endif %}
   {% if error %}<div class="err">{{ error }}</div>{% endif %}
 </div>
 {% endif %}
