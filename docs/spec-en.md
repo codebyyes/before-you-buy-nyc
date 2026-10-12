@@ -37,7 +37,9 @@ code rather than requested in a prompt:
   caused it". A finding worded as cause is sent back for rewriting, and
   withheld if it does not change.
 - **No model arithmetic.** Every figure on the page is computed in Python from
-  official rows. No language model is ever shown a price.
+  official rows. No model is given the sales data, and no figure shown is
+  one a model produced. A model does read search results that may quote a
+  price; it never receives the dataset those figures are computed from.
 - **No wandering.** The concepts named at the start are fixed. A research
   direction that sets out from anything else is discarded before any search
   runs.
@@ -79,7 +81,7 @@ response is sent.
 
 ```
 1 · Explore                          2 · Find and date
-explorer.py · Nemotron Super 120B    evidence.py · Nemotron Super 120B
+explorer.py · Nemotron Super 120B    evidence.py -> explorer.chat · Super 120B
 Names the keywords, sets the    ->   Searches 21 authoritative domains.
 directions. The keyword list is      Dates one event against its own source.
 then locked in code.                 Sees: the search term and the sources.
@@ -96,15 +98,23 @@ from official rows.                  Sees: the finding. Never a number.
 Sees: prices. Asks no model
 anything.
 
-Enforced by file: evidence.py holds no arithmetic, main.py makes no model call.
+Enforced by file: main.py holds every figure and makes no model call; the
+two modules that do call one are never handed the sales rows.
 ```
 
-Three modules, and the division between them is the design. `evidence.py`
-finds events and contains no arithmetic; `main.py` computes every figure and
-asks no model anything; `explorer.py` is the only module that calls a language
-model at all. Spec section 13 — "the AI never touches a number" — is therefore
-structural rather than a matter of self-discipline. Asked how we guarantee it,
-the answer is that the model cannot reach a price.
+Three modules, and the division between them is the design. `explorer.py`
+holds the only code that talks to the model endpoint; `evidence.py` calls
+through it to date an event and contains no arithmetic of its own; `main.py`
+computes every figure and never calls a model.
+
+Spec section 13 — "the AI never touches a number" — is therefore structural
+rather than a matter of self-discipline, but the claim has to be stated at
+the width it actually holds. A model does read search results, and a news
+page may quote a price. What no model receives is the sales dataset, and what
+no model produces is any figure the page displays: the rows are read,
+filtered and reduced to a median entirely inside `main.py`, which has no path
+to a model. The only numeric thing a model hands back in this system is one
+ISO date read out of a source document.
 
 `templates/index.html` holds all presentation and the front-end JavaScript.
 Nothing in the Python writes HTML.

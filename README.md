@@ -36,7 +36,9 @@ a prompt:
 - **No causal claims.** A finding worded as cause is sent back for rewriting,
   and withheld if it does not change.
 - **No model arithmetic.** Every figure on the page is computed in Python from
-  official rows. No language model is ever shown a price.
+  official rows. No model is given the sales data, and no figure shown is
+  one a model produced. A model does read search results that may quote a
+  price; it never receives the dataset those figures are computed from.
 - **No wandering.** The concepts named at the start are fixed. A research
   direction setting out from anything else is discarded before any search runs.
 - **No failure dressed as a finding.** An exhausted quota, an unreachable
@@ -156,7 +158,7 @@ for a housing question.
 
 ```
 1 · Explore                          2 · Find and date
-explorer.py · Nemotron Super 120B    evidence.py · Nemotron Super 120B
+explorer.py · Nemotron Super 120B    evidence.py -> explorer.chat · Super 120B
 Names the keywords, sets the    ->   Searches 21 authoritative domains.
 directions. The keyword list is      Dates one event against its own source.
 then locked in code.                 Sees: the search term and the sources.
@@ -174,13 +176,16 @@ Sees: prices. Asks no model
 anything.
 ```
 
-**The division between the files is the design.** `evidence.py` finds events
-and contains no arithmetic. `main.py` computes every figure and asks no model
-anything. `explorer.py` is the only module that calls a language model at all.
+**The division between the files is the design.** `explorer.py` holds the only
+code that talks to the model endpoint; `evidence.py` calls through it to date
+an event and contains no arithmetic of its own; `main.py` computes every
+figure on the page and never calls a model.
 
-So "the AI never touches a number" is structural rather than a matter of
-self-discipline. Asked how it is guaranteed, the answer is that the model
-cannot reach a price.
+So the guarantee is a narrow one, and narrow is what makes it checkable: the
+sales data is read, filtered and reduced to a median entirely inside
+`main.py`, which has no path to a model, and the modules that do call a model
+are never handed those rows. A model's only numeric output in this system is
+one ISO date read out of a source document.
 
 `templates/index.html` holds all presentation and the front-end JavaScript.
 Nothing in the Python writes HTML, and every string a model produced is written
@@ -313,10 +318,12 @@ epistemic honesty cannot be shy about its own.
   matter more than any single rezoning, but none happened on a particular day.
   The system can say "here are events that were recorded, and here is what
   followed". It cannot say "here is everything that mattered".
-- **Events are neighbourhood-scale; the data is borough-scale.** A rezoning of
-  a few blocks is measured against the median for the whole borough. The
-  datasets carry `neighborhood` and `nta` columns, so finer granularity is the
-  most valuable thing a second version could add.
+- **Events are neighbourhood-scale; the data is borough-scale.** All five
+  boroughs are available, and every one of them is measured whole: a rezoning
+  affecting a few blocks of Gowanus is compared against the median for all of
+  Brooklyn. This is a limit on precision, not on coverage. The datasets carry
+  `neighborhood` and `nta` columns, so finer granularity is the most valuable
+  thing a second version could add.
 - **A twelve-month window is a choice, not a finding.** Some events move a
   market in a quarter and some over five years. This version does not
   distinguish them.
