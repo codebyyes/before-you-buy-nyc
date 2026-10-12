@@ -31,12 +31,12 @@
   --fig-median:#1f6fb2; --fig-count:#191712; --fig-change:#8a3a62;
 }
 body{background:var(--bg);color:var(--ink);
-  font:15px/1.55 ui-sans-serif,-apple-system,"Helvetica Neue",sans-serif;
+  font:16px/1.6 ui-sans-serif,-apple-system,"Helvetica Neue",sans-serif;
   padding:28px 16px 64px}
 .wrap{max-width:1180px;margin:0 auto}
 header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
 h1{font-size:21px;font-weight:600;letter-spacing:-.01em}
-.tag{color:var(--mute);font-size:13px;margin-top:5px}
+.tag{color:var(--mute);font-size:14.5px;margin-top:5px}
 .cols{display:grid;grid-template-columns:minmax(0,480px) minmax(0,1fr);gap:22px}
 /* minmax(0,1fr) rather than 1fr: a grid item defaults to min-width:auto, so a
    wide table inside it pushes the column past the viewport instead of the
@@ -46,7 +46,7 @@ h1{font-size:21px;font-weight:600;letter-spacing:-.01em}
   min-width:0}
 .col.off{opacity:.42}
 .col.off *{cursor:not-allowed}
-.step{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);
+.step{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);
   margin-bottom:12px}
 .col.off .step,.col.locked .step{color:var(--locked)}
 h2{font-size:16px;font-weight:600;margin-bottom:4px}
@@ -69,9 +69,9 @@ button:disabled{background:#edeadf;color:var(--locked);cursor:not-allowed}
 .fixed{font-variant-numeric:tabular-nums;
   font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 table{width:100%;border-collapse:collapse;margin-top:6px}
-th{text-align:left;font-size:11px;letter-spacing:.07em;text-transform:uppercase;
+th{text-align:left;font-size:12px;letter-spacing:.07em;text-transform:uppercase;
   color:var(--mute);font-weight:500;padding:0 0 7px;border-bottom:1px solid var(--line)}
-td{padding:7px 0;border-bottom:1px solid var(--rule);font-size:13px}
+td{padding:9px 0;border-bottom:1px solid var(--rule);font-size:14.5px}
 td.num,th.num{text-align:right;padding-left:16px;white-space:nowrap}
 td.num{color:var(--fig-count)}
 td.num.lead{color:var(--fig-median);font-weight:600}
@@ -80,8 +80,8 @@ td.num.chg{color:var(--fig-change)}
    means "a year-on-year change" - the same hue for a rise and for a fall,
    so the colour never says whether the news is good. */
 .sublab{display:block;font-weight:400;letter-spacing:.03em;text-transform:none;
-  color:var(--locked);font-size:10px;margin-top:2px}
-.sub-chg{display:block;color:var(--fig-change);font-weight:600;font-size:11.5px;
+  color:var(--locked);font-size:12px;margin-top:3px}
+.sub-chg{display:block;color:var(--fig-change);font-weight:600;font-size:13px;
   margin-top:1px;font-variant-numeric:tabular-nums}
 tr.total td{border-bottom:0;border-top:1px solid var(--line);font-weight:600;padding-top:9px}
 tr.total td.num{color:var(--fig-count)}
@@ -101,7 +101,7 @@ tr.total td.num.chg{color:var(--fig-change)}
   border-radius:8px;padding:10px 8px 4px}
 .chart svg{display:block;width:100%;height:auto}
 .chart .grid{stroke:var(--chart-grid);stroke-width:1}
-.chart .axis{fill:var(--chart-axis);font-size:11.5px;font-weight:500;
+.chart .axis{fill:var(--chart-axis);font-size:13px;font-weight:500;
   font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 .chart .line{fill:none;stroke:var(--chart-line);stroke-width:2.5;
   stroke-linejoin:round;stroke-linecap:round}
@@ -119,24 +119,24 @@ tr.total td.num.chg{color:var(--fig-change)}
 .qt td.num{color:var(--fig-count)}
 .qt td.num.lead{color:var(--fig-median);font-weight:600}
 .qt tr:last-child td{border-bottom:0}
-.note{color:var(--mute);font-size:12px;margin-top:14px;line-height:1.5}
+.note{color:var(--mute);font-size:13.5px;margin-top:14px;line-height:1.5}
 .prov{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);
-  color:var(--mute);font-size:11.5px;line-height:1.65}
+  color:var(--mute);font-size:13px;line-height:1.7}
 .prov b{color:#3d382c;font-weight:500}
 .err{background:#fdf2ed;border:1px solid #e0b4a4;color:#8a3b26;padding:13px 15px;
-  border-radius:8px;font-size:13px;margin-top:14px}
+  border-radius:8px;font-size:14.5px;margin-top:14px}
 /* Not an error. Reaching a results address again is the storage rule working,
    so it is said in the page's ordinary voice, not in the warning colours. */
 .notice{background:var(--field);border:1px solid var(--line);color:var(--mute);
-  padding:13px 15px;border-radius:8px;font-size:13px;margin-top:14px;
+  padding:13px 15px;border-radius:8px;font-size:14.5px;margin-top:14px;
   line-height:1.55}
-.motto{color:var(--mute);font-size:12px;letter-spacing:.04em;margin-top:22px;
+.motto{color:var(--mute);font-size:13px;letter-spacing:.04em;margin-top:22px;
   text-align:center}
 
 /* ---- column two: the research directions ---- */
 .asked{background:var(--field);border:1px solid var(--line);border-radius:7px;
-  padding:11px 13px;font-size:14px;color:#3d382c;margin-top:5px}
-.busy{color:var(--mute);font-size:13px;margin-top:16px}
+  padding:12px 14px;font-size:15.5px;color:#3d382c;margin-top:5px}
+.busy{color:var(--mute);font-size:14px;margin-top:16px}
 .busy::after{content:"";display:inline-block;width:1.1em;text-align:left;
   animation:dots 1.2s steps(4,end) infinite}
 @keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
@@ -152,7 +152,7 @@ tr.total td.num.chg{color:var(--fig-change)}
 /* Row labels were 10px in the lightest colour on the page, which on a tablet
    is close to invisible - the reader who asked twice where the keywords were
    could see the keyword and not the word naming it. */
-.rl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+.rl{font-size:12px;letter-spacing:.08em;text-transform:uppercase;
   color:var(--mute);font-weight:600}
 @media(max-width:560px){
   .row{grid-template-columns:minmax(0,1fr);gap:3px}
@@ -178,20 +178,32 @@ tr.total td.num.chg{color:var(--fig-change)}
 .lock{background:var(--tray);border:1.5px solid var(--line);
   border-left:5px solid var(--accent);border-radius:8px;
   padding:11px 13px 12px;margin-top:4px}
-.lockcap{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;
+.lockcap{font-size:12px;letter-spacing:.09em;text-transform:uppercase;
   color:var(--accent);font-weight:700;margin-bottom:8px}
 .words{display:flex;flex-wrap:wrap;gap:6px}
 .words b{background:var(--panel);border:1px solid var(--line);border-radius:5px;
-  padding:4px 10px;font-size:14.5px;font-weight:600;color:var(--ink);
+  padding:5px 11px;font-size:15px;font-weight:600;color:var(--ink);
   line-height:1.35;word-break:break-word;
   font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
-.recn{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;
-  color:var(--accent);font-weight:700;margin-bottom:9px}
+/* Every record repeats the same three zones in the same order, so the second
+   one is read faster than the first and the tenth is scanned: a header saying
+   which record and how it ended, what was looked for, and what was found.
+   Fixed rhythm is most of what makes the table in the first column readable,
+   and it is what the directions had none of. */
+.rechead{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;
+  justify-content:space-between;padding-bottom:10px;margin-bottom:13px;
+  border-bottom:1px solid var(--line)}
+.recn{font-size:12px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--accent);font-weight:700}
+.zone{font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--locked);font-weight:600;margin-bottom:6px}
+.looked{margin-bottom:15px}
+.found{padding-top:14px;border-top:1px dashed var(--rule)}
 .from{display:flex;flex-wrap:wrap;gap:5px}
 .from b{background:var(--tray);border:1px solid var(--line);border-radius:4px;
-  padding:2px 7px;font-size:12.5px;font-weight:600;color:#3d382c;
+  padding:3px 8px;font-size:13.5px;font-weight:600;color:#3d382c;
   font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
-.query{color:var(--locked);font-size:11.5px;margin-top:5px;line-height:1.5;
+.query{color:var(--locked);font-size:13px;margin-top:6px;line-height:1.55;
   word-break:break-word;
   font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 /* An SVG with no size fills its container, and with no fill rule it fills it
@@ -201,15 +213,28 @@ tr.total td.num.chg{color:var(--fig-change)}
   margin-right:2px;stroke:var(--locked);fill:none;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round}
 .dir .row:first-of-type{margin-top:10px}
-.path{color:var(--mute);font-size:12.5px;line-height:1.5}
-.chip{display:inline-block;margin-top:11px;font-size:11px;letter-spacing:.07em;
-  text-transform:uppercase;color:var(--locked);border:1px solid var(--line);
-  border-radius:20px;padding:3px 10px}
+/* The path is the model's own reasoning and the notes under a record are the
+   system reporting on itself. They were the same size in the same grey, so
+   they read as one block of text and the thinking was lost inside the
+   bookkeeping. The path is content and is drawn as content. */
+.path{color:#3d382c;font-size:14.5px;line-height:1.55}
+/* The state moves into the record's header, where it can be scanned down the
+   page without reading anything else. It is not colour-coded by whether the
+   news is good: withheld by review is the gate doing its job, so it carries
+   the same neutral badge as a result. Only a direction that could not be
+   completed is marked apart, because that one is about us. */
+/* It wraps rather than holding one line: "no qualifying evidence found in the
+   sources searched" is 480px of badge, and nowrap pushed it out of a phone's
+   column. */
+.chip{font-size:12px;letter-spacing:.07em;line-height:1.45;max-width:100%;
+  text-transform:uppercase;color:var(--mute);border:1px solid var(--line);
+  background:var(--tray);border-radius:20px;padding:4px 11px;font-weight:600}
 .chip.inc{color:#8a3b26;border-color:#e0b4a4;background:#fdf2ed}
 .rollup{border:1px solid var(--line);background:var(--field);border-radius:8px;
-  padding:12px 14px;font-size:12.5px;color:var(--mute);margin-top:16px;
+  padding:14px 16px;font-size:14px;color:var(--mute);margin-top:16px;
   line-height:1.55}
 .rollup b{color:#3d382c;font-weight:600}
+.rollup p+p{margin-top:10px}
 .rollup.inc{background:#fdf2ed;border-color:#e0b4a4;color:#8a3b26}
 .rollup.inc b{color:#6f2f1e}
 .topnote{margin-bottom:4px;margin-top:14px}
@@ -219,22 +244,33 @@ tr.total td.num.chg{color:var(--fig-change)}
 .ev .row+.row{margin-top:6px}
 .prov-block{border-top:1px dashed var(--rule);padding-top:11px;margin-top:12px}
 .prov-block .row+.row{margin-top:7px}
-.evt{font-size:13px;color:var(--ink);line-height:1.45}
-.dt{font-size:13px;color:var(--ink);
+/* The anchor. A record needs one thing that is plainly the largest, the way
+   the median anchors a row in the first column: the eye lands on it and then
+   works outwards. The event was the same size as its own date, so a record
+   with no measurement under it had nothing to land on at all, and a column of
+   those reads as a grey field rather than as findings. */
+.evt{font-size:16.5px;color:var(--ink);line-height:1.45;font-weight:500}
+/* The outcome of a record that found nothing to measure. It stands where the
+   event would have stood and is sized like it, because "we looked here and
+   the sources held nothing" is a finding and should be as easy to read as
+   one. The sentences explaining it sit underneath in the ordinary size. */
+.outcome{font-size:16.5px;color:#3d382c;line-height:1.45;font-weight:500}
+.outcome.inc{color:#8a3b26}
+.dt{font-size:14.5px;color:var(--ink);
   font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
-.basis{font-size:12px;color:var(--mute);line-height:1.5;font-style:italic}
-.src{font-size:12px;line-height:1.5}
+.basis{font-size:13.5px;color:var(--mute);line-height:1.6;font-style:italic}
+.src{font-size:13.5px;line-height:1.6}
 .src a{color:var(--fig-median);word-break:break-all}
 .src .kind{color:var(--mute)}
 /* The measurement. Same colour per kind of figure as the first column:
    blue is a median, ink is a count, plum is a year-on-year change, and none
    of them says whether the number is good news. */
 table.meas{width:100%;border-collapse:collapse;margin-top:10px}
-table.meas th{font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+table.meas th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;
   color:var(--locked);font-weight:600;text-align:left;padding:0 0 6px;
   border-bottom:1px solid var(--rule)}
 table.meas th.num{text-align:right;padding-left:12px}
-table.meas td{padding:6px 0;border-bottom:1px solid var(--rule);font-size:12.5px;
+table.meas td{padding:8px 0;border-bottom:1px solid var(--rule);font-size:14.5px;
   color:var(--mute)}
 table.meas td.num{text-align:right;padding-left:12px;white-space:nowrap;
   font-variant-numeric:tabular-nums;
@@ -244,10 +280,14 @@ table.meas td.cnt{color:var(--fig-count)}
 table.meas tr.chg td{border-bottom:0;border-top:1px solid var(--line);
   padding-top:8px;font-weight:600;color:#3d382c}
 table.meas tr.chg td.num{color:var(--fig-change)}
-.win{font-size:11.5px;color:var(--mute);margin-top:7px;line-height:1.5}
-.flag{font-size:12px;color:#8a3b26;background:#fdf2ed;border:1px solid #e0b4a4;
-  border-radius:7px;padding:9px 11px;margin-top:10px;line-height:1.5}
-.plain{font-size:12.5px;color:var(--mute);margin-top:9px;line-height:1.5}
+.win{font-size:13px;color:var(--mute);margin-top:8px;line-height:1.6}
+.flag{font-size:13.5px;color:#8a3b26;background:#fdf2ed;border:1px solid #e0b4a4;
+  border-radius:7px;padding:11px 13px;margin-top:11px;line-height:1.6}
+/* The system's own note about what happened, set apart from the model's
+   words by a rule down its left edge rather than by a colour, so it reads as
+   a margin note and never as a verdict on the finding. */
+.plain{font-size:13.5px;color:var(--mute);margin-top:9px;line-height:1.6;
+  border-left:2px solid var(--line);padding-left:11px}
 </style>
 </head>
 <body>
@@ -563,16 +603,26 @@ table.meas tr.chg td.num{color:var(--fig-change)}
     show(busy, on);
   }
 
+  /* `rest` may be one string or several. Several are set as paragraphs: the
+     closing summary carries the counts, what the review did and did not
+     check, which models ran, where the figures came from and what is left to
+     the reader - five unrelated things, which as one block of text were read
+     as none of them. */
   function setNote(el, cls, strong, rest) {
     el.className = 'rollup' + (cls ? ' ' + cls : '');
     el.textContent = '';
-    if (strong) {
-      var b = document.createElement('b');
-      b.textContent = strong;
-      el.appendChild(b);
-      el.appendChild(document.createTextNode(' '));
-    }
-    el.appendChild(document.createTextNode(rest));
+    var parts = (typeof rest === 'string') ? [rest] : rest.filter(Boolean);
+    parts.forEach(function (text, i) {
+      var p = document.createElement('p');
+      if (i === 0 && strong) {
+        var b = document.createElement('b');
+        b.textContent = strong;
+        p.appendChild(b);
+        p.appendChild(document.createTextNode(' '));
+      }
+      p.appendChild(document.createTextNode(text));
+      el.appendChild(p);
+    });
     show(el, true);
   }
 
@@ -689,6 +739,17 @@ table.meas tr.chg td.num{color:var(--fig-change)}
   function plain(text) {
     var d = document.createElement('div');
     d.className = 'plain';
+    d.textContent = text;
+    return d;
+  }
+
+  /* The headline of a record that has no event to show. It is a statement of
+     what happened and never an apology - the same rule the reason strings in
+     explorer.py are scanned for, held here by hand, because these live in the
+     page and the offline suite cannot see them. */
+  function outcome(text, inc) {
+    var d = document.createElement('div');
+    d.className = 'outcome' + (inc ? ' inc' : '');
     d.textContent = text;
     return d;
   }
@@ -818,25 +879,42 @@ table.meas tr.chg td.num{color:var(--fig-change)}
       var li = document.createElement('li');
       li.className = 'dir';
 
+      /* Header: which record, and how it ended. The state used to sit last
+         and smallest, so finding out what had happened meant reading the
+         whole record. In the header it can be scanned straight down the
+         page, which is the question a reader asks first. */
       var head = document.createElement('div');
-      head.className = 'recn';
-      head.textContent = 'Record ' + (i + 1) + ' of ' + list.length;
-      li.appendChild(head);
-
-      /* The finding goes here when it arrives, above the provenance. */
-      var slot = document.createElement('div');
-      li.appendChild(slot);
-
-      var prov = document.createElement('div');
-      prov.className = 'prov-block';
-      prov.appendChild(fromRow(item.from || []));
-      prov.appendChild(pathRow(item.path, item.query));
-      li.appendChild(prov);
+      head.className = 'rechead';
+      var num = document.createElement('div');
+      num.className = 'recn';
+      num.textContent = 'Record ' + (i + 1) + ' of ' + list.length;
+      head.appendChild(num);
 
       var chip = document.createElement('span');
       chip.className = 'chip';
       chip.textContent = (d.labels && d.labels[item.state]) || item.state;
-      li.appendChild(chip);
+      head.appendChild(chip);
+      li.appendChild(head);
+
+      /* What was looked for comes before what was found. The path used to sit
+         underneath its own result, which invites reading it as a
+         justification for whatever turned up; above it, the reader judges the
+         direction on its own terms first. That judgement is what section 12
+         shows the path for. */
+      var prov = document.createElement('div');
+      prov.className = 'looked';
+      var lcap = document.createElement('div');
+      lcap.className = 'zone';
+      lcap.textContent = 'Looked for';
+      prov.appendChild(lcap);
+      prov.appendChild(fromRow(item.from || []));
+      prov.appendChild(pathRow(item.path, item.query));
+      li.appendChild(prov);
+
+      /* The finding goes here when it arrives. */
+      var slot = document.createElement('div');
+      slot.className = 'found';
+      li.appendChild(slot);
 
       dirs.appendChild(li);
       cards.push({ li: li, chip: chip, slot: slot });
@@ -1005,6 +1083,13 @@ table.meas tr.chg td.num{color:var(--fig-change)}
           + ' Reporting it as no evidence would be a false statement about the '
           + 'historical record made to cover a limit of ours.'));
       } else if (item.state === 'NO_EVIDENCE') {
+        /* A direction that found nothing still has an outcome, and it gets a
+           line of its own at the size an event would have had. Most records
+           in a given run end here, and when they were a paragraph of small
+           grey text they made a page carrying a great deal of information
+           look like a page carrying none. */
+        box.appendChild(outcome('No datable event in the '
+          + (item.sources_searched || 0) + ' sources searched.'));
         after.appendChild(plain('The search completed and no datable event was '
           + 'found in the ' + (item.sources_searched || 0)
           + ' authoritative sources it returned. This direction was searched '
@@ -1014,6 +1099,8 @@ table.meas tr.chg td.num{color:var(--fig-change)}
         /* Not a failure. A finding that claimed causation where the evidence
            established only sequence is one the gate is supposed to stop, so
            this is written as the gate working, never as an apology. */
+        box.appendChild(outcome('An event was found, and withheld by '
+          + 'presentation review.'));
         after.appendChild(plain('Evidence was found here. '
           + stop(item.reason)
           + ' It was rewritten '
@@ -1053,14 +1140,19 @@ table.meas tr.chg td.num{color:var(--fig-change)}
         }
       }
 
-      /* The record reads: what was found, then where the search set out
-         from, then what followed, then the state. The finding goes into the
-         slot reserved above the provenance rows. */
+      /* A record reads: how it ended, what was looked for, what was found.
+         The finding and the note about it both land in the last zone, under
+         its caption. */
       card.slot.textContent = '';
+      var fcap = document.createElement('div');
+      fcap.className = 'zone';
+      fcap.textContent = 'Found';
+      card.slot.appendChild(fcap);
       card.slot.appendChild(box);
       /* The status sentence goes after the route that produced it, so a
-         record reads: what was found, how it was reached, where it stands. */
-      if (after.childNodes.length) card.li.insertBefore(after, card.chip);
+         record reads: what was found, then the note about it. The chip is in
+         the header now, so this appends rather than inserting before it. */
+      if (after.childNodes.length) card.slot.appendChild(after);
     });
 
     /* Section 5: every rise and every fall is shown, in the order the
@@ -1092,18 +1184,20 @@ table.meas tr.chg td.num{color:var(--fig-change)}
        says so, because "passed review" invites the other reading. */
     var gate = '';
     if (reviewed) {
-      gate = ' Presentation review checks how a finding is worded against its '
+      gate = 'Presentation review checks how a finding is worded against its '
            + 'evidence. It does not check whether the event is true, and '
            + 'passing it is not a finding of accuracy.';
-      if (d.reviewer_model && d.explorer_model) {
-        gate += ' Explored with ' + d.explorer_model + ', reviewed with '
-              + d.reviewer_model + ', both on Nebius Token Factory.';
-      }
+    }
+
+    var models = '';
+    if (reviewed && d.reviewer_model && d.explorer_model) {
+      models = 'Explored with ' + d.explorer_model + ', reviewed with '
+             + d.reviewer_model + ', both on Nebius Token Factory.';
     }
 
     var prov = '';
     if (d.coverage) {
-      prov = ' Measured from NYC Open Data: ' + d.coverage.annual + ' and '
+      prov = 'Measured from NYC Open Data: ' + d.coverage.annual + ' and '
            + d.coverage.rolling + ', ' + count(d.coverage.rows_examined)
            + ' rows across these windows, ' + d.coverage.class_count
            + ' of 44 official property classes, sale_price below '
@@ -1115,22 +1209,26 @@ table.meas tr.chg td.num{color:var(--fig-change)}
     /* Section 10 roll-up: one incomplete direction makes the whole analysis
        incomplete, and that is said once, at the top, not only beside the
        direction it happened to. */
+    /* The reader's own business first, the provenance a judge or a developer
+       wants after it. One paragraph each. */
+    var yours = 'What you do with this is yours to decide: the system draws '
+              + 'no conclusion, makes no recommendation and gives no '
+              + 'probability.';
     if (counts.RESEARCH_INCOMPLETE) {
       setNote(roll, 'inc', 'This analysis is incomplete.',
-              counts.RESEARCH_INCOMPLETE + ' of ' + list.length
-            + ' directions did not finish'
-            + (afterSearch
-                ? ' (' + afterSearch + ' of them after the search had already '
-                  + 'found an event, so the event stands and only what comes '
-                  + 'after it is missing)'
-                : '')
-            + ', so what is shown is part of an answer and not the whole of '
-            + 'one. ' + parts.join(' \u00b7 ') + '.' + gate + prov);
+              [counts.RESEARCH_INCOMPLETE + ' of ' + list.length
+             + ' directions did not finish'
+             + (afterSearch
+                 ? ' (' + afterSearch + ' of them after the search had already '
+                   + 'found an event, so the event stands and only what comes '
+                   + 'after it is missing)'
+                 : '')
+             + ', so what is shown is part of an answer and not the whole of '
+             + 'one. ' + parts.join(' \u00b7 ') + '.',
+               gate, models, prov, yours]);
     } else {
       setNote(roll, '', 'Research complete.',
-              parts.join(' \u00b7 ') + '.' + gate + prov
-            + ' What you do with this is yours to decide: the system draws no '
-            + 'conclusion, makes no recommendation and gives no probability.');
+              [parts.join(' \u00b7 ') + '.', gate, models, prov, yours]);
     }
   }
 })();
