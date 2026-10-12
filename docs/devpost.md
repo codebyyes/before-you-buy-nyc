@@ -120,9 +120,13 @@ Three concrete facts, all true and all on the record:
    It blocked a real finding on its first live run — the Amazon HQ2 record
    failed question 5 (a claim stronger than the evidence), was rewritten
    twice, and was withheld.
-2. **"The AI never touches a number" is enforced by file.** `evidence.py`
-   cannot reach a price; `main.py` asks no model anything. It is structure,
-   not self-discipline.
+2. **No model computes, decides or controls any figure the page displays.**
+   The sales rows are read, filtered and reduced to a median entirely inside
+   `main.py`, which has no path to a model; the modules that do call one are
+   never handed those rows. A model does read search results, and a news page
+   may quote a price — the guarantee is narrow on purpose, because narrow is
+   what makes it checkable. The only numeric thing a model hands back is one
+   ISO date read out of a source document.
 3. **The keyword lock lives in `parse_plan()`, not in a prompt.** A research
    direction citing a concept outside the committed list is discarded before
    any search runs.
@@ -198,6 +202,18 @@ worth is exactly the kind of answer nobody can check and everybody acts on.
 We decided that was the specification rather than the obstacle. Instead of
 building a model that answers carefully, we built a system in which the model
 **is not permitted to answer at all**. It may look. It may not conclude.
+
+**New York housing is where we proved that, not what we set out to build.**
+The method asks two things of a domain and nothing else: official records
+that can be traced back to the body that published them, and an outcome that
+can be measured against a dated event. Housing has both in quantity, and it
+has the property that makes a demonstration honest — anyone can check the
+answer against the city's own data rather than against our word for it.
+Employment, inflation, energy, transport, public health all meet the same two
+conditions on paper. None of them is built here, and we are not going to
+claim they work until one of them does. What we can say is that the shape of
+the thing is not about houses: it is about any decision where the useful help
+is not a forecast but a traceable record of what followed last time.
 
 ## What it does
 
@@ -331,6 +347,16 @@ does not appear to exist. It found no source, so it never reached the reader
 as a historical claim. A model asked to name something specific will produce
 a plausible name rather than stop; the design's answer is that the model may
 explore freely but may not assert freely.
+
+**What none of that proves.** A gate that blocked three findings is a gate
+that worked three times, not a gate that cannot be passed — and the reviewer
+is itself a language model, checking wording rather than truth. The lock, the
+file split and the review are three different kinds of guarantee with three
+different strengths, and the strongest of them is the one that is not a model
+at all: a figure computed in Python from official rows cannot be talked into
+being something else. We designed defences. We have not demonstrated that
+they cannot fail, and a project about claims not outrunning evidence should
+not be the one to blur that line.
 
 ## What we learned
 
