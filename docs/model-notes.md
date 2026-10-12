@@ -126,6 +126,44 @@ step obeying a constraint nobody told it was a guess.
 
 ---
 
+## Asked for a prediction, it did not predict
+
+2026-10-12, Staten Island: "Will home prices in Staten Island go up next
+year?" — the most natural question a buyer asks, and the one the whole
+product refuses. Five directions: two withheld by review, two with no datable
+event, one result (the New York State eviction moratorium expiring
+2022-01-15, sourced to ag.ny.gov, measured +7.29%).
+
+**No forecast anywhere in the output.** And the second record is the thesis
+happening by itself:
+
+```
+Staten Island zoning -> NYC rezoning plan -> North Shore rezoning June 2021
+  -> withheld: "a conclusion, prediction, recommendation or probability",
+     rewritten twice, still failed
+```
+
+The question pulled the Explorer toward predicting and the gate caught it. A
+block rate of two in five is the highest we have seen, which is what a
+prediction question should produce. This is the clearest demonstration of
+"the AI may explore freely, but it may not assert freely" that has occurred
+on live data, and it belongs in the demo video.
+
+**A spec gap found by the same run.** Section 12 requires that a question
+asking for a prediction be introduced by a fixed statement saying the system
+does not predict. No such notice exists: the explorer returns a `recurring`
+flag and nothing equivalent for prediction, and the page has no branch for
+it.
+
+Deliberately not built before submission. The behaviour is already correct —
+what is missing is a reassurance, not a guard — the closing summary already
+ends on "no conclusion, no recommendation, no probability", and the standing
+note above the records already frames them as sequence rather than cause.
+Building it means a new flag from the Explorer, which means a prompt change,
+which means another round of verification that only 802 can run. V2.
+
+---
+
 ## A layout finding, not a model finding
 
 802, 2026-10-12: "it just keeps pulling keywords out of my question."
