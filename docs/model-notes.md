@@ -99,12 +99,51 @@ One competing explanation is ruled out: `esd.ny.gov`, where the 2026-10-08
 source was found, **is** in `TRUSTED` in `evidence.py`. The allowlist did not
 shut that page out.
 
+**Counter-evidence, 2026-10-12.** Manhattan, "do immigrant protests make home
+prices higher". One direction was `home prices -> Federal Reserve emergency
+rate cut -> 2020-03-15`, searched with that date — **which is correct**, and
+`federalreserve.gov` is in the allowlist. It returned `NO_EVIDENCE` anyway.
+
+So a guessed month is not sufficient to explain the misses: here is a correct
+date that found nothing. That run also missed four of six directions, a higher
+rate than any run before it. Something else is going on in the search or
+dating step that none of the current theories covers.
+
+This direction is also the acceptance case fixed in advance by spec section 17
+(the Fed press-release URL `monetary20200315b.htm` must yield 2020-03-15). It
+failed here at the search or dating step rather than at the URL-reading step
+the acceptance case was written about, so it is not the same test — but it is
+close enough to be worth saying out loud rather than filing quietly.
+
 **The mechanism is confirmed in code. The model's actual behaviour is not
 observed, because the build container cannot reach Nebius or Tavily.** Do not
 change the rule on this alone. It would be a change we equally cannot verify.
 
 This has the same shape as the five bugs already recorded in `spec-en.md`: a
 step obeying a constraint nobody told it was a guess.
+
+---
+
+---
+
+## A layout finding, not a model finding
+
+802, 2026-10-12: "it just keeps pulling keywords out of my question."
+
+He is right about what he sees, and the keywords are literal **by design** —
+spec section 11 makes them the reader's checkpoint, written the way a person
+says them out loud. The leaps live in the paths, and in that same run one of
+them went `home prices -> Federal Reserve emergency rate cut -> 2020-03-15`,
+which nobody asked about.
+
+But the complaint lands somewhere real. The keywords get a box each, at full
+width, above everything — the most prominent element on the page is the least
+interesting thing the model produced. The paths, which are where the thinking
+actually is, sit in small text under each record.
+
+This is a layout problem, not a model problem, and it is a V2 item. Worth
+noting that the keyword tray already took four attempts to get right; the
+question this raises is not how it looks but what it is ranked above.
 
 ---
 
