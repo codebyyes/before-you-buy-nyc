@@ -34,8 +34,21 @@ body{background:var(--bg);color:var(--ink);
   font:16px/1.6 ui-sans-serif,-apple-system,"Helvetica Neue",sans-serif;
   padding:28px 16px 64px}
 .wrap{max-width:1180px;margin:0 auto}
-header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
-h1{font-size:21px;font-weight:600;letter-spacing:-.01em}
+/* The page opened on a title, two lines of explanation and a hairline, all in
+   one tone, so nothing carried any weight and it read as a document rather
+   than as a thing you had arrived at. A tinted band and a rule in the accent
+   give the top of the page somewhere to start. */
+header{background:var(--tray);border:1px solid var(--line);
+  border-top:3px solid var(--accent);border-radius:10px;
+  padding:20px 22px 19px;margin-bottom:26px}
+h1{font-size:25px;font-weight:600;letter-spacing:-.015em}
+/* The line the whole project turns on, and it used to sit at the foot of the
+   page under everything else. It says what this is faster than the sentence
+   below it does, so it goes first and the sentence explains it. Removed from
+   the footer rather than repeated: the closing summary already ends on the
+   same thought in its own words. */
+.creed{color:var(--accent);font-size:14.5px;font-weight:600;
+  letter-spacing:.06em;margin-top:7px}
 .tag{color:var(--mute);font-size:14.5px;margin-top:5px}
 .cols{display:grid;grid-template-columns:minmax(0,480px) minmax(0,1fr);gap:22px}
 /* minmax(0,1fr) rather than 1fr: a grid item defaults to min-width:auto, so a
@@ -130,8 +143,6 @@ tr.total td.num.chg{color:var(--fig-change)}
 .notice{background:var(--field);border:1px solid var(--line);color:var(--mute);
   padding:13px 15px;border-radius:8px;font-size:14.5px;margin-top:14px;
   line-height:1.55}
-.motto{color:var(--mute);font-size:13px;letter-spacing:.04em;margin-top:22px;
-  text-align:center}
 
 /* ---- column two: the research directions ---- */
 .asked{background:var(--field);border:1px solid var(--line);border-radius:7px;
@@ -295,6 +306,7 @@ table.meas tr.chg td.num{color:var(--fig-change)}
 
 <header>
   <h1>Before You Buy NYC</h1>
+  <div class="creed">AI explores &middot; Evidence verifies &middot; Humans decide</div>
   <div class="tag">Every decision carries risk. Before you buy or sell in New York,
     see what actually happened after similar events in the past &mdash; with every
     source shown.</div>
@@ -518,7 +530,6 @@ table.meas tr.chg td.num{color:var(--fig-change)}
 
 </div>
 
-<div class="motto">AI explores. Evidence verifies. Humans decide.</div>
 
 </div>
 
