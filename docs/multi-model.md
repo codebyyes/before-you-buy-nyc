@@ -1,0 +1,143 @@
+# One exam paper, four candidates
+
+Recorded 2026-10-13, from a conversation with 802. **Nothing here is to be
+built before the submission closes on 2026-10-30.** Swapping the explorer for
+a non-NVIDIA model would break the hackathon's core eligibility requirement,
+which is that the project runs on Nebius Token Factory and uses at least one
+NVIDIA open source model.
+
+This file exists so the idea survives the frame, and so whoever picks it up
+does not have to rediscover the one thing that blocks it.
+
+---
+
+## The idea, in 802's words
+
+> It is the same exam paper, and we can see how each AI answers it.
+
+Give several models the identical question, under identical conditions, and
+watch what each one decides to look at. Not which answer sounds better —
+**which directions survived contact with the record.**
+
+Three properties make this worth doing here and hard to do elsewhere:
+
+**The paper only accepts working, never answers.** The system structurally
+cannot take a conclusion, so every model is forced to hand in its route and
+nothing else. Comparing four conclusions tells you nothing; you would just
+pick the one you liked. Comparing four routes has a referee.
+
+**It watches behaviour rather than self-report.** Asking a model to narrate
+its reasoning gets you an essay, and generated reasoning text is not a
+faithful record of what happened inside. Here nobody is asked to narrate. The
+record is the search it actually ran.
+
+**The controls are already locked, and we got them for free.** Same question,
+same borough, same market, same measurable window, same 21 domains, same
+measurement rule. Those were locked so a reader could check a finding, not so
+an experiment could be run — but they are exactly the controls an experiment
+needs. The apparatus was built for honesty and turns out to be an instrument.
+
+**The readout already exists too.** Every record on the page prints the
+keyword it set out from, the path, the query actually issued, and the state
+it ended in. That is the whole measurement. Nothing new has to be displayed.
+
+---
+
+## 🔴 The thing that blocks it, which is not obvious from outside
+
+**There are three jobs in this system and only two model constants.**
+
+| Job | Where | Constant used |
+| --- | --- | --- |
+| Name the keywords, set the directions | `explorer.py:482` | `EXPLORER_MODEL` |
+| **Read sources and date an event** | `evidence.py:256` | **`EXPLORER_MODEL` as well** |
+| Review how a finding is worded | `explorer.py:560` | `REVIEWER_MODEL` |
+
+Swapping `EXPLORER_MODEL` therefore swaps **two** jobs at once: how the system
+thinks, and how it reads a source. Two variables move together and the result
+cannot be attributed. If a challenger's directions all come back
+`NO_EVIDENCE`, there is no way to tell whether it chose poorly or merely reads
+sources differently.
+
+**The fix is about five lines.** Split the constant:
+
+```
+EXPLORER_MODEL    the one under test
+EXTRACTOR_MODEL   fixed across the comparison
+REVIEWER_MODEL    fixed across the comparison
+```
+
+`evidence.py` changes its import; `main.py` reports a third model id; the
+page's summary line gains one name. Nothing else moves.
+
+802 arrived at the right design unprompted — fix the reviewer, vary the
+explorer. This is the part of it that cannot be seen from the interface.
+
+---
+
+## The order of work
+
+1. **Saved analyses.** Without storage there is no experiment: the page is
+   the instrument, and the instrument currently throws away every reading.
+   Four models run against one question produce four sets of paths that
+   vanish when the tab closes. Everything in `model-notes.md` was transcribed
+   by hand for exactly this reason. This is already the first V2 item for
+   other reasons; this is one more.
+2. **Split the model constant** (above). Small enough to do alongside 1.
+3. **Then the API swap**, which for most providers is three constants and no
+   new architecture — see below.
+
+---
+
+## What swapping actually costs
+
+`chat()` in `explorer.py` already is the seam. It sends the OpenAI
+chat-completions shape and reads `choices[0].message.content` back.
+
+| Target | What changes |
+| --- | --- |
+| OpenAI | `BASE_URL`, the model name, the key's variable name |
+| Gemini | the same, through its OpenAI-compatible endpoint |
+| Most hosting providers | the same |
+| **Anthropic** | **a real code branch.** `/v1/messages`, an `x-api-key` header rather than a bearer token, a version header, `system` as a top-level field rather than a message, and the reply at `content[0].text` |
+
+`BASE_URL` is at `explorer.py:20`, the model names at 24 and 25, the key name
+at 269. For the OpenAI-shaped providers that is the whole adapter, and it is
+already written.
+
+---
+
+## The experiment to run first, before any of this
+
+**One model, one question, three runs.**
+
+Nothing is known about the variance of a single model across identical runs.
+Every observation in `model-notes.md` is n=1. If one model's paths differ
+wildly between runs, a cross-model comparison is meaningless until the noise
+floor is known — differences between models would be indistinguishable from
+a model differing from itself.
+
+Three searches, roughly 60 credits, and it decides whether any of the rest is
+worth doing.
+
+The 2026-10-11 finding that question shape drives reasoning depth is this
+experiment in miniature, with one run per condition.
+
+---
+
+## What it would and would not measure
+
+Worth writing down before anyone presents a result from it.
+
+It measures how far a model's directions align with **what is documented in
+21 chosen domains, between 2017 and 2026, as read by whichever model is
+fixed as the extractor.** That is narrow. Narrow is not a weakness — it is
+why there is a referee at all — but the width of the claim has to match.
+
+Two confounds to hold still:
+
+- **The marker is a model.** With Nemotron fixed as extractor, the measurement
+  is partly "how well does this challenger's direction survive being read by
+  Nemotron". Comparing extractors needs the explorer fixed instead.
+- **The allowlist is an editorial judgement.** A model reaching for sources
+  outside those 21 domains scores badly on coverage we chose, not on quality.

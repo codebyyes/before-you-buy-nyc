@@ -113,3 +113,8 @@ cd /home/claude/before-you-buy-nyc && python test_explorer.py
 - **預測問題的開場說明**。規格第 12 節要求，程式裡沒有。行為本身已經正確
   （10/12 Staten Island 那題一個預測都沒給），缺的只是一句開場的安撫。
   要做就得讓 Explorer 多回一個旗標，也就是改提示詞。詳見 `model-notes.md`。
+- **多模型比較**：同一份考卷，換掉 Explorer，看每個模型怎麼答題。
+  **全部寫在 `docs/multi-model.md`**，802 10/13 決定比賽結束後才做。
+  那份裡有一個從介面看不到的卡點：**系統有三個工作但只有兩個模型常數**，
+  `evidence.py` 的抽日期跟 Explorer 共用同一個常數，所以換一個等於換兩個。
+  🔴 送件前絕對不要換模型——核心資格要求就是跑在 Nebius 上、用 NVIDIA 模型。
