@@ -140,6 +140,13 @@ a model differing from itself.
 Three searches, roughly 60 credits, and it decides whether any of the rest is
 worth doing.
 
+**A free n=2 already exists.** The same Staten Island question was asked on
+2026-10-12 and again on 2026-10-13, and the model returned five keywords both
+times with overlapping territory and a different decomposition, plus one
+direction the first run never considered. Written up in `model-notes.md`. It
+does not measure the variance, but it rules out the assumption that there is
+none.
+
 The 2026-10-11 finding that question shape drives reasoning depth is this
 experiment in miniature, with one run per condition.
 

@@ -142,6 +142,11 @@ Nemotron were used. **Do not crop the model ids out.**
   the first load takes about fifty seconds. Open it, let it load, then start.
 - **Run the question once before filming.** If you film a cold run and it
   comes back all empty, you have filmed a blank page.
+- 🔴 **Do not leave the page while it is researching.** The evidence request
+  runs 60 to 120 seconds and a backgrounded tab on an iPad has its request
+  killed. It happened on 2026-10-13: every record came back at
+  `AWAITING EVIDENCE` with "the request did not reach the server". The page
+  handles it correctly, but it is not what you want on film.
 - **No music with a copyright, no third party logos** beyond what the page
   itself shows.
 - The on screen text can be English only. The narration is English.

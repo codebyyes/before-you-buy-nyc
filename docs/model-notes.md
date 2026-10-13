@@ -185,7 +185,74 @@ question this raises is not how it looks but what it is ranked above.
 
 ---
 
-## Not known, and what it would take
+## The same question twice: the first n=2 we have
+
+2026-10-12 18:02 and 2026-10-13 21:19. Staten Island, **identical question**,
+"Will home prices in Staten Island go up next year?", one day apart. The
+second run's evidence request never reached the server, so only the keywords
+and the paths can be compared — but those are the part nobody had two
+samples of.
+
+| 2026-10-12 | 2026-10-13 |
+| --- | --- |
+| mortgage rates | Staten Island |
+| Staten Island zoning | mortgage rates |
+| infrastructure investment | zoning |
+| local employment | zoning |
+| housing inventory | home prices |
+
+**Five keywords both times, overlapping in territory and different in
+decomposition.** Interest rates, zoning and infrastructure appear in both.
+The second run split "Staten Island" off as a concept of its own and dropped
+local employment; the first bundled the place into "Staten Island zoning".
+
+The paths differ too, and one direction is new:
+
+```
+2026-10-13  Staten Island -> infrastructure
+              -> Verrazzano-Narrows Bridge toll increase January 2020
+```
+
+Nothing like it on 2026-10-12. A bridge toll as a route into house prices is
+a reasonable thing to look at and the first run never considered it.
+
+**What this does and does not settle.** Two runs is not a variance estimate.
+What it rules out is the strong form of the opposite assumption: the model
+does **not** return the same decomposition for the same question. Any
+cross-model comparison therefore has to measure this noise floor first,
+because a difference between two models could be nothing more than a model
+differing from itself. That test — one model, one question, three runs — is
+already the first item in `multi-model.md`, and this is the accidental
+preview of it.
+
+It was free. Nobody set out to run it.
+
+---
+
+## A failure worth having seen
+
+The second run above ended with every record at `AWAITING EVIDENCE` and this
+at the foot of the page:
+
+> This analysis is incomplete. The request did not reach the server
+> (TypeError: Load failed). The keywords above were fixed, but the search did
+> not complete, so nothing below them is a finding about the historical
+> record.
+
+**That is the 2026-10-11 correction working on live data.** Five directions
+with nothing under them is exactly the shape that used to be reported as an
+empty record. It was not. The page said the search never ran and that nothing
+below the keywords is a statement about history.
+
+The cause is almost certainly the browser rather than the server. The
+front-end's own timeout is 240 seconds and the message would have said so;
+`TypeError: Load failed` is Safari's generic network error, and the evidence
+request runs 60 to 120 seconds. 802 was taking screenshots during the run on
+an iPad, and a backgrounded tab has its in-flight fetches killed.
+
+🔴 **Practical consequence for recording the demo: do not leave the page
+after pressing Research.** Let the run finish before switching apps, or the
+footage is of this screen.
 
 | Question | Why we cannot answer it | Minimum test |
 | --- | --- | --- |
