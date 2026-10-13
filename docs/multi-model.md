@@ -108,6 +108,23 @@ chat-completions shape and reads `choices[0].message.content` back.
 at 269. For the OpenAI-shaped providers that is the whole adapter, and it is
 already written.
 
+The Anthropic branch differs in five places, all inside `chat()`: the path,
+`x-api-key` in place of a bearer token, a required version header, `system`
+as a top-level field rather than the first message, and the reply at
+`content[0].text`. Twenty or thirty lines in one function.
+
+**802 confirmed on 2026-10-13 that he already holds accounts and billing at
+each provider.** So the only thing standing between here and a comparison is
+code, and the only code is that branch.
+
+⚠️ Provider APIs move. Read each one's current documentation when the time
+comes rather than implementing from the description above.
+
+**Do not write the branch before submission.** It is not a rules problem as
+long as the deployed build still runs on Nebius, but it would leave an
+unused, untested Anthropic path sitting in the repository through judging,
+where a judge reading the source will find it. No benefit before 2026-10-30.
+
 ---
 
 ## The experiment to run first, before any of this
