@@ -140,12 +140,17 @@ a model differing from itself.
 Three searches, roughly 60 credits, and it decides whether any of the rest is
 worth doing.
 
-**A free n=2 already exists.** The same Staten Island question was asked on
-2026-10-12 and again on 2026-10-13, and the model returned five keywords both
-times with overlapping territory and a different decomposition, plus one
-direction the first run never considered. Written up in `model-notes.md`. It
-does not measure the variance, but it rules out the assumption that there is
-none.
+**A free n=3 already exists, and it found something.** The same Staten Island
+question was asked three times across two days. Five keywords every time,
+with a stable core — rates, zoning, infrastructure — and a fifth slot that
+held a different concept in each run. More striking: the two runs that
+completed found **different events and reported different numbers**, and one
+direction that returned nothing on the first day found its event on the
+second, same date, same allowlisted domain.
+
+That last part matters for the design of any comparison. **A single
+direction's outcome is not stable**, so a model scored on one run could be
+scored on noise. Written up in `model-notes.md`.
 
 The 2026-10-11 finding that question shape drives reasoning depth is this
 experiment in miniature, with one run per condition.

@@ -99,21 +99,54 @@ One competing explanation is ruled out: `esd.ny.gov`, where the 2026-10-08
 source was found, **is** in `TRUSTED` in `evidence.py`. The allowlist did not
 shut that page out.
 
-**Counter-evidence, 2026-10-12.** Manhattan, "do immigrant protests make home
-prices higher". One direction was `home prices -> Federal Reserve emergency
-rate cut -> 2020-03-15`, searched with that date — **which is correct**, and
-`federalreserve.gov` is in the allowlist. It returned `NO_EVIDENCE` anyway.
+**Counter-evidence, 2026-10-12, overturned 2026-10-13.** Manhattan, "do
+immigrant protests make home prices higher". One direction was `home prices
+-> Federal Reserve emergency rate cut -> 2020-03-15`, searched with that date
+— **which is correct**, and `federalreserve.gov` is in the allowlist. It
+returned `NO_EVIDENCE` anyway, and this file recorded that as evidence
+against the guessed-month theory.
 
-So a guessed month is not sufficient to explain the misses: here is a correct
-date that found nothing. That run also missed four of six directions, a higher
-rate than any run before it. Something else is going on in the search or
-dating step that none of the current theories covers.
+**The next day the same direction found it.** Staten Island, 2026-10-13
+21:33:
 
-This direction is also the acceptance case fixed in advance by spec section 17
-(the Fed press-release URL `monetary20200315b.htm` must yield 2020-03-15). It
-failed here at the search or dating step rather than at the URL-reading step
-the acceptance case was written about, so it is not the same test — but it is
-close enough to be worth saying out loud rather than filing quietly.
+```
+EVENT   FOMC lowered the target range for the federal funds rate to
+        0 to 0.25 percent
+DATE    2020-03-15
+BASIS   quoted from the press release, citing its own URL
+SOURCE  federalreserve.gov
+        $538,000 -> $560,000 over the two windows, +4.09%
+```
+
+So the 2026-10-12 miss was **not systematic**. The same event, the same
+correct date, the same allowlisted domain, a different outcome one day
+apart. Whatever is happening, it varies run to run.
+
+The two queries were not identical, which is the one candidate mechanism
+on the table:
+
+| Run | Query | Outcome |
+| --- | --- | --- |
+| 10-12 | `Federal Reserve emergency rate cut March 15 2020` **plus** `Manhattan residential property sales` | nothing |
+| 10-13 | `Federal Reserve emergency rate cut March 2020` | found |
+
+The first appends a borough and an outcome to the event; the second asks for
+the event alone. **It is not the whole story**: the same 10-13 run searched
+`MTA Verrazzano-Narrows Bridge toll increase announcement 2023`, a bare
+event query with no tail, and found nothing.
+
+Looking across every success so far — the Fed cut, the New York State
+eviction moratorium expiry, the Harvey disaster declaration — all three are
+federal or state actions documented by a single press release. The misses
+are diffuser things: a toll increase, school ratings, a local rezoning. That
+is a pattern across six or seven cases and nothing more; it is written down
+to be checked, not believed.
+
+One detail worth not overstating: the date basis quotes a URL close to but
+not identical with the one spec section 17 fixed as its acceptance case. It
+may be a different release in the same series, or the model may have
+transcribed it loosely. Either way this is the search and dating path, not
+the URL-reading step the acceptance case was written about.
 
 **The mechanism is confirmed in code. The model's actual behaviour is not
 observed, because the build container cannot reach Nebius or Tavily.** Do not
@@ -185,7 +218,7 @@ question this raises is not how it looks but what it is ranked above.
 
 ---
 
-## The same question twice: the first n=2 we have
+## The same question three times
 
 2026-10-12 18:02 and 2026-10-13 21:19. Staten Island, **identical question**,
 "Will home prices in Staten Island go up next year?", one day apart. The
@@ -193,18 +226,38 @@ second run's evidence request never reached the server, so only the keywords
 and the paths can be compared — but those are the part nobody had two
 samples of.
 
-| 2026-10-12 | 2026-10-13 |
-| --- | --- |
-| mortgage rates | Staten Island |
-| Staten Island zoning | mortgage rates |
-| infrastructure investment | zoning |
-| local employment | zoning |
-| housing inventory | home prices |
+A third run at 21:33 completed, so there are now three samples of the
+keywords and two of the findings.
 
-**Five keywords both times, overlapping in territory and different in
-decomposition.** Interest rates, zoning and infrastructure appear in both.
-The second run split "Staten Island" off as a concept of its own and dropped
-local employment; the first bundled the place into "Staten Island zoning".
+| 10-12 18:02 | 10-13 21:19 | 10-13 21:33 |
+| --- | --- | --- |
+| mortgage rates | mortgage rates | interest rates |
+| Staten Island zoning | zoning | zoning reforms |
+| infrastructure investment | infrastructure | infrastructure |
+| local employment | Staten Island | Staten Island supply |
+| housing inventory | home prices | school quality |
+
+**Five keywords every time. A stable core and a moving edge.** Rates, zoning
+and infrastructure appear in all three, worded differently each time. The
+fifth slot is the unstable one: housing inventory, then home prices, then
+school quality — three different concepts in three runs, and school quality
+is a direction neither earlier run considered.
+
+**The two completed runs found different events and different numbers.**
+
+| Run | Event found | Change |
+| --- | --- | --- |
+| 10-12 | New York State eviction moratorium expires, 2022-01-15 | +7.29% |
+| 10-13 | FOMC cuts to 0–0.25 percent, 2020-03-15 | +4.09% |
+
+Same question, same borough, a day apart, and a reader would have been shown
+different evidence. Both are real, both are sourced, both are measured
+correctly. Nothing is wrong — but a reader who assumed a question has one
+answer would be surprised, and nothing on the page tells them otherwise.
+
+The withhold behaviour was steadier than the rest: 2 of 5 on the first run,
+1 of 5 on the third, and the first record withheld on both occasions for the
+same category, an event without an identifiable source.
 
 The paths differ too, and one direction is new:
 
