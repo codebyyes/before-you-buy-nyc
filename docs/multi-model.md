@@ -185,6 +185,30 @@ be stated with any result.
 
 ---
 
+## How the result gets reported — agreed 2026-10-13, before any data exists
+
+Written now, while nobody knows how any model will behave, because the frame
+that reads the result will be one of the models in it.
+
+**Report, ranked by the measured count:** attempts that reached the gate,
+withholds, the failure categories broken out by which of the five rules was
+broken, and the revision counts. Sort them. An unsorted table hides the
+finding, and ordering a measured number is presentation, not judgement — the
+same way this product sorts quarters and prints a percentage change.
+
+**Do not mark either end as the good one.** Whether a high withhold rate
+means a model is less disciplined or more willing to reach is not something
+the number settles. That is interpretation, and it is the part excluded.
+
+**Do not excuse any model, including whichever one is writing the report.**
+No "but Claude was probably handling a harder set of directions". The counts
+stand as counts.
+
+This is the rule the product already applies to events: lay it out, show the
+provenance, decline to conclude.
+
+---
+
 ## What it would and would not measure
 
 Worth writing down before anyone presents a result from it.
