@@ -39,7 +39,10 @@ needs. The apparatus was built for honesty and turns out to be an instrument.
 
 **The readout already exists too.** Every record on the page prints the
 keyword it set out from, the path, the query actually issued, and the state
-it ended in. That is the whole measurement. Nothing new has to be displayed.
+it ended in — and behind it the server already records whether the finding
+was reviewed, whether it passed, how many rewrites it took, and which of the
+gate's five rules it broke. That is the whole measurement. Nothing new has to
+be instrumented; the readings simply have to stop being thrown away.
 
 ---
 
@@ -122,6 +125,63 @@ worth doing.
 
 The 2026-10-11 finding that question shape drives reasoning depth is this
 experiment in miniature, with one run per condition.
+
+---
+
+## The better measurement, which is 802's and not mine
+
+**Which model tries hardest to get a conclusion past the referee, and how it
+behaves once stopped.**
+
+Everything needed is already recorded per record: `reviewed`, whether it
+passed, `revisions` (0, 1 or 2), and which of the gate's five questions it
+failed. Three things fall out of that:
+
+- **How often does this model attempt to smuggle a conclusion through?**
+- **Which rule does it break?** Causal language where only sequence holds, a
+  prediction, a claim stronger than the evidence, a missing source, a missing
+  window. Those are five distinguishable habits, not one score.
+- **What does it do when stopped?** Complying on the first rewrite and still
+  pushing on the second are different temperaments, and the revision count
+  separates them.
+
+This is far less confounded than counting how many events a model's
+directions turned up. That count depends on Tavily, on the 21 domains, on the
+extractor and on the subject. **This does not.** The gate is fixed, its five
+questions are fixed, the reviewer is fixed. It works even in a run where
+every direction came back empty, so long as something reached review.
+
+Three runs already on the record, before anyone set out to measure this:
+
+| Question | Reviewed | Withheld |
+| --- | --- | --- |
+| Remote work, Brooklyn | 3 | 1 |
+| Will prices rise next year, Staten Island | 5 | **2** |
+| Extreme weather elsewhere, Bronx | 4 | 1 |
+
+And the categories carry the pattern: one of the Staten Island withholds was
+for "a conclusion, prediction, recommendation or probability" — on the
+question that asked for a prediction. The instrument was already reading.
+
+### A correction to this file, 2026-10-13
+
+An earlier version of this document argued against running the comparison on
+the grounds that the models would probably converge and the result would be
+dull. 802's answer: **convergence is the finding.** Four companies' models
+producing broadly the same directions under one locked question is a real
+fact about how alike frontier models are under constraint; divergence is a
+real fact too. Either way there is a result.
+
+The argument was also inconsistent with the project. Using an untested
+prediction as a reason not to gather evidence is the exact move this system
+exists to stop, and it was made one day after writing that a project about
+claims not outrunning evidence should not blur that line. Recorded here
+rather than quietly deleted, because the reasoning was wrong in a way worth
+being able to see.
+
+What survives from it: the cost is real (a minimal study is close to two
+months of the free monthly allowance), and the confounds below still have to
+be stated with any result.
 
 ---
 
