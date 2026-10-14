@@ -137,8 +137,29 @@ wildly between runs, a cross-model comparison is meaningless until the noise
 floor is known — differences between models would be indistinguishable from
 a model differing from itself.
 
-Three searches, roughly 60 credits, and it decides whether any of the rest is
-worth doing.
+**`tools/variance.py` does this.** It asks the explorer the same question N
+times and prints which concepts held across every run and which appeared in
+only some. It spends model tokens and no Tavily credit, because only the
+explore step runs.
+
+```
+python tools/variance.py                    # the arm the product runs
+python tools/variance.py --temperature 0    # the discriminating arm
+```
+
+Run both. If the variation collapses at zero, it was sampling. If it
+survives, it was not, and 802's reading - that each instantiation is its own
+thing with its own ordering - has its strongest evidence. The request the
+product sends carries no temperature at all, so the default arm inherits
+whatever the service uses, and that is usually well above zero.
+
+The tool builds its own request rather than calling `chat()`, so
+`explorer.py` is untouched; it imports the real prompt and the real context
+block, so what it measures is the real thing. It has been exercised against
+a stubbed endpoint and **never against the live service** - this container
+has neither the key nor a route to Nebius.
+
+🔴 Not before 2026-10-30.
 
 **A free n=3 already exists, and it found something.** The same Staten Island
 question was asked three times across two days. Five keywords every time,
