@@ -4,7 +4,7 @@ Rewritten 2026-10-25. Three minutes or shorter, public on YouTube, and it has
 to show the project working **and** how Nebius Token Factory and NVIDIA
 Nemotron were used.
 
-**482 words. Whether that fits depends entirely on the voice, not on the
+**480 words. Whether that fits depends entirely on the voice, not on the
 script.** At 160 words a minute it runs 2:58. At 175 it runs 2:43. At a slow
 145 it runs 3:17, which is over.
 
@@ -124,15 +124,28 @@ up next year?*
 
 ---
 
-### 5 · And they are different every time 🔴 **what 802 asked for** — 0:56 to 1:18 (59 words)
+### 5 · And they are different every time 🔴 **what 802 asked for** — 0:56 to 1:18 (56 words)
 
-**On screen:** two keyword trays from different runs, side by side or cut
-one to the other. **You already have these screenshots** — 10-12, 10-13 and
-25-10 each produced a different set.
+**On screen:** three keyword trays of the same question from different runs.
+**802 has already composited these** — three Staten Island runs, five
+keywords each, and no two sets alike.
+
+🔴 **Rates and zoning are the two that appear in all three, so the narration
+names only those.** Infrastructure is in two of the three; the third carries
+`Verrazzano Bridge tolls` and `North Shore redevelopment` instead — the same
+idea under other names, which would make the line false to anyone who paused
+on that frame.
+
+The question on screen here is the Staten Island one, not the question in
+shot 3. **That is a change of example, not a change of claim**: the three
+trays are the same question as each other, which is the whole point of the
+shot. 802 called this on 2026-10-25 and he is right — this set is the
+stronger picture anyway, five keywords and two stable concepts against three
+and one.
 
 > Ask again tomorrow and the list is not the same. We have asked this one
-> eight times. Interest rates, zoning and infrastructure come back every
-> time. The rest moves. Two completed runs found different events and
+> eight times. Rates and zoning come back every time. The rest moves. Two
+> completed runs found different events and
 > different figures, both sourced. That is not a fault. Asking again is
 > closer to consulting a second adviser than to checking an answer.
 
@@ -284,11 +297,11 @@ video is the most watched thing here, so it holds to it too.
 ---
 
 **鏡頭 5 · 0:56–1:18 — 而且每次都不一樣** 🔴 **你要的那一段**
-畫面：兩次不同執行的關鍵字方框，並排或接著切
-**截圖你已經有了**——10/12、10/13、10/25 三次各是不同的一組
+畫面：**同一題三次執行的關鍵字方框**（802 已經合成好了）
+三次 Staten Island，各五個關鍵字，沒有兩組一樣
 
 > 明天再問同一題，清單就不一樣。我們問過八次。
-> 利率、分區、基礎建設每次都在。其他的會變。
+> 利率和分區每次都在。其他的會變。
 > 兩次跑完的執行**找到不同的事件、給出不同的數字**，兩個都有來源，兩個都用同樣的方式測量。
 > **這不是故障。再問一次比較像多找一位顧問，不是去核對答案。**
 
