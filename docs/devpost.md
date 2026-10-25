@@ -1,7 +1,15 @@
 # Devpost submission material
 
-Everything needed to fill the submission form. Written 2026-10-11.
-Submissions close 2026-10-30; our own target is 2026-10-15.
+Everything needed to fill the submission form. Written 2026-10-11, last
+revised 2026-10-26. Submissions close 2026-10-30, 10:00 PT.
+
+**The demo video is done**: https://www.youtube.com/watch?v=qBgl_KVVWsg —
+2:40, public, uploaded 2026-10-26. YouTube classified it as a Short because
+it is vertical and under three minutes; the `watch?v=` form of the same URL
+opens it in the ordinary player and is the one to give Devpost.
+
+👉 **[`docs/SUBMIT.md`](SUBMIT.md) is the field-by-field paste sheet.** This
+file is the reasoning behind it.
 
 **Track:** Best Apps and Agents
 
@@ -55,8 +63,8 @@ explanation of where the NVIDIA models and Token Factory were used ✅, a
 track selection ✅, a detailed project description ✅ (below), **feedback on
 Nebius and NVIDIA tools ✅ written, see the section below — this one is
 required, not a bonus**, and an explanation of pre-existing work (confirmed
-not to apply). Still owed by 802: the demo video, under three minutes, public
-on YouTube — and the submission itself.
+not to apply), and a public demo video under three minutes on YouTube ✅.
+**Still owed: the submission itself.**
 
 ⚠️ **Where the rules can be checked.** `nebiusglobalaihackathon.devpost.com`
 is not reachable from the session this file is written in: a direct fetch is
@@ -216,14 +224,10 @@ whose entire job is to pass or block, that terseness is exactly right, and a
 
 ## Still owed by 802
 
-- YouTube demo video, under three minutes, publicly visible, no third-party
-  trademarks or copyrighted music. The video is a video; the parts showing the
-  program running are screenshots taken while it runs.
-- Submit on Devpost.
-- Confirm screenshots for Bronx, Queens and Staten Island.
-
-The demo script is written only after the whole thing has been verified, not
-before.
+- ✅ ~~YouTube demo video~~ — done 2026-10-26, 2:40, public.
+- 🔴 **Submit on Devpost.** The paste sheet is [`docs/SUBMIT.md`](SUBMIT.md).
+- 🟢 After the deadline: upgrade Render off the free tier before judging opens
+  2026-12-01, so the site does not sleep on a judge.
 
 ---
 
@@ -245,6 +249,20 @@ worth is exactly the kind of answer nobody can check and everybody acts on.
 We decided that was the specification rather than the obstacle. Instead of
 building a model that answers carefully, we built a system in which the model
 **is not permitted to answer at all**. It may look. It may not conclude.
+
+The person we built it for is specific: **someone deciding whether to buy or
+sell, surrounded by people who are certain and cannot show their work.** The
+agent, the forum, the relative, the chatbot — each will tell you what happens
+next, and none will hand you anything you can check. What this gives back
+instead is narrow and checkable: a real event, its source, and what the city's
+own sales records did in the twelve months after it. You decide.
+
+And because the system shows the route it took rather than the answer it
+reached, **two runs can be compared.** Two conclusions cannot be usefully
+compared: they either agree or they do not, and you learn nothing about why.
+Two routes can be read side by side. That is a property of showing the
+reasoning instead of the verdict, and it is not available to any system whose
+output is an answer.
 
 **New York housing is where we proved that, not what we set out to build.**
 The method asks two things of a domain and nothing else: official records
@@ -276,6 +294,24 @@ in the twelve months before and after that date.
 
 Then it stops. It does not tell you whether to buy.
 
+**The route is on the page, and it was written before the search ran.** For
+each direction the model first writes down the path it intends to take, from
+one of its own keywords to the kind of event it expects to find, as terms
+joined by arrows:
+
+```
+coffee shop openings -> zoning policy change -> NYC ground-floor retail zoning amendment
+black clothing       -> protest participation -> George Floyd protests June 2020 NYC
+```
+
+This is not a chain of thought. A chain of thought is a model's account of its
+own insides, produced after the fact and different every time you ask. A route
+here is a **commitment**: stated before the search, with the keywords it starts
+from then locked in code, its wording run through the same review as the
+finding, and left standing on the page whether or not the search supported it.
+A direction that went looking and found nothing still shows you where it
+went.
+
 **The refusals are the product**, and all four are enforced in code rather
 than requested in a prompt:
 
@@ -299,15 +335,30 @@ the data can measure, and a finding withheld by review.
 ## How we built it
 
 **Two NVIDIA Nemotron models on Nebius Token Factory, doing different jobs,
-and the second one's job is to block the first.**
+and the second one's job is to hold a ruler against the first one's
+sentence.**
 
 `nvidia/nemotron-3-super-120b-a12b` explores: it names the concepts, sets the
 research directions, and later reads search results to date an event against
 its source. `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B` reviews: it reads each
 measured finding as a reader would meet it and answers five fixed questions
-about **how it is worded** — never about whether it is true. A finding may be
-rewritten twice; still failing means it is withheld, with its failure
-category named and the blocked text not shown.
+about **how it is worded** — never about whether it is true.
+
+**Its entire output is a verdict** — `PASS`, or `FAIL` and the numbers of the
+questions that failed. Four tokens. It never rewrites anything and never gives
+a reason. What goes back is the finding's own sentence, handed to the
+**Explorer** along with which line it crossed, under an instruction ending
+*you are changing how this is said, nothing else*. A finding may be rewritten
+twice; still failing means it is withheld, with its failure category named and
+the blocked text not shown.
+
+So this is not one model policing another. It is a model being shown what it
+just wrote. The concern it answers is not that the Explorer lies — it is that
+a capable model is good at making a sequence sound like a cause and evidence
+sound like it carries more than it does. Two of the five questions are aimed
+exactly there. Truth is checked elsewhere, and not by a model at all: **no
+source, no publication**, enforced in code. Asking a second model whether
+something is true would only be guessing twice.
 
 One OpenAI-compatible endpoint serving both is what made the split practical:
 assigning the narrow review job to a small fast model cost one line of
