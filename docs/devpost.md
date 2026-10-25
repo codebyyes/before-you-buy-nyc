@@ -25,16 +25,47 @@ $100 × 10 winners plus a swag pack** (the feedback section below). Track
 winner is an NVIDIA Jetson Orin Nano; grand prizes are $20,000 / $10,000 /
 $6,000.
 
-Judging criteria, in the sponsor's words: **Technological Implementation**,
-**Design** (whether it is a complete, coherent product rather than a proof of
-concept), **Potential Impact**, **Quality of the Idea**. The Design criterion
-is why all five boroughs are enabled rather than one — a single borough reads
-as a proof of concept, whatever the specification originally said.
+Judging criteria: **Technological Implementation**, **Design** (whether it is
+a complete, coherent product rather than a proof of concept), **Potential
+Impact**, **Quality of the Idea**. The Design criterion is why all five
+boroughs are enabled rather than one — a single borough reads as a proof of
+concept, whatever the specification originally said.
 
-Requirements already satisfied: public repo, Apache-2.0 licence detected by
-GitHub, README with setup and run instructions, working demo URL, and the
-explanation of where the NVIDIA models and Token Factory were used. Still owed
-by 802: the demo video and the submission itself.
+Two of the four are recorded verbatim, read off the official rules page on
+2026-10-25. They are quoted because each one rules out a way of writing that
+would otherwise be tempting:
+
+> **Potential Impact:** Does the project make a credible, specific case for
+> solving a real problem for a real audience and does the solution actually
+> address it **based on what's demonstrated**?
+
+> **Quality of the Idea:** Is this a **creative, non-obvious use** of Nebius
+> Token Factory or AI Cloud model(s), and NVIDIA Nemotron and does the team
+> show genuine understanding of the problem space?
+
+*Based on what's demonstrated* is the one to keep in view while writing. It
+means the impact argument is made from the twenty-odd runs this project has
+actually done, not from the domains it could extend to. Arguing the larger
+case there would be a claim outrunning its evidence in the one section a
+judge is reading for exactly that.
+
+**Submission requirements, all of them.** Public repo with an OSI licence and
+a README ✅, Apache-2.0 detected by GitHub ✅, working demo URL ✅, an
+explanation of where the NVIDIA models and Token Factory were used ✅, a
+track selection ✅, a detailed project description ✅ (below), **feedback on
+Nebius and NVIDIA tools ✅ written, see the section below — this one is
+required, not a bonus**, and an explanation of pre-existing work (confirmed
+not to apply). Still owed by 802: the demo video, under three minutes, public
+on YouTube — and the submission itself.
+
+⚠️ **Where the rules can be checked.** `nebiusglobalaihackathon.devpost.com`
+is not reachable from the session this file is written in: a direct fetch is
+refused by the allowlist and the domain does not surface in web search at
+all. Third-party aggregator pages do, and they are not the rules — the
+summary that said the criteria had no per-criterion wording was one of those,
+and it was wrong. **Anything in this section came from 802 or from the frame
+that can reach the page, and anything that cannot be sourced that way should
+be marked unverified rather than filled in from a summary site.**
 
 Two requirements confirmed **not** to apply: the project was begun after the
 submission period opened, so no "significant updates" summary is needed; and
@@ -140,10 +171,22 @@ event; any domain meeting those two conditions fits the same method.
 
 ---
 
-## Platform feedback — eligible for a bonus award
+## Platform feedback — REQUIRED, not optional
 
-The rules make the feedback section itself eligible for a bonus, so it is
-written properly rather than left blank. Two findings from live use:
+🔴 **This is a submission requirement, in the same list as the video and the
+repository**, and the rules word it as an instruction:
+
+> Provide feedback on Nebius Token Factory, AI Cloud and any NVIDIA tools,
+> models, or technologies used.
+
+A submission that leaves it blank is incomplete. **Fill this section in.**
+
+Separately, and only after that: completing it also enters the **Most
+Valuable Feedback** award, $100 and a swag pack, ten winners. That is a
+reason to write it well, not the reason to write it at all. This file called
+it "eligible for a bonus award" until 2026-10-25, which read as optional.
+
+Two findings from live use:
 
 **Silent empty responses from reasoning models.** Nemotron 3 Super spends
 tokens reasoning before answering, and the reasoning is billed against the
