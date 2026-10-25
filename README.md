@@ -28,6 +28,31 @@ It does not predict. It does not recommend. It does not state probabilities. It
 never says one thing caused another — it says what followed, and shows the
 source and the window so the reader can judge for themselves.
 
+### The route is the point
+
+Before any search runs, the model writes down the route it intends to take —
+from one of its own keywords, through whatever reasoning it is doing, to the
+kind of event it expects to find. It comes out as terms joined by arrows, and
+it is printed on the page next to whatever the search actually returned:
+
+```
+coffee shop openings -> zoning policy change -> NYC ground-floor retail zoning amendment
+black clothing       -> protest participation -> George Floyd protests June 2020 NYC
+new parks            -> Hudson Yards park opening -> home prices
+```
+
+**This is not a chain of thought.** A chain of thought is a model's account of
+its own insides, produced after the fact, unverifiable, and different every
+time you ask for it. A route here is a **commitment**: it is stated before the
+search, the keywords it starts from are then locked in code, its wording goes
+through the same review as the finding, and it stays on the page whether or
+not the search supported it. A direction that went looking and came back empty
+shows you where it went looking.
+
+That is what makes two runs comparable. You cannot compare two conclusions
+usefully — they are either the same or they disagree and you learn nothing
+about why. You can compare two routes.
+
 ### The refusals are the product
 
 Four things the system will not do. Each is enforced in code, not requested in
@@ -220,6 +245,25 @@ date, the source and every figure are out of its reach. Still failing means the
 finding is withheld, with its failure categories named and the blocked text not
 reproduced.
 
+**The second model is a ruler, not a judge, and the first model does the
+rewriting.** The reviewer's entire output is a verdict: `PASS`, or `FAIL` and
+the numbers of the questions that failed. Four tokens. It never rewrites
+anything, never offers a reason, and never re-decides whether a direction was
+worth taking. What goes back is the finding's own sentence, handed to the
+**Explorer** (`explorer.py:570`) along with which line it crossed, under an
+instruction ending *you are changing how this is said, nothing else*.
+
+So the design is not one model policing another. It is a model being shown
+what it just wrote. The concern it answers is not that the Explorer lies — it
+is that a capable model is good at making a sequence sound like a cause and
+evidence sound like it carries more than it does. Questions 2 and 5 are aimed
+exactly there.
+
+Truth is checked, but not by a model: **no source, no publication**, enforced
+in code. That is a mechanical gate, not a judgement. Asking a second model
+whether something is true would only be guessing twice, since it has no more
+access to the world than the first one does.
+
 The gate blocked a real finding on its first live run, and the wording of a
 withheld finding never apologises: the test suite scans every reason string for
 apologetic language and fails the build if it appears. A withheld finding is
@@ -370,6 +414,21 @@ epistemic honesty cannot be shy about its own.
 - **Coverage begins in 2016 and measurement in 2017.** Earlier events — the
   2008 financial crisis among them — can be found and dated but not measured,
   and are reported as such rather than omitted.
+- **A date basis can be the document's date rather than the event's.** The
+  gate asks whether a source is identifiable, not whether the quoted date
+  basis is a statement *about the event*. One run dated a store announcement
+  from the article's publication metadata and passed. A sixth question could
+  catch it; it is not in this version.
+- **We found a contradiction in our own prompt and left it in.** The explorer
+  is told not to end a path at a trend, and thirty-four lines later was shown
+  an example path ending at one. It was corrected on 2026-10-25, together with
+  a separate drift: the instruction had quietly changed from *the chain of
+  reasoning that led you there* to *the route from those keywords to the
+  event* during an unrelated refactor on 2026-10-11, and the two-term paths
+  that followed were the model giving exactly what it was then asked for.
+  Both are recorded in [`docs/model-notes.md`](docs/model-notes.md) with the
+  commits. **The lesson generalises: a prompt is code that nothing type-checks,
+  and a wording change inside a large commit is invisible to review.**
 
 ---
 
