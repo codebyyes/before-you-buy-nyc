@@ -335,6 +335,42 @@ def chat(model, system, user, max_tokens=MAX_TOKENS):
 # ---------------------------------------------------------------------------
 
 
+def objects_in(text):
+    """Every balanced {...} span in the text, in the order they begin.
+
+    Braces are counted rather than the first and last one taken, because a
+    reasoning model writes before it answers and that prose can contain a
+    brace of its own. Taking the outermost pair then spans from somebody's
+    aside to the end of the real object and parses as nothing. Quoted strings
+    and their escapes are skipped so that a brace inside a value cannot throw
+    the count off.
+    """
+    depth = 0
+    start = -1
+    in_string = False
+    escaped = False
+    for i, ch in enumerate(text):
+        if in_string:
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == '"':
+                in_string = False
+            continue
+        if ch == '"':
+            in_string = True
+        elif ch == "{":
+            if depth == 0:
+                start = i
+            depth += 1
+        elif ch == "}":
+            if depth:
+                depth -= 1
+                if depth == 0 and start >= 0:
+                    yield text[start:i + 1]
+
+
 def extract_json(text):
     """The verified responses are bare JSON. This tolerates a wrapper anyway."""
     text = text.strip()
@@ -343,14 +379,23 @@ def extract_json(text):
     except ValueError:
         pass
 
-    # A fenced block, or reasoning text around the object.
-    start = text.find("{")
-    end = text.rfind("}")
-    if start >= 0 and end > start:
+    # A fenced block, or reasoning text around the object. Each balanced span
+    # is tried in turn and the first one that is a result object wins: a model
+    # that thinks out loud may leave several, and the plan is not always the
+    # first of them.
+    fallback = None
+    for span in objects_in(text):
         try:
-            return json.loads(text[start:end + 1])
+            parsed = json.loads(span)
         except ValueError:
-            pass
+            continue
+        if isinstance(parsed, dict):
+            if "keywords" in parsed or "found" in parsed or "event" in parsed:
+                return parsed
+            if fallback is None:
+                fallback = parsed
+    if fallback is not None:
+        return fallback
     raise Unavailable("The model's response was not valid JSON.")
 
 
