@@ -4,7 +4,7 @@ Rewritten 2026-10-25. Three minutes or shorter, public on YouTube, and it has
 to show the project working **and** how Nebius Token Factory and NVIDIA
 Nemotron were used.
 
-414 words of narration. Under three minutes at any sane pace: 2:51 at a
+423 words of narration. Under three minutes at any sane pace: 2:55 at a
 slow 145 words a minute, 2:30 at a brisk 165. Do not
 pad to reach three minutes; shorter is better than stretched.
 
@@ -19,6 +19,14 @@ are now the spine of the video rather than details inside it:
 - **We cannot promise the model never invents an event.** That is stated
   plainly, and then what the architecture does about it is shown rather than
   claimed.
+- **It does not refuse you, and it does not conclude for you.** You may ask
+  it anything, including next year. What comes back is what already happened,
+  sourced. Saying "the system will not answer that" made it sound broken;
+  802 corrected it on 10-25.
+- **The second model is a mirror, not a judge.** It emits a verdict and
+  nothing else. The first model reads its own sentence back and rewrites it.
+  See the note under shot 7 before writing any of this into the English
+  submission materials.
 
 ---
 
@@ -42,8 +50,8 @@ verifies · Humans decide*.
 
 > Ask any AI what your home will be worth next year, and it will tell you.
 > That is the problem. A confident answer nobody can check is the one
-> everybody acts on. This is built the other way round. The AI may look. It
-> may not conclude.
+> everybody acts on. The AI here may look. But what it hands you is not a
+> conclusion. It is information you can check yourself.
 
 ---
 
@@ -54,7 +62,7 @@ chart, then the dataset lines at the foot of the column.
 
 > Pick a New York City borough. Every figure here is computed in Python from
 > the city's own sales records, live. The page prints its dataset names,
-> refresh dates and filters, so you can check it yourself.
+> refresh dates and filters.
 
 🔴 Hold two seconds on the dataset lines. That is the shot that proves the
 numbers are traceable.
@@ -66,8 +74,9 @@ numbers are traceable.
 **On screen:** the question box reading *Will home prices in Staten Island go
 up next year?*
 
-> Now the question a buyer actually asks. The system will not answer it.
-> Watch what it does instead.
+> Now the question a buyer actually asks. Ask it anything, even this. It will
+> not refuse you, and it will not predict for you. It answers with what has
+> already happened, every finding sourced.
 
 ---
 
@@ -77,7 +86,7 @@ up next year?*
 
 > These five concepts are not search terms anybody typed. The model read the
 > question and decided what it is about, and how many. Everything below
-> starts from one of these and from nothing else.
+> starts from one of these and nothing else.
 
 ---
 
@@ -102,7 +111,7 @@ with the searched line underneath.
 
 > Once named, the concepts are fixed in code. The model must search from its
 > own list. If something more interesting appears halfway through, it cannot
-> go after it. Anything else is dropped before a single search runs.
+> go after it.
 
 ---
 
@@ -113,11 +122,12 @@ review*, and the reason text underneath.
 
 > Can the model invent an event? We cannot promise it never does. We have
 > watched it name a boutique that does not appear to exist. But an invented
-> event finds no source, and nothing without a source is published. That is
-> where truth gets checked, and no model does the checking. A second model
-> asked whether something is true would only be guessing twice. So it asks
-> what it can actually see: five fixed questions about how a finding is
-> worded. This one carried a prediction. Rewritten twice. Still withheld.
+> event finds no source, and without a source nothing is published. It is
+> never listed as a historical event at all. Then every finding goes to a
+> second model. It answers only pass or fail, and which line was crossed.
+> The first model gets its own sentence back, and rewrites it itself. Nobody
+> tells it what to say. This one carried a prediction. Rewritten
+> twice. Still withheld.
 
 🔴 Zoom on the reason line: *a conclusion, prediction, recommendation or
 probability.* That is the whole product in one sentence, and it happened on
@@ -130,7 +140,7 @@ its own.
 **On screen:** the record that reached `RESULT`. Event, date, date basis, the
 clickable source, and the before and after table.
 
-> Here is what does get through. A real event, the date confirmed against
+> Here is what gets through. A real event, the date confirmed against
 > the sentence it came from, a source you can click, and the median price
 > twelve months before and after. Not what caused it. What followed it.
 
@@ -143,8 +153,8 @@ words *Nebius Token Factory* are printed there — then the header.
 
 > Two NVIDIA Nemotron models on Nebius Token Factory. One explores, one
 > reviews, neither sees the sales data. Housing is where we proved this, not
-> what we set out to build. The method needs two things from any field:
-> official records, and an outcome measurable against a dated event.
+> what we set out to build. It needs two things from any field: official
+> records, and an outcome measurable against a dated event.
 > AI explores. Evidence verifies. Humans decide.
 
 🔴 This shot is what satisfies the rule about showing where Token Factory and
@@ -186,7 +196,7 @@ video is the most watched thing here, so it holds to it too.
 
 > 你去問任何一個 AI 你的房子明年值多少，它都會回答你。**那就是問題。**
 > 一個沒人查得了的肯定答案，正是每個人會照著做的那一個。
-> 這個產品反過來做。**AI 可以看。但它不可以下結論。**
+> **AI 可以看。但它給你的不是結論，是你可以自己去查的資訊。**
 
 ---
 
@@ -195,7 +205,7 @@ video is the most watched thing here, so it holds to it too.
 
 > 選一個紐約市行政區。這裡每個數字都是 Python 從城市自己的成交紀錄即時算出來的。
 > 按官方類別的中位價。成交筆數。五年的季度。
-> 這一頁印出自己的資料集名稱、更新日期和篩選條件，**所以你可以自己查。**
+> 這一頁印出自己的資料集名稱、更新日期和篩選條件。
 
 ---
 
@@ -203,7 +213,8 @@ video is the most watched thing here, so it holds to it too.
 畫面：問題框
 
 > 現在換買家真正會問的問題。明年會不會漲。
-> **這套系統不會回答這個。看它做了什麼。**
+> **你可以問任何問題，連這一個都可以問。它不會拒絕你，也不會預測你。**
+> 它回給你的是**已經發生過的事**，而每一筆放出來的都有來源。
 
 ---
 
@@ -231,7 +242,6 @@ video is the most watched thing here, so it holds to it too.
 
 > 一旦命名，這些概念就被鎖在程式裡。模型只能從自己這份清單出發。
 > **半路上出現更有意思的東西，它也不能追過去。**
-> 從別的地方出發的方向，在任何搜尋發生之前就被丟掉。
 
 ---
 
@@ -240,21 +250,37 @@ video is the most watched thing here, so it holds to it too.
 
 > 模型會不會編出一個事件？**我們不能保證它永遠不會。**
 > 我們親眼看過它說出一家查不到的精品店。
-> 但編出來的事件找不到來源，**而沒有來源的東西不會被發表**。
-> **真假是在那裡被檢查的，而檢查它的不是一個模型。**
-> 一個模型去問另一個模型「這是不是真的」，只是猜了兩次。
-> 所以它問它真正看得見的東西：**五個固定問題，只問措辭怎麼寫的。**
+> 但編出來的事件找不到來源，**而沒有來源的東西不會被發表**，
+> **它根本不會被列為一個歷史事件。**
+> 然後每一筆發現都會送給第二個模型，它只回答通過或不通過，以及越過了哪一條。
+> **第一個模型拿回自己寫的那句話，必須自己重寫。沒有人告訴它該怎麼寫。**
 > 這一筆因為夾帶預測被擋下。重寫兩次。還是沒放出來。
 
-🔴 **為什麼只檢查措辭、不檢查真假**（802 的理由，比規格書那版更銳利）：
+🔴 **第二隻 AI 到底是什麼**（802 的設計原意，2026-10-25 口述，影片用這一版）
 
-規格第 9 節給的理由是避免重複、拖慢、把判斷偷偷還給 AI。802 的講法更直接——
-**一個模型去審另一個模型的真假，自己也沒有通往現實的特權，那是猜兩次。**
-第一支 AI 如果鐵了心往幻覺跑，再疊幾層模型審查都是浪費。
+當初設的理由是**怕第一支 AI 太會自圓其說**——不是怕它說謊，是怕它把順序講成
+因果、把證據講得比它承載的多。而對策不是去抓它，是**讓它自己意識到自己在哪個
+方向**。
 
-而真假其實**有**被檢查，只是不由模型檢查：**沒有來源就不會被發表。**
-那是一道機械的門，不是一個判斷。審查員負責的是另一種失敗——
-事情是真的、來源也有，但話講得比證據大。
+程式真的是這樣跑的（`explorer.py` 544–589）：第二個模型的全部輸出只有
+`PASS`，或者 `FAIL` 加幾個數字——四個 token，不改字、不重寫、不給理由。
+退回去的時候，收到東西的是**第一支 AI 自己**（第 570 行用 `EXPLORER_MODEL`），
+它拿到的是「被退的是第幾條」加上「它自己寫的那句話，原封不動」，附帶指示的最後
+一句是 *You are changing how this is said, nothing else.*
+
+**所以主角是第一支 AI，不是審查員。** 審查員是舉鏡子的那隻手。五個問題裡
+第 2、5 條（順序不准講成因果、話不准比證據大）就是衝著自圓其說來的，另外三條
+是結構性的。
+
+⚠️ **822 在 10/25 把主角寫反過一次**，寫成「審查員去看它看得見的東西」。
+從程式讀回去猜設計原意，猜錯的方向剛好是最常見的那個（AI 互相監督）。
+寫英文報告的時候不要再滑回去。
+
+💾 **另一條理由，影片砍掉但留著給英文說明報告用**：模型去審另一個模型的真假，
+自己也沒有通往現實的特權，那是猜兩次；第一支 AI 鐵了心往幻覺跑，疊幾層模型
+都是浪費。真假是由**來源要求**檢查的，那是一道機械的門，不是一個判斷。
+這條跟上面那條不衝突——一條講為什麼不查真假，一條講它到底在做什麼。
+影片只塞得下一條，報告塞得下兩條。
 
 ⚠️ 802 問對了，原本那句寫成「讀過每一筆發現」太寬。
 **只有有事件、有日期、算得出價格的那幾筆才送審**；查無證據、超出範圍、
@@ -280,7 +306,7 @@ video is the most watched thing here, so it holds to it too.
 > 兩個 NVIDIA Nemotron 模型，在 Nebius Token Factory 上。一個探索，一個審查。
 > **兩個都拿不到成交資料。**
 > 住宅是我們證明它的地方，不是我們想做的東西。
-> 這套方法只跟任何領域要兩件事：**可追溯的官方紀錄，以及一個能對有日期的事件去測量的結果。**
+> 它只跟任何領域要兩件事：**可追溯的官方紀錄，以及一個能對有日期的事件去測量的結果。**
 > AI explores. Evidence verifies. Humans decide.
 
 🔴 **不要把模型 ID 裁掉**——那一格就是滿足比賽規則的地方。
