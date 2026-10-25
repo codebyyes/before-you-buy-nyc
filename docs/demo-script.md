@@ -4,7 +4,7 @@ Rewritten 2026-10-25. Three minutes or shorter, public on YouTube, and it has
 to show the project working **and** how Nebius Token Factory and NVIDIA
 Nemotron were used.
 
-403 words of narration. Under three minutes at any sane pace: 2:47 at a
+412 words of narration. Under three minutes at any sane pace: 2:50 at a
 slow 145 words a minute, 2:27 at a brisk 165. Do not
 pad to reach three minutes; shorter is better than stretched.
 
@@ -42,8 +42,8 @@ verifies · Humans decide*.
 
 > Ask any AI what your home will be worth next year, and it will tell you.
 > That is the problem. A confident answer nobody can check is the one
-> everybody acts on. Before You Buy NYC is built the other way round. The AI
-> may look. It may not conclude.
+> everybody acts on. This is built the other way round. The AI may look. It
+> may not conclude.
 
 ---
 
@@ -115,9 +115,10 @@ review*, and the reason text underneath.
 > Can the model invent an event? We cannot promise it never does. We have
 > watched it name a boutique that does not appear to exist. What we can show
 > is what happens next. An invented event finds no source, so it is never
-> published, and a second model reads every finding first, checking only how
-> it is worded. This one was blocked for carrying a prediction. Rewritten
-> twice. Still withheld.
+> published. And every finding on its way to being shown goes to a second
+> model first, which asks five fixed questions about how it is worded, never
+> whether it is true. This one carried a prediction. Rewritten twice. Still
+> withheld.
 
 🔴 Zoom on the reason line: *a conclusion, prediction, recommendation or
 probability.* That is the whole product in one sentence, and it happened on
@@ -132,8 +133,8 @@ clickable source, and the before and after table.
 
 > Here is what does get through. A real event, the date confirmed against
 > the sentence it came from, a government source you can click, and the
-> median sale price twelve months before and after. Not what caused it.
-> What followed it.
+> median price twelve months before and after. Not what caused it. What
+> followed it.
 
 ---
 
@@ -242,8 +243,14 @@ video is the most watched thing here, so it holds to it too.
 > 模型會不會編出一個事件？**我們不能保證它永遠不會。**
 > 我們親眼看過它說出一家查不到的精品店。
 > **我們能給你看的是接下來發生什麼。** 編出來的事件找不到來源，所以永遠不會被發表。
-> 而且第二個模型會先讀過每一筆發現，只檢查**措辭**。
+> 而且沒有東西會沒被讀過就到你面前：**每一筆即將被展示的發現**，都會先送給第二個模型，
+> 它用**五個固定問題**檢查措辭，從不檢查事情是不是真的。
 > 這一筆因為夾帶預測被擋下。重寫兩次。還是沒放出來。
+
+⚠️ 802 問對了，原本那句寫成「讀過每一筆發現」太寬。
+**只有有事件、有日期、算得出價格的那幾筆才送審**；查無證據、超出範圍、
+算不出來的，在閘門之前就跳出去了。規格是刻意這樣設計的——沒有找到東西的
+記錄沒有東西可以講過頭。
 
 🔴 把那句 `a conclusion, prediction, recommendation or probability` 放大。
 
