@@ -457,6 +457,63 @@ nothing despite naming two real, dated, well-documented park openings. If they
 return measured results, the pattern is wrong. 802 has the screenshot of the
 finished run; this note was written before reading it.
 
+### The prompt contradicts itself about where a path may end
+
+Found 2026-10-25 while answering 802's question about why some paths are two
+terms with no middle step. He was right that it was odd. Three things, and
+only the third is a defect.
+
+**One: nothing requires a middle step.** The whole definition of a path is one
+clause, `explorer.py:156` — *"the route from those keywords to the event, as
+terms joined by arrows"*. No minimum length. The only place three terms appear
+is the JSON template's `"... -> ... -> ..."`, which is a shape, not a rule.
+Compare the keyword lock, which is enforced in `parse_plan()`. Path length is
+enforced nowhere, so a two-term path is not the model disobeying.
+
+**Two: the instruction is lopsided.** Lines 117-130 are fourteen lines about
+where a path must *end* — must be a dated occasion, a trend is not an event,
+stopped too early versus gone far enough, with two worked examples. The route
+itself gets that single clause. A model optimising for what it is actually
+pressed on will write the shortest path whose last term is dateable. That is
+what run 4 did, and run 4 found the most. Some of its short paths also had no
+distance to cover: `coffee shop openings -> Starbucks Brooklyn opening 2018`
+is a concept and an instance of that concept, with nothing in between to say.
+
+**Three, the defect: the rule and the example disagree.** Line 124-127:
+
+> A trend is not an event. "Hiring grew", "prices rose", "talent surged",
+> **"the market cooled"** all describe something spread over months... If your
+> path ends at a trend, you have stopped one step too early.
+
+Thirty-four lines later, at 159-161, as the illustration of permitted
+distance:
+
+> A path may be distant. From the keyword "black clothing", the path
+> **"Black clothing -> protest movements -> market instability"** is valid if
+> you believe it is worth searching.
+
+`market instability` is a trend, and `the market cooled` is in the forbidden
+list above it. **The prompt states a rule and then holds up an example that
+breaks it.** That the two disagree is a fact anyone can check in two lines.
+*Whether it drives the variation in path endings is a hypothesis* — an
+attractive one, since the runs that ended at events found things and the runs
+that ended at trends did not, but untested.
+
+**Left unfixed before 2026-10-30, deliberately.** The fix is one line, but
+every screenshot and every frame of the demo video comes from this version of
+the prompt; this frame cannot reach the live service to test a change; and
+changing a prompt mid-comparison is exactly what made the 10-11 and 10-13
+observations incomparable. It belongs in *What's next*, stated plainly: we
+found a contradiction in our own instructions and did not ship an untested
+change to fix it five days out.
+
+⚠️ This example had also reached `docs/demo-script.md`, where the narration
+spoke it aloud and called it *a real one*. It is not a run output at all. It
+was replaced on 2026-10-25 with `infrastructure projects -> Staten Island
+Ferry -> terminal upgrade`, from one of 802's own runs. **Do not quote the
+black-clothing path from the prompt as evidence of anything the system did.**
+The spec carries it too, at `docs/spec-en.md:200`.
+
 ### A date basis that is metadata, not a statement
 
 Run 4's first result passed the gate with this:

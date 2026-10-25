@@ -4,7 +4,7 @@ Rewritten 2026-10-25. Three minutes or shorter, public on YouTube, and it has
 to show the project working **and** how Nebius Token Factory and NVIDIA
 Nemotron were used.
 
-**475 words. Whether that fits depends entirely on the voice, not on the
+**480 words. Whether that fits depends entirely on the voice, not on the
 script.** At 160 words a minute it runs 2:58. At 175 it runs 2:43. At a slow
 145 it runs 3:17, which is over.
 
@@ -144,10 +144,25 @@ one to the other. **You already have these screenshots** — 10-12, 10-13 and
 let the arrows be readable.** That line is the shot this whole project exists
 to show: not a chain of thought, a declared route.
 
+🔴 **The path spoken in the narration must be one the system actually
+produced, and the keyword it starts from must be visible in shot 4.** The
+ferry route starts from `infrastructure projects`, so shot 4 needs a keyword
+tray containing that chip — two of 802's three Staten Island trays do. Swap
+in a different real path if the footage calls for it, and change the
+narration with it.
+
+⚠️ Until 2026-10-25 this line read *Black clothing, to protest movements, to
+market instability. That is a real one.* **That was not a real run**: it is
+the illustrative example inside `explorer.py`'s own prompt, and it is the one
+that contradicts the prompt's rule about not ending a path at a trend (see
+`docs/model-notes.md`). Narrating it as a run output would have been a claim
+the repository disproves.
+
 > Watch this line. Before it searches anything, the model writes down the
 > route it means to take, from one of its own keywords to what it expects to
-> find. Black clothing, to protest movements, to market instability. That is a
-> real one. Then the keywords are locked and the search runs. If something
+> find. Infrastructure projects, to the Staten Island Ferry, to a terminal
+> upgrade. That is one from a real run. Then the keywords are locked and the
+> search runs. If something
 > more interesting appears halfway through, it cannot go after it. The route
 > you are reading is a commitment it made before it knew what it would find.
 
@@ -280,7 +295,7 @@ video is the most watched thing here, so it holds to it too.
 
 > **看這一行。** 在它搜尋任何東西之前，模型先寫下它打算走的路線——
 > 從它自己的某一個關鍵字，走到它預期會找到的東西。
-> **黑色衣服 → 抗議運動 → 市場不穩。那是一條真的。**
+> **基礎建設 → 史泰登島渡輪 → 航廈改建。那是真的跑出來的一條。**
 > 然後關鍵字被鎖上，搜尋才跑。半路上出現更有意思的東西，它也不能追過去。
 > **所以你讀到的那條路線，是它在還不知道會找到什麼之前就做出的承諾。**
 
