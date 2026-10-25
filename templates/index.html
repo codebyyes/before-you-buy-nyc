@@ -232,8 +232,19 @@ tr.total td.num.chg{color:var(--fig-change)}
 /* The path is the model's own reasoning and the notes under a record are the
    system reporting on itself. They were the same size in the same grey, so
    they read as one block of text and the thinking was lost inside the
-   bookkeeping. The path is content and is drawn as content. */
-.path{color:#3d382c;font-size:14.5px;line-height:1.55}
+   bookkeeping. The path is content and is drawn as content.
+
+   2026-10-25: it was still drawn smaller than the event it leads to, which
+   had the priority backwards. The route the model declared before it searched
+   is the thing this project exists to show, and a reader scanning the page met
+   it as the faintest line in the record. It now matches the event's weight.
+
+   The arrows carry the accent and the terms do not. Making the whole line
+   loud would set it against the event underneath, and two lines shouting is
+   the same as neither. Colouring only the joins makes it read as a route at a
+   glance without competing for the sentence. */
+.path{color:var(--ink);font-size:16.5px;line-height:1.5;font-weight:500}
+.path .arr{color:var(--accent);font-weight:700;padding:0 1px}
 /* The state moves into the record's header, where it can be scanned down the
    page without reading anything else. It is not colour-coded by whether the
    news is good: withheld by review is the gate doing its job, so it carries
@@ -732,7 +743,7 @@ table.meas tr.chg td.num{color:var(--fig-change)}
     var v = document.createElement('div');
     var p = document.createElement('div');
     p.className = 'path';
-    p.textContent = arrows(path || '');
+    writePath(p, path || '');
     v.appendChild(p);
     if (query) {
       var q = document.createElement('div');
@@ -746,12 +757,26 @@ table.meas tr.chg td.num{color:var(--fig-change)}
     return r;
   }
 
-  function arrows(text) {
+  function writePath(el, text) {
     /* Typography only. The model writes its arrows as "->", and a line that
        wraps between the hyphen and the bracket leaves a stray "-" at the end
        of a phone-width line. One arrow character cannot be split. Nothing
-       else about the path is altered. */
-    return text.replace(/\s*->\s*/g, ' → ');
+       else about the path is altered.
+
+       The terms go in as text nodes and the arrows as their own spans, so the
+       joins can carry the accent while the words stay in ink. The path is
+       model output and is still written to the page as text: nothing here is
+       ever assigned as HTML. */
+    var parts = String(text).split(/\s*->\s*/);
+    for (var i = 0; i < parts.length; i++) {
+      if (i) {
+        var a = document.createElement('span');
+        a.className = 'arr';
+        a.textContent = ' → ';
+        el.appendChild(a);
+      }
+      el.appendChild(document.createTextNode(parts[i]));
+    }
   }
 
   function flag(text) {
