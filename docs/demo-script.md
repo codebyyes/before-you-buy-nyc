@@ -4,9 +4,33 @@ Rewritten 2026-10-25. Three minutes or shorter, public on YouTube, and it has
 to show the project working **and** how Nebius Token Factory and NVIDIA
 Nemotron were used.
 
-423 words of narration. Under three minutes at any sane pace: 2:55 at a
-slow 145 words a minute, 2:30 at a brisk 165. Do not
-pad to reach three minutes; shorter is better than stretched.
+**475 words. Whether that fits depends entirely on the voice, not on the
+script.** At 160 words a minute it runs 2:58. At 175 it runs 2:43. At a slow
+145 it runs 3:17, which is over.
+
+🔴 **So do this before cutting anything.** Pick the 剪映 voice, have it read
+shot 1 alone (53 words), and time it. 53 words in 20 seconds or less means
+160 wpm or faster and the whole script fits as written. Slower than that, cut
+from the list below, in order, and stop as soon as it fits.
+
+**Cut list, in order.** Each of these can go without damaging the point of
+its shot. Running totals are at 160 wpm.
+
+| # | Shot | Line to delete | Words | Script becomes |
+|---|---|---|---|---|
+| 1 | 6 | *The route you are reading is a commitment it made before it knew what it would find.* | 17 | 458 · 2:52 |
+| 2 | 5 | *Two completed runs found different events and different figures, both sourced.* | 11 | 447 · 2:48 |
+| 3 | 7 | *Nobody tells it what to say.* | 6 | 441 · 2:45 |
+| 4 | 1 | *That is the problem.* | 4 | 437 · 2:44 |
+| 5 | 2 | *Pick a New York City borough.* | 6 | 431 · 2:42 |
+
+Cut 1 is first because the sentence restates what the two before it already
+established. **Do not cut shot 8's "Not what caused it. What followed it."**
+That is the product's own sentence and it is 8 words.
+
+The timings on each shot below are computed at 160 wpm, not measured.
+Re-fix them from the real audio. Do not pad to reach three minutes; shorter
+is better than stretched.
 
 **What changed from the first version.** Three things 802 asked for, and they
 are now the spine of the video rather than details inside it:
@@ -16,6 +40,16 @@ are now the spine of the video rather than details inside it:
 - **They are not the same twice.** Eight runs of one question, a stable core
   and a moving edge. This is the thing most likely to be mistaken for a bug,
   so it is said out loud and framed as what it is.
+- 🔴 **The route is the product.** Before it searches, the model declares the
+  path from one of its own keywords to what it expects to find, in arrows, in
+  the reader's language — the prompt says outright that paths are *for the
+  reader* (`explorer.py:152`), and it is told not to filter out unusual ones
+  (`:159`). That is not a chain of thought. A chain of thought is a model's
+  unverifiable account of its own insides. A path is a **commitment**: stated
+  before the search, locked to the keywords, reviewed for wording, and then
+  left standing next to whatever it actually ran into. **This is what 802
+  built the system to observe, and it was missing from the first two drafts
+  of this script.**
 - **We cannot promise the model never invents an event.** That is stated
   plainly, and then what the architecture does about it is shown rather than
   claimed.
@@ -43,7 +77,7 @@ are now the spine of the video rather than details inside it:
 
 ## Shots
 
-### 1 · The problem — 0:00 to 0:18
+### 1 · The problem — 0:00 to 0:20 (53 words)
 
 **On screen:** the site header. Title, and the line *AI explores · Evidence
 verifies · Humans decide*.
@@ -55,7 +89,7 @@ verifies · Humans decide*.
 
 ---
 
-### 2 · Official data, computed — 0:18 to 0:38
+### 2 · Official data, computed — 0:20 to 0:31 (30 words)
 
 **On screen:** Step 1 confirmed. The property class table, then the five year
 chart, then the dataset lines at the foot of the column.
@@ -69,7 +103,7 @@ numbers are traceable.
 
 ---
 
-### 3 · The question — 0:38 to 0:48
+### 3 · The question — 0:31 to 0:44 (34 words)
 
 **On screen:** the question box reading *Will home prices in Staten Island go
 up next year?*
@@ -80,7 +114,7 @@ up next year?*
 
 ---
 
-### 4 · Nobody chose these — 0:48 to 1:04
+### 4 · Nobody chose these — 0:44 to 0:56 (33 words)
 
 **On screen:** the keyword tray. Let the five boxes be readable.
 
@@ -90,7 +124,7 @@ up next year?*
 
 ---
 
-### 5 · And they are different every time — 1:04 to 1:30 🔴 **new, and the one 802 wants**
+### 5 · And they are different every time 🔴 **what 802 asked for** — 0:56 to 1:18 (59 words)
 
 **On screen:** two keyword trays from different runs, side by side or cut
 one to the other. **You already have these screenshots** — 10-12, 10-13 and
@@ -104,18 +138,22 @@ one to the other. **You already have these screenshots** — 10-12, 10-13 and
 
 ---
 
-### 6 · It has to follow its own keywords — 1:30 to 1:48
+### 6 · The route it declared before it looked 🔴 **the core of the project** — 1:18 to 1:48 (80 words)
 
-**On screen:** a record's *LOOKED FOR* block — the FROM chips and the PATH,
-with the searched line underneath.
+**On screen:** a record's *LOOKED FOR* block. 🔴 **Hold on the PATH line and
+let the arrows be readable.** That line is the shot this whole project exists
+to show: not a chain of thought, a declared route.
 
-> Once named, the concepts are fixed in code. The model must search from its
-> own list. If something more interesting appears halfway through, it cannot
-> go after it.
+> Watch this line. Before it searches anything, the model writes down the
+> route it means to take, from one of its own keywords to what it expects to
+> find. Black clothing, to protest movements, to market instability. That is a
+> real one. Then the keywords are locked and the search runs. If something
+> more interesting appears halfway through, it cannot go after it. The route
+> you are reading is a commitment it made before it knew what it would find.
 
 ---
 
-### 7 · Can it make things up — 1:48 to 2:14 🔴 **the honest centre**
+### 7 · Can it make things up 🔴 **the honest centre** — 1:48 to 2:24 (95 words)
 
 **On screen:** Record 1, the badge reading *Finding withheld by presentation
 review*, and the reason text underneath.
@@ -135,7 +173,7 @@ its own.
 
 ---
 
-### 8 · What does get through — 2:14 to 2:34
+### 8 · What gets through — 2:24 to 2:38 (38 words)
 
 **On screen:** the record that reached `RESULT`. Event, date, date basis, the
 clickable source, and the before and after table.
@@ -146,7 +184,7 @@ clickable source, and the before and after table.
 
 ---
 
-### 9 · Close — 2:34 to 2:50
+### 9 · Close — 2:38 to 2:58 (53 words)
 
 **On screen:** the *Research complete* summary box — both model ids and the
 words *Nebius Token Factory* are printed there — then the header.
@@ -191,7 +229,7 @@ video is the most watched thing here, so it holds to it too.
 
 ---
 
-**鏡頭 1 · 0:00–0:18 — 問題**
+**鏡頭 1 · 0:00–0:20 — 問題**
 畫面：頁首，標題 + 金色標語
 
 > 你去問任何一個 AI 你的房子明年值多少，它都會回答你。**那就是問題。**
@@ -200,7 +238,7 @@ video is the most watched thing here, so it holds to it too.
 
 ---
 
-**鏡頭 2 · 0:18–0:38 — 官方資料，程式算的**
+**鏡頭 2 · 0:20–0:31 — 官方資料，程式算的**
 畫面：類別表格 → 五年圖表 → **最下面的資料集說明**（停兩秒）
 
 > 選一個紐約市行政區。這裡每個數字都是 Python 從城市自己的成交紀錄即時算出來的。
@@ -209,7 +247,7 @@ video is the most watched thing here, so it holds to it too.
 
 ---
 
-**鏡頭 3 · 0:38–0:48 — 那個問題**
+**鏡頭 3 · 0:31–0:44 — 那個問題**
 畫面：問題框
 
 > 現在換買家真正會問的問題。明年會不會漲。
@@ -218,7 +256,7 @@ video is the most watched thing here, so it holds to it too.
 
 ---
 
-**鏡頭 4 · 0:48–1:04 — 這些不是你選的**
+**鏡頭 4 · 0:44–0:56 — 這些不是你選的**
 畫面：五個關鍵字方框
 
 > 這五個概念**不是任何人打進去的搜尋詞**。是模型讀了問題，自己決定它在問什麼，
@@ -226,7 +264,7 @@ video is the most watched thing here, so it holds to it too.
 
 ---
 
-**鏡頭 5 · 1:04–1:30 — 而且每次都不一樣** 🔴 **你要的那一段**
+**鏡頭 5 · 0:56–1:18 — 而且每次都不一樣** 🔴 **你要的那一段**
 畫面：兩次不同執行的關鍵字方框，並排或接著切
 **截圖你已經有了**——10/12、10/13、10/25 三次各是不同的一組
 
@@ -237,15 +275,18 @@ video is the most watched thing here, so it holds to it too.
 
 ---
 
-**鏡頭 6 · 1:30–1:48 — 它必須照自己的關鍵字走**
-畫面：一筆記錄的 LOOKED FOR 區塊（FROM 方框 + PATH + 搜尋字串）
+**鏡頭 6 · 1:18–1:48 — 它在看之前就宣告的路線** 🔴 **專案的核心**
+畫面：一筆記錄的 LOOKED FOR 區塊，**停在 PATH 那一行，讓箭頭看得清楚**
 
-> 一旦命名，這些概念就被鎖在程式裡。模型只能從自己這份清單出發。
-> **半路上出現更有意思的東西，它也不能追過去。**
+> **看這一行。** 在它搜尋任何東西之前，模型先寫下它打算走的路線——
+> 從它自己的某一個關鍵字，走到它預期會找到的東西。
+> **黑色衣服 → 抗議運動 → 市場不穩。那是一條真的。**
+> 然後關鍵字被鎖上，搜尋才跑。半路上出現更有意思的東西，它也不能追過去。
+> **所以你讀到的那條路線，是它在還不知道會找到什麼之前就做出的承諾。**
 
 ---
 
-**鏡頭 7 · 1:48–2:14 — 它會不會亂編** 🔴 **最誠實的一段**
+**鏡頭 7 · 1:48–2:24 — 它會不會亂編** 🔴 **最誠實的一段**
 畫面：被擋下那一筆，徽章 + 下面的理由
 
 > 模型會不會編出一個事件？**我們不能保證它永遠不會。**
@@ -291,7 +332,7 @@ video is the most watched thing here, so it holds to it too.
 
 ---
 
-**鏡頭 8 · 2:14–2:34 — 過得了的長這樣**
+**鏡頭 8 · 2:24–2:38 — 過得了的長這樣**
 畫面：跑出 RESULT 那一筆（事件 / 日期 / 日期依據 / 來源 / 前後表格）
 
 > 這是過得了的。一個真實事件，日期對照它出處的那句話確認過，
@@ -300,7 +341,7 @@ video is the most watched thing here, so it holds to it too.
 
 ---
 
-**鏡頭 9 · 2:34–2:50 — 收尾**
+**鏡頭 9 · 2:38–2:58 — 收尾**
 畫面：Research complete 結論框（**兩個模型 ID + Nebius Token Factory 都在上面**）→ 回頁首
 
 > 兩個 NVIDIA Nemotron 模型，在 Nebius Token Factory 上。一個探索，一個審查。
