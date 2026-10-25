@@ -133,6 +133,11 @@ tr.total td.num.chg{color:var(--fig-change)}
 .qt td.num.lead{color:var(--fig-median);font-weight:600}
 .qt tr:last-child td{border-bottom:0}
 .note{color:var(--mute);font-size:13.5px;margin-top:14px;line-height:1.5}
+/* The seconds counter is the one number on the page that says the thing is
+   alive, so it is set apart from the sentence explaining it. */
+.note.running{color:#3d382c}
+.note.running #secs{color:var(--accent);font-weight:700;font-size:16px;
+  font-variant-numeric:tabular-nums}
 .prov{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);
   color:var(--mute);font-size:13px;line-height:1.7}
 .prov b{color:#3d382c;font-weight:500}
@@ -147,7 +152,7 @@ tr.total td.num.chg{color:var(--fig-change)}
 /* ---- column two: the research directions ---- */
 .asked{background:var(--field);border:1px solid var(--line);border-radius:7px;
   padding:12px 14px;font-size:15.5px;color:#3d382c;margin-top:5px}
-.busy{color:var(--mute);font-size:14px;margin-top:16px}
+.busy{color:var(--accent);font-size:15px;font-weight:600;margin-top:16px}
 .busy::after{content:"";display:inline-block;width:1.1em;text-align:left;
   animation:dots 1.2s steps(4,end) infinite}
 @keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
@@ -241,6 +246,15 @@ tr.total td.num.chg{color:var(--fig-change)}
   text-transform:uppercase;color:var(--mute);border:1px solid var(--line);
   background:var(--tray);border-radius:20px;padding:4px 11px;font-weight:600}
 .chip.inc{color:#8a3b26;border-color:#e0b4a4;background:#fdf2ed}
+/* Still running. This badge used to be the same grey pill as every end
+   state, so a reader who scrolled down during the sixty to ninety seconds of
+   searching saw five records that looked exactly like five records that had
+   finished and found nothing. It has to be the one badge on the page that is
+   plainly alive: the accent, and a pulse slow enough not to nag. */
+.chip.pending{color:var(--accent);border-color:var(--accent);
+  background:var(--panel);animation:breathe 1.9s ease-in-out infinite}
+@keyframes breathe{0%,100%{opacity:1}50%{opacity:.45}}
+@media(prefers-reduced-motion:reduce){.chip.pending{animation:none}}
 .rollup{border:1px solid var(--line);background:var(--field);border-radius:8px;
   padding:14px 16px;font-size:14px;color:var(--mute);margin-top:16px;
   line-height:1.55}
@@ -501,7 +515,7 @@ table.meas tr.chg td.num{color:var(--fig-change)}
   </div>
 
   <div class="busy" id="busy" hidden>Deciding where to look</div>
-  <div class="note" id="elapsed" hidden><span id="secs">0</span>s.
+  <div class="note running" id="elapsed" hidden><span id="secs">0</span>s.
     <span id="whywait"></span></div>
 
   <div id="out" hidden>
@@ -902,7 +916,7 @@ table.meas tr.chg td.num{color:var(--fig-change)}
       head.appendChild(num);
 
       var chip = document.createElement('span');
-      chip.className = 'chip';
+      chip.className = 'chip pending';
       chip.textContent = (d.labels && d.labels[item.state]) || item.state;
       head.appendChild(chip);
       li.appendChild(head);
@@ -1035,10 +1049,11 @@ table.meas tr.chg td.num{color:var(--fig-change)}
         if (item.review_passed === true) passedReview += 1;
       }
       card.chip.textContent = (d.labels && d.labels[item.state]) || item.state;
-      if (item.state === 'RESEARCH_INCOMPLETE' ||
-          item.state === 'EVENT_OUTSIDE_MEASURABLE_RANGE') {
-        card.chip.className = 'chip inc';
-      }
+      /* Always reassigned, never only for the pink states: leaving it alone
+         would leave the pending badge pulsing under a finished record. */
+      card.chip.className =
+        (item.state === 'RESEARCH_INCOMPLETE' ||
+         item.state === 'EVENT_OUTSIDE_MEASURABLE_RANGE') ? 'chip inc' : 'chip';
 
       var box = document.createElement('div');
       box.className = 'ev';
