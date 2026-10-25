@@ -378,6 +378,138 @@ needs explaining on camera.
 
 ---
 
+## Five runs in one evening, 2026-10-25, 19:56 to 21:08
+
+802 ran five analyses in seventy minutes, screenshotting each. This is the
+largest single batch of live observations the project has, and it is here
+because nothing in the system records itself.
+
+**Read the confound first.** The keywords are different in every run, because
+the model chooses them. So no two runs below are a controlled comparison: when
+two runs differ in outcome, the keywords, the paths and the queries all moved
+together and no one of them can be credited. Everything in this section is
+description. Where a mechanism is suggested, it is marked as a suggestion.
+
+### The runs
+
+| # | Question | Region | Keywords | Outcome |
+| --- | --- | --- | --- | --- |
+| 1 | black clothing, 19:56 | Brooklyn | `black clothing` `social movement` `home prices` | 3 searched, nothing datable |
+| 2 | same, 19:59 | Brooklyn | `black clothing` `home prices` `NYC` | 1 measured · 1 withheld · 2 nothing datable |
+| 3 | coffee shops, 20:26 | Brooklyn | `coffee shop openings` `residential property sales` `gentrification` | 3 nothing datable · 1 **not completed** |
+| 4 | same, 20:30 | Brooklyn | `coffee shop openings` `home prices` `Brooklyn residential` | **2 measured** · 3 nothing datable |
+| 5 | new parks, 21:07 | Manhattan | `new parks` `home prices` | not recorded past the search stage |
+
+### The thing nobody had noticed: the keyword count is stable per question
+
+Across every run of a given question the model chose the same *number* of
+keywords, while choosing different keywords:
+
+- "Will home prices in Staten Island go up next year?" → **5, 5, 5**
+- "If a lot of people wore black…" → **3, 3**
+- "I've noticed more coffee shops…" → **3, 3**
+- "Do new parks change home prices?" → **2**
+
+The cap is twelve and the model is told to decide for itself. It is not
+picking a number at random, and it is not picking a house default. The count
+tracks something about the question — plausibly how many distinct concepts
+the sentence actually contains. **n is small and this has never been tested
+deliberately.** It is the cheapest experiment left in the project: ask one
+question ten times and count.
+
+### Suggested, not established: where a path stops predicts whether it finds
+
+Reading the path lines of runs 1 to 4 — sixteen paths — and sorting them by
+whether the **last** term names a specific dated occasion or an outcome:
+
+| | paths | events found |
+| --- | --- | --- |
+| last term is a named occasion | 10 | 4 |
+| last term is an outcome or a place | 6 | **0** |
+
+The six that ended at `home prices`, `New York City`, `higher home sale
+prices`, `impact on property values`, `Brooklyn neighborhood revitalization`
+found nothing between them. Run 1 is the clearest: all three paths ended at an
+outcome and all three came back empty — and its second path, `social movement
+-> Black Lives Matter protests -> home prices`, walked *through* the George
+Floyd protests and kept going. Run 2 stopped at that same event and measured it.
+
+This is not a discovery about the model so much as a confirmation that the
+prompt already knows the failure mode. `explorer.py` 124-127:
+
+> A trend is not an event. "prices rose", "the market cooled" all describe
+> something spread over months, and no search will return a date for them. **If
+> your path ends at a trend, you have stopped one step too early.**
+
+**Why this is not yet a finding.** The keywords moved with the paths. Run 3's
+keywords were `gentrification` and `residential property sales` — abstractions
+— and its paths ended at abstractions. Run 4's included `Brooklyn residential`
+and its paths ended at named places and companies. The starting point and the
+stopping point cannot be separated from outside, and the system gives no way
+to hold the keywords fixed. That is what `tools/multi-model.md` and
+`tools/variance.py` are for, and both are after the deadline.
+
+**A prediction, registered before the answer was known.** Run 5's paths are
+`new parks -> Hudson Yards park opening -> home prices` and `new parks ->
+Little Island (Pier 55) opening -> home prices`: a named occasion in the
+middle, an outcome at the end. If the pattern above is real, these find
+nothing despite naming two real, dated, well-documented park openings. If they
+return measured results, the pattern is wrong. 802 has the screenshot of the
+finished run; this note was written before reading it.
+
+### A date basis that is metadata, not a statement
+
+Run 4's first result passed the gate with this:
+
+```
+EVENT  Starbucks announced plans to open a new store at 774 Broadway, on the
+       border of Bed-Stuy and Bushwick, slated to open in 2018
+DATE   2017-06-28
+BASIS  "The Gothamist article was published and modified on June 28, 2017,
+        as indicated in the source metadata."
+```
+
+The date is the **article's** publication date, taken from metadata, not a
+sentence in the article stating when anything happened — and the event text
+says the store was slated for 2018. This is the softer cousin of the
+`as-of-august-1-2010` filename bug: not a date pulled out of a filename, but
+still a date about the document rather than about the event.
+
+**The gate passed it, correctly, because the gate does not check this.** Its
+five questions ask whether a source is identifiable, not whether the date
+basis is a statement about the event. A sixth question could ask that. It is
+not being added before 2026-10-30, and nothing should be built on this record:
+the run's *other* result, the Atlantic Avenue rezoning, has a date basis that
+quotes the article saying when the rezoning happened, and that is the one to
+use in any material.
+
+### The first real upstream outage, reported as itself
+
+Run 3, third direction. The search returned ten sources; the reading pass over
+them hit the endpoint mid-outage:
+
+> The model endpoint returned HTTP 529. `{"error":{"type":"server_error",
+> "message":"System is overloaded"}}` What those sources held is therefore
+> unknown, **and this is not evidence that the historical record is empty.**
+
+`RESEARCH_INCOMPLETE`, the closing summary marked the whole analysis
+incomplete, and nothing was shown as "nothing happened". This is the fourth
+refusal — *no failure dressed as a finding* — verified by an accident rather
+than by a test. It is the only recorded instance of a real Nebius outage.
+
+### The Federal Reserve direction, three dates, three different endings
+
+| date | outcome |
+| --- | --- |
+| 2026-10-12 | `NO_EVIDENCE` |
+| 2026-10-13 | found and measured |
+| 2026-10-25 | found, then **withheld** — no identifiable source, rewritten twice |
+
+Same system, same direction, three endings. Any note that treats one run of
+one direction as a fact about the system is wrong, including the ones above.
+
+---
+
 ## How to talk about this in the submission
 
 Spec section 17's model evaluation is itself a deliverable — the rules make
