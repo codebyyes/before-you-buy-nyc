@@ -153,12 +153,17 @@ stay in the language of the question, because those are for the reader.
 
 For each direction, give:
 - from: which of your keywords it starts from, one or more, copied exactly
-- path: the route from those keywords to the event, as terms joined by arrows
+- path: the chain of reasoning that led you from those keywords to the event,
+  as terms joined by arrows. Write the thinking you actually did. Where you
+  reasoned your way across a distance, show the steps you crossed. Where the
+  event is simply an instance of the keyword and there was nothing in
+  between, say so in two terms. Do not pad a path with a step you did not
+  take: an invented step is a worse answer than a short one.
 - query: the search phrase you want run, which may be long and specific
 
 A path may be distant. From the keyword "black clothing", the path
-"Black clothing -> protest movements -> market instability" is valid if you
-believe it is worth searching. Do not filter out unusual directions.
+"Black clothing -> protest movements -> a named protest with a date" is valid
+if you believe it is worth searching. Do not filter out unusual directions.
 
 If the question is about something that recurs rather than something that
 happened - a season, a yearly pattern, a busy period - say so in "recurring"
