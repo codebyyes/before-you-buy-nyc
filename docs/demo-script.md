@@ -4,7 +4,8 @@ Rewritten 2026-10-25. Three minutes or shorter, public on YouTube, and it has
 to show the project working **and** how Nebius Token Factory and NVIDIA
 Nemotron were used.
 
-385 words of narration, about 2:35 at a normal text-to-speech pace. Do not
+403 words of narration. Under three minutes at any sane pace: 2:47 at a
+slow 145 words a minute, 2:27 at a brisk 165. Do not
 pad to reach three minutes; shorter is better than stretched.
 
 **What changed from the first version.** Three things 802 asked for, and they
@@ -52,9 +53,8 @@ verifies · Humans decide*.
 chart, then the dataset lines at the foot of the column.
 
 > Pick a New York City borough. Every figure here is computed in Python from
-> the city's own sales records, live. Median price by official class.
-> Transaction counts. Five years of quarters. The page prints its dataset
-> names, refresh dates and filters, so you can check it yourself.
+> the city's own sales records, live. The page prints its dataset names,
+> refresh dates and filters, so you can check it yourself.
 
 🔴 Hold two seconds on the dataset lines. That is the shot that proves the
 numbers are traceable.
@@ -66,8 +66,8 @@ numbers are traceable.
 **On screen:** the question box reading *Will home prices in Staten Island go
 up next year?*
 
-> Now the question a buyer actually asks. Will prices go up next year. The
-> system will not answer that. Watch what it does instead.
+> Now the question a buyer actually asks. The system will not answer it.
+> Watch what it does instead.
 
 ---
 
@@ -76,8 +76,8 @@ up next year?*
 **On screen:** the keyword tray. Let the five boxes be readable.
 
 > These five concepts are not search terms anybody typed. The model read the
-> question and decided what it is about, and it chose how many. Everything
-> below starts from one of these, and from nothing else.
+> question and decided what it is about, and how many. Everything below
+> starts from one of these and from nothing else.
 
 ---
 
@@ -87,12 +87,11 @@ up next year?*
 one to the other. **You already have these screenshots** — 10-12, 10-13 and
 25-10 each produced a different set.
 
-> Ask the same question tomorrow and the list is not the same. We have asked
-> this one eight times. Interest rates, zoning and infrastructure come back
-> every time. The rest moves. Two completed runs found different events and
-> reported different figures, both sourced, both measured the same way. That
-> is not a fault. Asking again is closer to consulting a second adviser than
-> to checking an answer.
+> Ask again tomorrow and the list is not the same. We have asked this one
+> eight times. Interest rates, zoning and infrastructure come back every
+> time. The rest moves. Two completed runs found different events and
+> different figures, both sourced. That is not a fault. Asking again is
+> closer to consulting a second adviser than to checking an answer.
 
 ---
 
@@ -103,8 +102,8 @@ with the searched line underneath.
 
 > Once named, the concepts are fixed in code. The model must search from its
 > own list. If something more interesting appears halfway through, it cannot
-> go after it. A direction setting out from anything else is discarded before
-> a single search runs.
+> go after it. Anything setting out from elsewhere is discarded before a
+> single search runs.
 
 ---
 
@@ -116,7 +115,7 @@ review*, and the reason text underneath.
 > Can the model invent an event? We cannot promise it never does. We have
 > watched it name a boutique that does not appear to exist. What we can show
 > is what happens next. An invented event finds no source, so it is never
-> published. And a second model reads every finding first, checking only how
+> published, and a second model reads every finding first, checking only how
 > it is worded. This one was blocked for carrying a prediction. Rewritten
 > twice. Still withheld.
 
@@ -131,10 +130,10 @@ its own.
 **On screen:** the record that reached `RESULT`. Event, date, date basis, the
 clickable source, and the before and after table.
 
-> Here is what does get through. A real event, with the date confirmed
-> against the sentence it came from, a government source you can click, and
-> the median sale price in the twelve months before and after, computed from
-> official rows. Not what caused it. What followed it.
+> Here is what does get through. A real event, the date confirmed against
+> the sentence it came from, a government source you can click, and the
+> median sale price twelve months before and after. Not what caused it.
+> What followed it.
 
 ---
 
@@ -143,10 +142,10 @@ clickable source, and the before and after table.
 **On screen:** the *Research complete* summary box — both model ids and the
 words *Nebius Token Factory* are printed there — then the header.
 
-> Two NVIDIA Nemotron models on Nebius Token Factory. One explores. One
-> reviews. Neither receives the sales data. Housing is where we proved this,
-> not what we set out to build. The method needs two things from any field.
-> Official records, and an outcome you can measure against a dated event.
+> Two NVIDIA Nemotron models on Nebius Token Factory. One explores, one
+> reviews, and neither receives the sales data. Housing is where we proved
+> this, not what we set out to build. The method needs two things from any
+> field: official records, and an outcome measurable against a dated event.
 > AI explores. Evidence verifies. Humans decide.
 
 🔴 This shot is what satisfies the rule about showing where Token Factory and
