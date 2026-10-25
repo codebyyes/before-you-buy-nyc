@@ -342,6 +342,42 @@ footage is of this screen.
 
 ---
 
+## A parse failure, left unfixed on purpose
+
+2026-10-25, live site: "Research could not be completed. The model's
+response was not valid JSON. No research directions were produced, so
+nothing was searched. This is not evidence that the historical record is
+empty."
+
+Not a refusal, which is what it looks like. The explorer answered and
+`extract_json` could not read the answer.
+
+**Cause, reproduced locally.** The fallback took the span from the first
+brace in the response to the last. Nemotron is a reasoning model and writes
+before it answers; one brace anywhere in that prose moves the start of the
+span, so the slice runs from somebody's aside to the end of the real object
+and parses as nothing. Three variants break the old code: a brace in the
+prose before the object, a brace in a sentence after it, and two objects
+with the plan second.
+
+**A fix exists and is not merged.** Branch `fix/json-extractor`, commit
+`9fa2a54`: it counts brace depth, skips quoted strings and their escapes,
+and tries each balanced span in turn, preferring the one that looks like a
+result object. All three variants pass, garbage still raises, and the
+offline suite is green.
+
+**802 declined it on 2026-10-25, six days from the deadline, and the
+reasoning holds.** He had seen it once in roughly ten runs, and when it
+happens the page behaves correctly: it reports that nothing was searched and
+says plainly that this is not evidence of an empty record. A rare failure
+that fails honestly is not worth touching code for in the last week. Merge
+the branch afterwards.
+
+If it happens while the demo is being filmed, re-run. It is not a state that
+needs explaining on camera.
+
+---
+
 ## How to talk about this in the submission
 
 Spec section 17's model evaluation is itself a deliverable — the rules make
