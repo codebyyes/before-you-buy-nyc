@@ -5,7 +5,7 @@ to show the project working **and** how Nebius Token Factory and NVIDIA
 Nemotron were used.
 
 412 words of narration. Under three minutes at any sane pace: 2:50 at a
-slow 145 words a minute, 2:27 at a brisk 165. Do not
+slow 145 words a minute, 2:30 at a brisk 165. Do not
 pad to reach three minutes; shorter is better than stretched.
 
 **What changed from the first version.** Three things 802 asked for, and they
