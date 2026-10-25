@@ -4,7 +4,7 @@ Rewritten 2026-10-25. Three minutes or shorter, public on YouTube, and it has
 to show the project working **and** how Nebius Token Factory and NVIDIA
 Nemotron were used.
 
-**480 words. Whether that fits depends entirely on the voice, not on the
+**482 words. Whether that fits depends entirely on the voice, not on the
 script.** At 160 words a minute it runs 2:58. At 175 it runs 2:43. At a slow
 145 it runs 3:17, which is over.
 
@@ -146,10 +146,14 @@ to show: not a chain of thought, a declared route.
 
 🔴 **The path spoken in the narration must be one the system actually
 produced, and the keyword it starts from must be visible in shot 4.** The
-ferry route starts from `infrastructure projects`, so shot 4 needs a keyword
-tray containing that chip — two of 802's three Staten Island trays do. Swap
-in a different real path if the footage calls for it, and change the
-narration with it.
+zoning route starts from `coffee shop openings`, which is the first chip in
+every tray that question has produced, so shot 4 traces cleanly. Swap in a
+different real path if the footage calls for it, and change the narration
+with it.
+
+🔴 **This path is from the 21:59 run on 2026-10-25, the first after the
+explorer prompt was restored to ask for a chain of reasoning. Footage shot
+before that run has two-term paths and must not be mixed in.**
 
 ⚠️ Until 2026-10-25 this line read *Black clothing, to protest movements, to
 market instability. That is a real one.* **That was not a real run**: it is
@@ -160,9 +164,9 @@ the repository disproves.
 
 > Watch this line. Before it searches anything, the model writes down the
 > route it means to take, from one of its own keywords to what it expects to
-> find. Infrastructure projects, to the Staten Island Ferry, to a terminal
-> upgrade. That is one from a real run. Then the keywords are locked and the
-> search runs. If something
+> find. Coffee shop openings, to zoning policy change, to a ground-floor
+> retail zoning amendment. That is one from a real run. Then the keywords are
+> locked and the search runs. If something
 > more interesting appears halfway through, it cannot go after it. The route
 > you are reading is a commitment it made before it knew what it would find.
 
@@ -295,7 +299,7 @@ video is the most watched thing here, so it holds to it too.
 
 > **看這一行。** 在它搜尋任何東西之前，模型先寫下它打算走的路線——
 > 從它自己的某一個關鍵字，走到它預期會找到的東西。
-> **基礎建設 → 史泰登島渡輪 → 航廈改建。那是真的跑出來的一條。**
+> **咖啡店開張 → 分區政策變動 → 一樓零售分區修正案。那是真的跑出來的一條。**
 > 然後關鍵字被鎖上，搜尋才跑。半路上出現更有意思的東西，它也不能追過去。
 > **所以你讀到的那條路線，是它在還不知道會找到什麼之前就做出的承諾。**
 
