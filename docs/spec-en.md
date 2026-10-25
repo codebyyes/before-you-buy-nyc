@@ -385,6 +385,17 @@ A sixth label, `PENDING`, is deliberately not one of the five. The five are end
 states; `PENDING` is the honest label for the gap between the Explorer
 finishing and the evidence layer starting.
 
+### The same question does not give the same directions
+
+Eight runs of one identical question produced a stable core of concepts and a
+moving edge, and the two that completed found different events and reported
+different figures. This is the behaviour section 7 describes between models,
+observed within one. It is not a defect: a run reports the directions it
+searched, never the directions that exist, and both results are sourced and
+measured identically. The cause is open — `tools/variance.py` separates
+sampling from the alternative and has not been run. Amendments A16 and A17
+carry the full account.
+
 Two rules hold the set together.
 
 **No failure may be reported as an empty result.** `NO_EVIDENCE` says this

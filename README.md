@@ -253,6 +253,37 @@ belongs to.
 
 ---
 
+## Asking the same question twice
+
+**The system does not return the same research directions twice, and that is
+not a fault.** It is the first thing a reader notices that looks like one, so
+it is said here rather than left to be discovered.
+
+One identical question — "Will home prices in Staten Island go up next
+year?" — has been asked on eight occasions. The explorer named five concepts
+every time, with a stable core and a moving edge: interest rates, zoning and
+infrastructure appeared in every run, while the remaining slots held housing
+inventory, then home prices, then school quality. Two of the runs completed
+through to measurement and **found different events and reported different
+figures**: a state eviction moratorium expiring, +7.29%, and a Federal
+Reserve rate cut, +4.09%. Both are real, both are sourced, both are measured
+the same way.
+
+Nothing about that contradicts what this system claims. **A run reports the
+directions it searched, never the directions that exist.** Asking again is
+closer to consulting a second adviser than to checking an answer: the results
+add to each other, and each one can be traced to the page the date came from.
+
+What causes the variation is not established. The request carries no
+temperature, so a service default applies and a model draws from a
+distribution rather than returning a fixed answer; that is one reading. The
+other is that each run is its own thing with its own sense of what matters,
+and this is that showing. `tools/variance.py` separates the two by asking the
+same question at temperature zero, and has not been run. Until it is, the
+observation stands and the explanation does not.
+
+---
+
 ## Data
 
 Two NYC Open Data datasets, read live over Socrata on every question. Nothing

@@ -218,6 +218,32 @@ question this raises is not how it looks but what it is ranked above.
 
 ---
 
+## 802's five runs, 2026-10-25
+
+He ran the same Staten Island question five more times through the live site
+and got a different keyword set each time. With the three earlier runs that
+is **about eight observations of one question**, and the observable is no
+longer in doubt: the explorer does not return the same decomposition twice.
+
+Two things to keep straight about what those five settle.
+
+**They confirm the phenomenon.** Eight for eight. Nobody needs more samples
+to believe the variation is real.
+
+**They do not identify the cause.** The live site has no way to set a
+temperature, so all five ran at the service default — they are all the
+control arm. The arm that discriminates is temperature zero, and
+`tools/variance.py` exists to run it and has not been run.
+
+Worth recording plainly, because it is the part that turned out well: **802
+predicted this before there was any data.** He expected different
+instantiations to see a question differently, and that expectation is why he
+insisted the keywords be surfaced and locked rather than left as an internal
+step. The observable came out on his side. The mechanism is still open, and
+he agreed to document it that way rather than as a cause.
+
+---
+
 ## The same question three times
 
 2026-10-12 18:02 and 2026-10-13 21:19. Staten Island, **identical question**,

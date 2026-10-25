@@ -430,3 +430,77 @@ last year") rather than as characterisations ("an upward trend").
 | README | Gowanus 的 +6.79% 用 `>=` 重算 | D1 |
 | README | 新增「已知限制」一節：殘餘幻覺面是「真實事件 + 捏造的理由」，第 9 節刻意不擋 | C3 |
 | 第 15 / 16 節 | 802 已於 10/08 改寫（不儲存，可重現性由畫面承擔）—— A12 的掃描需要在改寫後的版本上重做一次 | — |
+
+---
+
+## A16 — 第 7 節，變異也發生在同一個模型的不同執行之間（2026-10-25）
+
+第 7 節現在寫的是跨模型：「不同的模型，就像不同的人類專家，會提出不同的
+方向，那個變異是特性而不是缺陷。」
+
+**實測顯示同一個探索者跨執行也是如此。** 802 在 10/25 用同一題跑了五次，
+每次抓到不同的關鍵字；加上 10/12 到 10/13 之間的三次，總共約八次觀察。
+兩次完整跑完的執行找到**不同的事件、給出不同的數字**。
+
+這一段接在第 7 節末尾：
+
+> **The same explorer varies between runs, not only between models.** Asked
+> one identical question on eight occasions, the explorer named a stable core
+> of concepts and a moving edge: interest rates, zoning and infrastructure
+> appeared every time, while the remaining slots held housing inventory, then
+> home prices, then school quality. Two completed runs found different events
+> and reported different figures for the same question, each one sourced and
+> each one measured correctly.
+>
+> This is not a defect, and it follows from what the system does and does not
+> claim. A run reports the directions it searched, never the directions that
+> exist. Asking again is closer to consulting a second adviser than to
+> checking an answer: the two results add to each other rather than
+> contradicting each other, and both can be traced to their sources.
+>
+> **What causes the variation is not established.** Two readings fit the
+> observations. One is sampling: the request carries no temperature, the
+> service default applies, and a model draws from a distribution rather than
+> returning a fixed answer. The other is 802's, recorded here because he held
+> it before there was any data and the observable came out on his side — that
+> each instantiation is its own thing with its own ordering of what matters,
+> and the variation is that showing. `tools/variance.py` separates them by
+> running the same question at temperature zero. It has not been run.
+
+🔴 **這條不要寫成「不同的 AI 專家」當作原因。** 現象確定，機制沒確定。
+那正是 10/12 從 README 拿掉兩個宣稱的同一條線。
+
+---
+
+## A17 — 第 8 節，鎖住關鍵字的理由不只是「承諾」（802 口述，2026-10-25）
+
+第 8 節現在把鎖解釋成一個紀律：AI 必須真的思考要走哪些方向，一旦承諾就
+只能照著走。那是對的，但它不是 802 當初堅持要有這個設計的原因。
+
+**他的原因是一個關於 AI 的假設，而那個假設先於資料。**
+
+> 「這也就是為什麼當初我一定要把關鍵詞定下來的原因。」
+> ——802，2026-10-25
+
+他一開始就認為每個 AI 看東西的方式不一樣。如果那是真的，那麼：
+
+- **只給結論是沒用的**——不同的探索者結論會長得差不多，差異被洗掉了
+- **關鍵字必須攤開**——差異住在那裡，那是最早能看見它的地方
+- **而且必須鎖住**——不鎖，下游會把它磨平
+
+所以「問題 → 關鍵字 → 鎖住 → 只從關鍵字去找歷史」不是一個流程設計，
+**是那個假設做成的實體。** 第 18 節的多模型比較之所以可能，就是因為第 8 節
+先把差異固定在一個看得見的地方。
+
+這一段接在第 8 節開頭，在現有的解釋之前：
+
+> The keywords are locked because they are the first place a difference in
+> how a model sees a question becomes visible. A system that showed only
+> conclusions would hide it: two explorers reaching the same borough median
+> by different routes look identical at the end. Fixing the concepts at the
+> point they are named, and building every later step from them, is what
+> makes the route itself inspectable — which is the precondition for section
+> 18, not a consequence of it.
+
+⚠️ 接手的框很容易把第 8 節的鎖讀成可追溯性設計。**它不是。**
+可追溯是副產品；設計目的是讓差異看得見。
