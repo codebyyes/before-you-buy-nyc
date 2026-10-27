@@ -508,5 +508,21 @@ All five boroughs were enabled without touching the pipeline — adding a region
 changes the dataset, not the application logic. Real estate is the first
 application because it has reliable official records and an outcome that can
 be measured against a dated event; any domain meeting those two conditions
-fits the same method. We are not showing you the limits of what this can do.
-We are showing you, as clearly as possible, how it works.
+fits the same method.
+
+**What would carry over is a sequence, not a codebase**: ask a question,
+declare a traceable route before searching, verify each piece of evidence
+against its own source, measure the outcome in deterministic code that no
+model touches, review the resulting claim for what it says rather than
+whether it is true, and publish the failures and the incomplete runs
+alongside the findings. What would have to be rebuilt for every new domain is
+everything underneath that: the data interface, what counts as an event, how
+an outcome is measured, and the constraints particular to the field.
+
+So the goal was never to re-skin a property tool across industries. It was to
+find out whether that sequence holds. It has been implemented and tested in
+one domain, and claiming more than that is precisely the thing this project
+refuses to do.
+
+We are not showing you the limits of what this can do. We are showing you, as
+clearly as possible, how it works.
