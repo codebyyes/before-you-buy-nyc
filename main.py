@@ -19,7 +19,7 @@ import urllib.parse
 import urllib.request
 from datetime import date, datetime, timedelta
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, Response, jsonify, render_template, request
 
 import evidence
 import explorer
@@ -889,6 +889,62 @@ def evidence_route():
             "class_count": len(RESIDENTIAL),
         }
     return jsonify(body)
+
+
+@app.route("/models")
+def models_route():
+    """Plain text: which models the endpoint offers, and whether ours are there.
+
+    Added 2026-11-01 for the Nemotron 3 deprecation. The two model ids are not
+    guessable and must not be taken from memory or from a documentation page,
+    so this reads the catalogue itself and says plainly whether the two ids
+    this deployment is configured with are in it. Both are settable from the
+    environment, so a wrong one is fixed in the host's settings rather than in
+    a commit.
+
+    Model names are public information and no key is echoed here.
+    """
+    lines = []
+    try:
+        available = explorer.list_models()
+    except explorer.Unavailable as exc:
+        return Response(
+            "Could not read the catalogue: %s\n\n"
+            "This says nothing about which models exist - only that the list "
+            "could not be fetched.\n" % exc,
+            mimetype="text/plain", status=503)
+
+    for label, chosen in (("explorer", explorer.EXPLORER_MODEL),
+                          ("reviewer", explorer.REVIEWER_MODEL)):
+        mark = "OK      " if chosen in available else "NOT FOUND"
+        lines.append("%-9s %s  %s" % (label, mark, chosen))
+
+    missing = [m for m in (explorer.EXPLORER_MODEL, explorer.REVIEWER_MODEL)
+               if m not in available]
+    lines.append("")
+    if missing:
+        lines.append("A NOT FOUND id will fail every call that uses it. Set "
+                     "EXPLORER_MODEL or REVIEWER_MODEL in the host's")
+        lines.append("environment to an id from the list below, exactly as it "
+                     "is spelled there, and redeploy.")
+    else:
+        lines.append("Both configured ids are in the catalogue.")
+
+    lines.append("")
+    lines.append("%d models offered by %s:" % (len(available), explorer.BASE_URL))
+    lines.append("")
+    nvidia = [m for m in available if m.lower().startswith("nvidia/")]
+    for m in nvidia:
+        lines.append("  %s" % m)
+    if nvidia:
+        lines.append("")
+        lines.append("  ---- everything else ----")
+        lines.append("")
+    for m in available:
+        if m not in nvidia:
+            lines.append("  %s" % m)
+
+    return Response("\n".join(lines) + "\n", mimetype="text/plain")
 
 
 @app.errorhandler(404)

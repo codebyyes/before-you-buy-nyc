@@ -45,8 +45,19 @@ check("records are capped at ten", ex.MAX_DIRECTIONS == 10)
 check("padding is still forbidden", "Do not pad." in ex.EXPLORER_PROMPT)
 check("bare JSON instruction present", 'Output ONLY valid JSON, no other text:' in ex.EXPLORER_PROMPT)
 check("no padding instruction present", "Do not pad." in ex.EXPLORER_PROMPT)
-check("explorer model id lowercase", ex.EXPLORER_MODEL == "nvidia/nemotron-3-super-120b-a12b")
-check("reviewer model id mixed case", ex.REVIEWER_MODEL == "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B")
+# Until 2026-11-01 these two lines pinned the exact ids, which was right while
+# the ids had come out of client.models.list(). The Nemotron 3 serverless
+# models retire on 2026-11-09 and the replacements were read off a
+# documentation page, so pinning their spelling here would pin a guess and
+# make this suite agree with itself about something it cannot know. What is
+# checked offline is what can be: that two distinct NVIDIA Nemotron ids are
+# configured and that the environment can override them. Whether the strings
+# are real is answered by /models against the live catalogue, and nowhere else.
+check("explorer and reviewer are different models",
+      ex.EXPLORER_MODEL != ex.REVIEWER_MODEL)
+check("both ids are NVIDIA Nemotron",
+      all(m.lower().startswith("nvidia/") and "nemotron" in m.lower()
+          for m in (ex.EXPLORER_MODEL, ex.REVIEWER_MODEL)))
 
 print("\nparsing")
 GOOD = json.dumps({

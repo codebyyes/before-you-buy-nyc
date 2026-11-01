@@ -21,8 +21,24 @@ BASE_URL = "https://api.tokenfactory.nebius.com/v1"
 
 # Both IDs came from client.models.list(). The capitalisation rules differ
 # between them and neither is guessable - do not retype these from memory.
-EXPLORER_MODEL = "nvidia/nemotron-3-super-120b-a12b"
-REVIEWER_MODEL = "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B"
+#
+# 2026-11-01: Nebius is retiring the Nemotron 3 serverless models on
+# 2026-11-09; after that date their ids simply fail, with no rerouting. The
+# replacements below are the ones the deprecation notice names, but they were
+# read off a documentation page and not out of the catalogue - which is
+# exactly what the line above says not to trust. So they are overridable from
+# the environment, and /models prints what the endpoint actually offers and
+# whether these two are among them. A wrong id is fixed in Render's
+# environment settings in a minute, without a code change and without me.
+#
+# To roll back to the retired pair before 2026-11-09, set the two environment
+# variables to:
+#     EXPLORER_MODEL=nvidia/nemotron-3-super-120b-a12b
+#     REVIEWER_MODEL=nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B
+EXPLORER_MODEL = os.environ.get(
+    "EXPLORER_MODEL", "nvidia/Nemotron-3.5-Super-VL").strip()
+REVIEWER_MODEL = os.environ.get(
+    "REVIEWER_MODEL", "nvidia/Nemotron-3_5-Lightning").strip()
 
 # Nemotron reasons before it answers, and the reasoning is billed against the
 # same budget as the answer. A small max_tokens returns an empty string because
@@ -333,6 +349,45 @@ def chat(model, system, user, max_tokens=MAX_TOKENS):
         raise Unavailable("The model returned an empty response.")
 
     return text
+
+
+def list_models():
+    """Every model id the endpoint currently offers, sorted.
+
+    Written for the 2026-11-09 deprecation. The two ids this program uses are
+    not guessable and the comment above them says not to retype them from
+    memory; a documentation page is no better than memory. This reads the
+    catalogue itself, so a wrong id can be seen rather than argued about.
+
+    Raises Unavailable like every other call here, for the same reason: not
+    being able to look is never evidence about what is there.
+    """
+    key = api_key()
+    if not key:
+        raise Unavailable("NEBIUS_API_KEY is not set in this environment.")
+
+    req = urllib.request.Request(
+        BASE_URL + "/models",
+        headers={"Authorization": "Bearer " + key,
+                 "Accept": "application/json"},
+        method="GET",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        raise Unavailable("The model endpoint returned HTTP %s." % exc.code)
+    except urllib.error.URLError as exc:
+        raise Unavailable("The model endpoint could not be reached (%s)."
+                          % exc.reason)
+    except Exception as exc:
+        raise Unavailable("The model endpoint failed (%s: %s)."
+                          % (type(exc).__name__, exc))
+
+    rows = payload.get("data")
+    if not isinstance(rows, list):
+        raise Unavailable("The catalogue came back in an unexpected shape.")
+    return sorted(str(r.get("id", "")) for r in rows if r.get("id"))
 
 
 # ---------------------------------------------------------------------------
