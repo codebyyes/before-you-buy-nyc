@@ -666,15 +666,42 @@ QUESTION_NAMES = {
 
 
 def parse_verdict(text):
-    """PASS, or FAIL and which questions. Anything else is not a verdict."""
+    """PASS, or FAIL and which questions. Anything else is not a verdict.
+
+    2026-11-01. Nemotron 3 Nano answered in four tokens with the verdict
+    first, so reading the start of the reply was enough. On the first live run
+    after the swap to Nemotron 3.5 Lightning every review came back
+    unreadable, and the error said only that the reviewer had not answered
+    PASS or FAIL - which is the same shape of mistake as an empty reply with
+    no finish_reason: true, and useless.
+
+    Two changes. The verdict may now be any line that begins with PASS or
+    FAIL, not only the first, because a model that reasons before it answers
+    puts its answer last. The last such line wins, for the same reason: a
+    reasoning line mentioning "FAIL" comes before the verdict, never after
+    it. And when nothing matches, the reply itself is quoted, so the next
+    occurrence is read rather than guessed at.
+
+    This never turns a FAIL into a PASS: a line must begin with the word.
+    """
     head = (text or "").strip()
-    upper = head.upper()
-    if upper.startswith("PASS"):
+    lines = head.splitlines()
+    at = -1
+    for i, line in enumerate(lines):
+        upper = line.strip().upper()
+        if upper.startswith("PASS") or upper.startswith("FAIL"):
+            at = i
+    if at < 0:
+        shown = " ".join(head.split())[:200] or "(empty)"
+        raise Unavailable(
+            "The reviewer did not answer PASS or FAIL. It said: %s" % shown)
+    # From the verdict word to the end, because Nano wrote the numbers on the
+    # line below the word often enough that a test pins the behaviour.
+    verdict = "\n".join(lines[at:]).strip().upper()
+    if verdict.startswith("PASS"):
         return True, []
-    if not upper.startswith("FAIL"):
-        raise Unavailable("The reviewer did not answer PASS or FAIL.")
     numbers = []
-    for token in upper[4:].replace(",", " ").split():
+    for token in verdict[4:].replace(",", " ").split():
         if token.isdigit() and 1 <= int(token) <= 5 and int(token) not in numbers:
             numbers.append(int(token))
     # A FAIL with no numbers is still a FAIL. The gate is not asked to justify
