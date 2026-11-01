@@ -1244,6 +1244,9 @@ table.meas tr.chg td.num{color:var(--fig-change)}
     if (reviewed && d.reviewer_model && d.explorer_model) {
       models = 'Explored with ' + d.explorer_model + ', reviewed with '
              + d.reviewer_model + ', both on Nebius Token Factory.';
+      /* Only present while the running models differ from the pair the
+         submission names. The server derives it; nothing here decides. */
+      if (d.model_note) models += ' ' + d.model_note;
     }
 
     var prov = '';

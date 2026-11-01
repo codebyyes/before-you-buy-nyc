@@ -31,14 +31,38 @@ BASE_URL = "https://api.tokenfactory.nebius.com/v1"
 # whether these two are among them. A wrong id is fixed in Render's
 # environment settings in a minute, without a code change and without me.
 #
-# To roll back to the retired pair before 2026-11-09, set the two environment
-# variables to:
-#     EXPLORER_MODEL=nvidia/nemotron-3-super-120b-a12b
-#     REVIEWER_MODEL=nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B
 EXPLORER_MODEL = os.environ.get(
     "EXPLORER_MODEL", "nvidia/Nemotron-3.5-Super-VL").strip()
 REVIEWER_MODEL = os.environ.get(
     "REVIEWER_MODEL", "nvidia/Nemotron-3_5-Lightning").strip()
+
+# The pair this ran on until Nebius retired them, and the only place those two
+# strings still live. Two uses.
+#
+# Rollback: they are still served until 2026-11-09, so setting EXPLORER_MODEL
+# and REVIEWER_MODEL to these values in the host's environment puts the
+# program back on the models the submission describes.
+#
+# And the page explains itself. The submitted video and write-up name this
+# pair; the page prints whichever pair is running. A judge who notices the
+# difference should meet the reason in the same breath rather than a
+# discrepancy to wonder about. The note is derived rather than written down,
+# so pointing the environment back at these two makes it disappear on its own
+# and there is no stale sentence left to remember to delete.
+RETIRED_EXPLORER = "nvidia/nemotron-3-super-120b-a12b"
+RETIRED_REVIEWER = "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B"
+RETIRED_ON = "2026-11-09"
+
+
+def migration_note():
+    """One sentence, if the models have moved on from the submitted pair."""
+    if (EXPLORER_MODEL == RETIRED_EXPLORER
+            and REVIEWER_MODEL == RETIRED_REVIEWER):
+        return ""
+    return ("These replaced %s and %s, which Nebius retired from Token "
+            "Factory's serverless models on %s. The submitted video and "
+            "write-up name that earlier pair."
+            % (RETIRED_EXPLORER, RETIRED_REVIEWER, RETIRED_ON))
 
 # Nemotron reasons before it answers, and the reasoning is billed against the
 # same budget as the answer. A small max_tokens returns an empty string because

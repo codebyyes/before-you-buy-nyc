@@ -874,6 +874,7 @@ def evidence_route():
         "rollup": explorer.rollup(out),
         "explorer_model": explorer.EXPLORER_MODEL,
         "reviewer_model": explorer.REVIEWER_MODEL,
+        "model_note": explorer.migration_note(),
     }
     body["rollup_label"] = explorer.STATE_LABEL.get(body["rollup"], body["rollup"])
     if coverage:
