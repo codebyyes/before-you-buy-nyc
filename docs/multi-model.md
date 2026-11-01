@@ -114,8 +114,59 @@ as a top-level field rather than the first message, and the reply at
 `content[0].text`. Twenty or thirty lines in one function.
 
 **802 confirmed on 2026-10-13 that he already holds accounts and billing at
-each provider.** So the only thing standing between here and a comparison is
-code, and the only code is that branch.
+each provider.**
+
+### ⚠️ Corrected 2026-11-01: that is the cost of SENDING, not of swapping
+
+This section used to end "the only thing standing between here and a
+comparison is code, and the only code is that branch." **That is wrong, and
+the evidence is unusually clean**: on 2026-11-01 Nebius retired the Nemotron
+3 serverless models and we moved to the 3.5 pair. Same vendor. Same endpoint.
+Same request shape. Two string constants, exactly as the table above
+promises, and the request went out first time.
+
+Four things broke anyway, none of them in `chat()`:
+
+- `parse_verdict` read only the start of the reply, because the old reviewer
+  answered in four tokens. The new one narrates, so every finding was blocked
+  as unreviewable.
+- `MAX_TOKENS = 4096` was the old explorer's reasoning volume. The new one
+  returned empty content until it was doubled.
+- The JSON extractor took the span from the first brace to the last, which
+  assumed the old explorer's output shape.
+- The reviewer prompt demanded its format once, at the end. The old model
+  complied on one reading; the new one restated the instruction back
+  correctly and then ignored it.
+
+**The adapter was already written. What was not written was everything that
+reads what comes back.** Those four were load-bearing and nowhere recorded as
+dependencies, because while they were true they looked general. `docs/model-
+notes.md` has the full account under "Swapping the models cost eight changes".
+
+So budget a model swap as: the transport (small, and the table above is
+right), plus an unknown amount of work downstream that is only discoverable
+by running it. For a comparison across four providers, assume that cost four
+times and assume it differs each time.
+
+### What this does to the comparison itself
+
+A real methodological problem, and it has a clean line through it.
+
+**Loosening a parser per model does not bias the comparison.** Accepting a
+verdict on any line rather than only the first changes what the harness can
+read, not what the model was asked. Every model still sits the same exam.
+
+**Changing a prompt per model does bias it**, because then they are not
+sitting the same exam, and a difference in output could be a difference in
+the question.
+
+On 2026-11-01 we did the second thing — but only to `REVIEWER_PROMPT`, to get
+a narrating reviewer to emit a verdict at all. `EXPLORER_PROMPT` was not
+touched (checked against the day's diffs, zero changes). **The explorer is
+what this comparison is about, so the comparison is still clean.** Keep it
+that way: if a future model needs the explorer prompt changed to produce
+usable output, that is a finding about that model, and it must be reported as
+one rather than quietly accommodated.
 
 ⚠️ Provider APIs move. Read each one's current documentation when the time
 comes rather than implementing from the description above.
