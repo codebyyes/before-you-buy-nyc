@@ -627,6 +627,34 @@ Cause: speed. Three failures in ninety minutes, 802 waiting on each deploy,
 and a fix written to the shape of the error rather than to the shape of the
 risk.
 
+### Resolved the same evening, 20:21
+
+First clean run since the swap: **1 measured, 1 passed presentation review,
+7 searched with no datable event, nothing incomplete.** Both remaining
+failures closed, each by a change that was measured rather than argued:
+
+- **Dating.** `DATE_TOKENS` back to 8192. Three directions had failed with
+  `finish_reason=length` and `completion_tokens=4096` exactly, against
+  prompt_tokens near 2900 — the whole allowance into reasoning, the date
+  never reached. The 4096 was mine, set an hour earlier on the grounds that
+  dating "ran on 4096 before", which was true of the retired model and of no
+  other. The coupling note above, repeated within the hour of writing it.
+- **Review.** Nemotron 3.5 Super VL in Lightning's place. Lightning had
+  failed at 8192, at 1024, and against the format demanded three ways.
+
+What came through: the Council's approval of the Sea Park North Rezoning in
+Brooklyn, 2018-03-07, dated from a quoted Legistar meeting record, source
+`legistar.council.nyc.gov`, median $760,000 before and $767,000 after —
+**+0.92%**. A rezoning followed by a flat market, published as flatly.
+
+**Not a conclusion**: one direction in eight found an event, where an earlier
+run on the old pair found two in five. The keywords differed too, as they
+always do. One run says nothing about hit rate.
+
+**Still unmeasured**: the page tells the reader the explorer takes twenty to
+forty seconds. That was the old pair, and it is the one claim on the page
+that this evening has not checked.
+
 ### What to check the next time a model changes
 
 Derived from what broke, in the order it broke.
