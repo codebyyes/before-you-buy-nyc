@@ -53,8 +53,16 @@ check("no padding instruction present", "Do not pad." in ex.EXPLORER_PROMPT)
 # checked offline is what can be: that two distinct NVIDIA Nemotron ids are
 # configured and that the environment can override them. Whether the strings
 # are real is answered by /models against the live catalogue, and nowhere else.
-check("explorer and reviewer are different models",
-      ex.EXPLORER_MODEL != ex.REVIEWER_MODEL)
+# Until 2026-11-01 this asserted the two were different models, which was the
+# design: a 30B for the narrow pass/fail job, a large one for the open-ended
+# work. Nemotron 3_5-Lightning narrates instead of judging and failed at three
+# different budgets with the format demanded three ways, so the reviewer now
+# runs on the explorer's model and they are deliberately equal. The suite is
+# not the place to insist on a design that lost to the evidence; what it can
+# still check is that both are real NVIDIA Nemotron ids, which catches an
+# empty or mistyped environment variable.
+check("both ids are set",
+      bool(ex.EXPLORER_MODEL) and bool(ex.REVIEWER_MODEL))
 check("both ids are NVIDIA Nemotron",
       all(m.lower().startswith("nvidia/") and "nemotron" in m.lower()
           for m in (ex.EXPLORER_MODEL, ex.REVIEWER_MODEL)))

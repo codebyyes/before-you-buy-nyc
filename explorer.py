@@ -33,8 +33,19 @@ BASE_URL = "https://api.tokenfactory.nebius.com/v1"
 #
 EXPLORER_MODEL = os.environ.get(
     "EXPLORER_MODEL", "nvidia/Nemotron-3.5-Super-VL").strip()
+# 2026-11-01, second choice. Nemotron 3_5-Lightning is the id the deprecation
+# notice names as Nano's replacement, and it narrates instead of judging. It
+# failed three ways in ninety minutes: at an 8192 budget, at 1024, and with
+# the format demand written three times including as literal examples. Every
+# reply restated the task correctly and then stopped before the verdict. When
+# a model has failed on both sides of the parameter it is not the parameter.
+#
+# So the reviewer is the explorer's model. It costs more per call than a
+# 30B was meant to, which loses the small-model-for-the-narrow-job story the
+# submission tells, and a working gate is worth more than a matching story.
+# Lightning is one environment variable away if it ever starts complying.
 REVIEWER_MODEL = os.environ.get(
-    "REVIEWER_MODEL", "nvidia/Nemotron-3_5-Lightning").strip()
+    "REVIEWER_MODEL", "nvidia/Nemotron-3.5-Super-VL").strip()
 
 # The pair this ran on until Nebius retired them, and the only place those two
 # strings still live. Two uses.
@@ -102,9 +113,21 @@ def _budget(name, default):
 
 
 MAX_TOKENS = _budget("MAX_TOKENS", 8192)          # planning, and the default
-DATE_TOKENS = _budget("DATE_TOKENS", 4096)        # what dating ran on before
-REVIEW_TOKENS = _budget("REVIEW_TOKENS", 1024)    # a verdict, not an essay
+DATE_TOKENS = _budget("DATE_TOKENS", 8192)        # measured; see below
+REVIEW_TOKENS = _budget("REVIEW_TOKENS", 4096)    # it reasons; let it finish
 REVISE_TOKENS = _budget("REVISE_TOKENS", 2048)    # one rewritten sentence
+
+# DATE_TOKENS was 4096 for one hour, on the reasoning that dating had run on
+# 4096 before any of this. It had - under the OLD model. Applying a retired
+# model's measurement to its replacement is the exact mistake recorded in
+# docs/model-notes.md under "the four couplings nobody had written down",
+# made again an hour after writing it up.
+#
+# What settled it is not an argument. Three directions failed with
+# finish_reason=length and completion_tokens=4096 exactly, against a
+# prompt_tokens of about 2900: the whole allowance went into reasoning and
+# the date never arrived. The same step completed at 8192 earlier the same
+# evening. Measured, not reasoned.
 TIMEOUT = 120
 
 # ---------------------------------------------------------------------------
