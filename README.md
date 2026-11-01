@@ -95,6 +95,19 @@ market-context column, but any research question returns
 | `SOCRATA_APP_TOKEN` | No | NYC Open Data app token. Works without one, at a lower rate limit |
 | `SEARCH_CREDIT_BUDGET` | No | Per-instance search-credit guard. Defaults to 300 |
 | `PORT` | No | Defaults to 5000 |
+| `EXPLORER_MODEL` | No | Overrides the explorer's model id |
+| `REVIEWER_MODEL` | No | Overrides the reviewer's model id |
+| `MAX_TOKENS` | No | Ceiling for naming the concepts. 8192 |
+| `DATE_TOKENS` | No | Ceiling for dating an event against its sources. 8192 |
+| `REVIEW_TOKENS` | No | Ceiling for the five presentation questions. 4096 |
+| `REVISE_TOKENS` | No | Ceiling for rewording a rejected finding. 2048 |
+
+The six optional model settings exist because a model that is retired, or
+replaced by one with different habits, should not need a commit and a
+redeploy and a programmer. A wrong id or too small a ceiling is corrected in
+the host's environment in a minute, and `/models` says whether the ids are
+real. All six were added on 2026-11-01, the day Nebius announced the
+retirement of the pair this project was built on.
 
 ```bash
 export NEBIUS_API_KEY="..."
@@ -130,12 +143,12 @@ This is a development tool and is not part of the deployed application.
 
 ## Where NVIDIA Nemotron is used
 
-Two Nemotron models, both served by **Nebius Token Factory**, doing different
-jobs. Neither is ever shown a price, and neither decides anything numeric.
+Two NVIDIA Nemotron jobs, both served by **Nebius Token Factory**. Neither is
+ever shown a price, and neither decides anything numeric.
 
 | | Explorer | Reviewer |
 | --- | --- | --- |
-| Model | `nvidia/nemotron-3-super-120b-a12b` | `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B` |
+| Model | `nvidia/Nemotron-3.5-Super-VL` | `nvidia/Nemotron-3.5-Super-VL` |
 | Job | Names the concepts, sets the research directions, dates events against their sources, rewords a rejected finding | Judges how a finding is presented, against five fixed questions |
 | Sees prices | Never | Never |
 
@@ -143,17 +156,64 @@ jobs. Neither is ever shown a price, and neither decides anything numeric.
 BASE_URL = "https://api.tokenfactory.nebius.com/v1"
 ```
 
-Both model identifiers came from `client.models.list()` rather than the
-catalogue display names. Their capitalisation rules differ from each other and
-neither is guessable.
+### These are not the models the submitted video names
+
+Until 2026-11-09 the two jobs ran on `nvidia/nemotron-3-super-120b-a12b` and
+`nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B`. **Nebius retired both from Token
+Factory's serverless models on that date**, with eight days' notice and no
+rerouting: after it, those ids simply fail. The hackathon entry was submitted
+on 2026-10-28 and is locked, so its video and write-up still name the retired
+pair. The running pair is printed on the page at the end of every analysis,
+together with a line saying what it replaced and why.
+
+The deprecation notice names `nvidia/Nemotron-3.5-Super-VL` as the Super
+replacement and `nvidia/Nemotron-3_5-Lightning` as the Nano one. Lightning is
+not used. It narrates rather than judging: given a finding it restates the
+task back correctly — *"I need to answer 5 yes/no questions, then output PASS
+or FAIL"* — and then does not output one, at an 8192 token budget, at 1024,
+and with the format demanded three times including as literal examples. Every
+finding of those runs was blocked as unreviewable, which is the gate behaving
+correctly under a broken reviewer and still a broken reviewer. **So both jobs
+now run on the same model.** That costs more per review than a 30B would and
+loses a genuinely nice property of the original design; a working gate is
+worth more. `docs/model-notes.md` has the full account.
+
+Every model id is read from the environment, so none of this needs a commit
+to change:
+
+| Variable | Default |
+| --- | --- |
+| `EXPLORER_MODEL` | `nvidia/Nemotron-3.5-Super-VL` |
+| `REVIEWER_MODEL` | `nvidia/Nemotron-3.5-Super-VL` |
+
+**`/models` reads the live catalogue** and prints whether the two configured
+ids are actually in it. Model ids here are not guessable — their
+capitalisation rules differ from one another and from the catalogue display
+names — so that route exists to make a wrong one visible rather than
+arguable, and to be readable by someone who does not write code.
 
 **Nebius Token Factory is the only Nebius service this project uses.** It
-serves both models through one OpenAI-compatible endpoint, which is why a
-120B explorer and a 30B reviewer could be assigned to different jobs without
-running two integrations. Both are reasoning models, and reasoning is billed
-against the same token budget as the answer, so every call is given
-`max_tokens=4096` — a small budget returns an empty content field because the
-whole allowance went into thinking.
+serves every model through one OpenAI-compatible endpoint, which is why the
+two jobs could be assigned to different models without running two
+integrations, and why moving both to a new model was two strings rather than
+an adapter.
+
+These are reasoning models, and reasoning is billed against the same token
+budget as the answer: too small a budget returns an empty content field
+because the whole allowance went into thinking. One ceiling used to serve all
+four call sites, which was fine until the models changed and then was not —
+the four jobs want very different amounts:
+
+| Variable | Default | Job |
+| --- | --- | --- |
+| `MAX_TOKENS` | 8192 | naming the concepts and setting the directions |
+| `DATE_TOKENS` | 8192 | reading sources to date an event |
+| `REVIEW_TOKENS` | 4096 | the five presentation questions |
+| `REVISE_TOKENS` | 2048 | rewording one rejected finding |
+
+When a reply does come back empty, the error carries the model, the ceiling,
+`finish_reason` and the usage object, which is what separates a budget spent
+on reasoning from a model that never began.
 
 The endpoint is called over the Python standard library rather than a vendor
 SDK. The project must stay live through judging (2026-12-01 to 12-15), and a
@@ -193,7 +253,7 @@ market, dates.                                     |
    +-----------------------------------------------+ event per direction
    v
 3 · Measure                          4 · Review
-main.py · no model is called         explorer.py · Nemotron Nano 30B
+main.py · no model is called         explorer.py · the reviewer model
 Median of the 12 months before  ->   Five fixed questions on how it is worded.
 and after. Computed in Python        Two rewrites, then the finding is withheld.
 from official rows.                  Sees: the finding. Never a number.
@@ -229,9 +289,16 @@ lives only in an instruction is a rule the next model gets to reinterpret.
 
 ### The presentation gate
 
-A second model reads each measured finding as a reader would meet it and
+A separate call reads each measured finding as a reader would meet it and
 answers five fixed questions about how it is **worded**. It is never asked
 whether the finding is true.
+
+A call rather than a second model: until 2026-11-09 this ran on a smaller,
+faster model than the explorer, which was the nicer design and is described
+above under *Where NVIDIA Nemotron is used*. What makes the gate a gate is
+not that a different model answers. It is that the questions are fixed, the
+reviewer's whole output is a verdict, and the finding goes back to the
+explorer to rewrite rather than being rewritten for it.
 
 1. Does every presented event carry an identifiable source?
 2. Is causal language used where only sequence is established?
