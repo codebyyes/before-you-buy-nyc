@@ -43,7 +43,14 @@ REVIEWER_MODEL = os.environ.get(
 # Nemotron reasons before it answers, and the reasoning is billed against the
 # same budget as the answer. A small max_tokens returns an empty string because
 # the whole allowance went into thinking.
-MAX_TOKENS = 4096
+# 2026-11-01: 4096 was enough for Nemotron 3 Super for three weeks. The first
+# run on Nemotron 3.5 Super VL came back with empty content, which is what
+# this model family does when the whole allowance goes into reasoning, so the
+# ceiling is doubled. That is the likeliest cause and not a measured one: the
+# empty-response error now reports finish_reason and the usage object, so the
+# next failure says whether the budget was the problem instead of leaving it
+# to be guessed. Raise it further from the environment if it was not enough.
+MAX_TOKENS = int(os.environ.get("MAX_TOKENS", "8192"))
 TIMEOUT = 120
 
 # ---------------------------------------------------------------------------
@@ -346,7 +353,35 @@ def chat(model, system, user, max_tokens=MAX_TOKENS):
     if not text or not text.strip():
         # A reasoning model that spends its whole allowance thinking returns an
         # empty content field. That is a failed call, not an empty finding.
-        raise Unavailable("The model returned an empty response.")
+        #
+        # 2026-11-01: this message used to say only that the reply was empty,
+        # which was enough while one model did it for one known reason. On the
+        # first run after the Nemotron 3.5 swap it happened again, and the
+        # message could not tell a spent token budget from a reply the model
+        # never started. Both numbers below come from the response itself, so
+        # the next occurrence says which it was instead of inviting a guess.
+        #   finish_reason "length"  -> the budget ran out; raise MAX_TOKENS.
+        #   finish_reason "stop" with completion_tokens near the ceiling
+        #                           -> spent on reasoning; raise MAX_TOKENS.
+        #   finish_reason "stop" with completion_tokens near zero
+        #                           -> the model declined to answer at all,
+        #                              and MAX_TOKENS is not the problem.
+        reason = ""
+        usage = ""
+        try:
+            reason = str(payload["choices"][0].get("finish_reason", ""))
+        except (KeyError, IndexError, TypeError):
+            pass
+        try:
+            u = payload.get("usage") or {}
+            usage = ", ".join("%s=%s" % (k, u[k]) for k in sorted(u)
+                              if isinstance(u[k], int))
+        except Exception:
+            pass
+        raise Unavailable(
+            "The model returned an empty response. model=%s, max_tokens=%s, "
+            "finish_reason=%s, usage: %s"
+            % (model, max_tokens, reason or "unreported", usage or "unreported"))
 
     return text
 
