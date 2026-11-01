@@ -567,6 +567,106 @@ one direction as a fact about the system is wrong, including the ones above.
 
 ---
 
+## Swapping the models cost eight changes, and why that is the finding
+
+2026-11-01. Nebius retired the Nemotron 3 serverless models with eight days'
+notice, five weeks before judging opens. The swap itself is two strings. It
+took six commits and touched four files, and 802 asked the right question:
+**only two models changed, why did so much?**
+
+### The four couplings nobody had written down
+
+Each of these was true, load-bearing, and nowhere stated as a dependency.
+
+| What the code said | What it was actually relying on |
+| --- | --- |
+| `parse_verdict` read the **start** of the reply | Nano answered in four tokens and never narrated |
+| `MAX_TOKENS = 4096` | Nemotron 3 Super's reasoning volume, measured once |
+| the JSON extractor took the span from the **first brace to the last** | the old explorer's output shape |
+| `REVIEWER_PROMPT` asked for the format **once, at the end** | Nano complied on one reading |
+
+None of them was written as a decision. They were written as though they were
+general, because at the time they were true, and a thing that is true is easy
+to mistake for a thing that is necessary. **Swapping the engine made all four
+visible in the same hour.**
+
+So the honest accounting is not "changing two models is expensive". It is
+that three weeks of quiet coupling came due at once, and the bill was mostly
+for work that had never been done. The same lesson as the 2026-10-25 prompt
+drift, one level up: **a prompt is code nothing type-checks, and the places
+where a program leans on a model's habits are invisible until the model
+changes.**
+
+### What the new models actually did
+
+`nvidia/Nemotron-3.5-Super-VL` as explorer: good, immediately. Across three
+runs it reached the NYC Council vote on the 307 Kent Avenue rezoning
+(Legistar), the Sheepshead Bay 3033 Avenue V rezoning (council.nyc.gov press
+release), the 2019 Housing Stability and Tenant Protection Act (hcr.ny.gov)
+and an FOMC statement (federalreserve.gov) — four government sources, every
+date quoted from text about the event rather than from metadata. It also
+produced three-term and four-term paths without being asked twice.
+
+`nvidia/Nemotron-3_5-Lightning` as reviewer: not usable as configured. It
+narrates. On every finding it restated the task back correctly — *"I need to
+answer 5 yes/no questions about the text, then output PASS or FAIL"* — and
+then never output one. The gate blocked every finding as unreviewable, which
+is the gate working correctly under a broken reviewer, and is still broken.
+
+### An error of mine, recorded because it nearly shipped
+
+The first fix for the narrating reviewer matched **any line beginning with
+PASS or FAIL**. A reviewer that narrates writes sentences like *"PASS or FAIL
+will be output below"*, and that fix would have read one as a pass and
+published a finding the gate never judged. **That is the single error this
+program exists to prevent, and it was twenty minutes from live.** A verdict
+line must now *be* a verdict — `PASS` alone, or `FAIL` followed only by
+digits — and five narrating sentences of that shape are tested and refused.
+
+Cause: speed. Three failures in ninety minutes, 802 waiting on each deploy,
+and a fix written to the shape of the error rather than to the shape of the
+risk.
+
+### What to check the next time a model changes
+
+Derived from what broke, in the order it broke.
+
+1. **Are the ids real?** Not from a documentation page, not from memory — from
+   the catalogue. `/models` reads it live and says whether the configured two
+   are in it.
+2. **Does the explorer return anything at all?** An empty reply now reports
+   `finish_reason` and the usage object, which separates a spent token budget
+   from a model that never began.
+3. **Does the reviewer answer in the required shape?** An unreadable verdict
+   now quotes what the reviewer said.
+4. **Does the JSON still parse?** The brace-counting extractor is merged, so
+   reasoning prose containing a brace no longer breaks the span.
+5. **Are the page's own timing claims still true?** It tells the reader the
+   explorer takes twenty to forty seconds and the evidence pass sixty to
+   ninety. Those were measured on the old pair. 83s and 106s on the new one
+   keep the second claim honest; the first is unmeasured and may now be
+   wrong. **A page that states a range it no longer meets is making a small
+   false claim, which this project does not get to do.**
+
+### What is cheap now that was not
+
+`EXPLORER_MODEL`, `REVIEWER_MODEL` and `MAX_TOKENS` all read from the
+environment, so a wrong id or an insufficient ceiling is fixed in the host's
+settings in a minute, by someone who does not write code, without a commit
+and without this frame. The retired pair is recorded in one place
+(`explorer.py:52`) and serves as both the documented rollback target and the
+source of the page's migration note, which disappears on its own if the
+environment is pointed back at it.
+
+**If the reviewer prompt does not hold Lightning**, the next thing to try
+costs nothing and needs no code: set `REVIEWER_MODEL` to
+`nvidia/Nemotron-3.5-Super-VL`, which is following instructions in the same
+runs. It loses the small-fast-model-for-the-narrow-job story that the
+submission tells. The submission is locked; the site working is worth more
+than the story matching.
+
+---
+
 ## How to talk about this in the submission
 
 Spec section 17's model evaluation is itself a deliverable — the rules make
