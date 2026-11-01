@@ -252,7 +252,24 @@ Output ONLY valid JSON, no other text:
 # prompt because the answers look terse.
 # ---------------------------------------------------------------------------
 
-REVIEWER_PROMPT = """You check how a finding is presented. You do not check
+REVIEWER_PROMPT = """THE FIRST LINE OF YOUR REPLY IS THE VERDICT. Write it
+before anything else. It is one of:
+
+    PASS
+    FAIL 2 5
+
+Nothing may come before that line - no preamble, no restatement of the task,
+no numbered plan, no working. If you want to show your working, put it on the
+lines AFTER the verdict, where it will be ignored.
+
+(2026-11-01: this instruction is doubled, at the top and at the bottom, and
+given as literal examples, because Nemotron 3.5 Lightning read the single
+closing version of it, restated it back correctly - "I need to answer 5
+yes/no questions, then output PASS or FAIL" - and then never output one. The
+gate blocked every finding of that run as unreviewable. Nemotron 3 Nano
+needed none of this and answered in four tokens.)
+
+You check how a finding is presented. You do not check
 whether it is true.
 
 Answer these five questions about the text below:
@@ -271,7 +288,9 @@ direction was worth taking, or whether the figures are interesting. Those are
 not yours to judge.
 
 Reply with one word, PASS or FAIL. If FAIL, follow it with the numbers of the
-questions that failed, separated by spaces. Nothing else."""
+questions that failed, separated by spaces. Nothing else.
+
+Again: the verdict is the FIRST line. PASS, or FAIL and the numbers."""
 
 # Revisions are capped at two. The explorer may rewrite how it said something;
 # it may not go and find something else to say.
@@ -665,43 +684,63 @@ QUESTION_NAMES = {
 }
 
 
+def _verdict_line(line):
+    """PASS, FAIL, or None - and only when the line IS a verdict.
+
+    Matching a line that merely begins with the word is not safe here. A
+    reviewer that narrates writes sentences like "PASS or FAIL will be output
+    below", and reading that as a pass would publish a finding the gate never
+    judged. That is the one error this program must not make, so a verdict
+    line has to be a verdict and nothing else: PASS alone, or FAIL followed
+    only by digits.
+    """
+    toks = [t.strip(".:;*-") for t in line.strip().upper().replace(",", " ").split()]
+    toks = [t for t in toks if t]
+    if not toks:
+        return None
+    if toks[0] == "PASS":
+        return "PASS" if len(toks) == 1 else None
+    if toks[0] == "FAIL":
+        return "FAIL" if all(t.isdigit() for t in toks[1:]) else None
+    return None
+
+
 def parse_verdict(text):
     """PASS, or FAIL and which questions. Anything else is not a verdict.
 
     2026-11-01. Nemotron 3 Nano answered in four tokens with the verdict
-    first, so reading the start of the reply was enough. On the first live run
-    after the swap to Nemotron 3.5 Lightning every review came back
-    unreadable, and the error said only that the reviewer had not answered
-    PASS or FAIL - which is the same shape of mistake as an empty reply with
-    no finish_reason: true, and useless.
+    first, so reading the start of the reply was enough. Nemotron 3.5
+    Lightning narrates instead: on the first live run after the swap it
+    restated the task back correctly - "I need to answer 5 yes/no questions,
+    then output PASS or FAIL" - and then never output one, and every finding
+    of that run was blocked as unreviewable.
 
-    Two changes. The verdict may now be any line that begins with PASS or
-    FAIL, not only the first, because a model that reasons before it answers
-    puts its answer last. The last such line wins, for the same reason: a
-    reasoning line mentioning "FAIL" comes before the verdict, never after
-    it. And when nothing matches, the reply itself is quoted, so the next
-    occurrence is read rather than guessed at.
+    So two shapes are read. The prompt now demands the verdict on the first
+    line, and a first line that is one is taken at its word with everything
+    after it treated as working. Otherwise the model reasoned first and the
+    verdict is the last verdict line, because a reasoning line comes before
+    the answer and never after it.
 
-    This never turns a FAIL into a PASS: a line must begin with the word.
+    Numbers may follow the word or sit on the lines below it; Nano did both.
+    When no line is a verdict, the reply is quoted so the next occurrence is
+    read rather than guessed at.
     """
     head = (text or "").strip()
     lines = head.splitlines()
-    at = -1
-    for i, line in enumerate(lines):
-        upper = line.strip().upper()
-        if upper.startswith("PASS") or upper.startswith("FAIL"):
-            at = i
+    hits = [i for i, ln in enumerate(lines) if _verdict_line(ln)]
+    at = hits[0] if hits and hits[0] == 0 else (hits[-1] if hits else -1)
     if at < 0:
         shown = " ".join(head.split())[:200] or "(empty)"
         raise Unavailable(
             "The reviewer did not answer PASS or FAIL. It said: %s" % shown)
-    # From the verdict word to the end, because Nano wrote the numbers on the
-    # line below the word often enough that a test pins the behaviour.
-    verdict = "\n".join(lines[at:]).strip().upper()
-    if verdict.startswith("PASS"):
+    if _verdict_line(lines[at]) == "PASS":
         return True, []
+    # From the verdict word to the end: Nano put the numbers on the line
+    # below it often enough that a test pins the behaviour.
+    tail = "\n".join(lines[at:]).upper().replace(",", " ").split()
     numbers = []
-    for token in verdict[4:].replace(",", " ").split():
+    for token in tail[1:]:
+        token = token.strip(".:;*-")
         if token.isdigit() and 1 <= int(token) <= 5 and int(token) not in numbers:
             numbers.append(int(token))
     # A FAIL with no numbers is still a FAIL. The gate is not asked to justify
