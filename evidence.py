@@ -18,7 +18,8 @@ import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 
-from explorer import (NO_EVIDENCE, RESEARCH_INCOMPLETE, Unavailable, chat,
+from explorer import (DATE_TOKENS, NO_EVIDENCE, RESEARCH_INCOMPLETE,
+                      Unavailable, chat,
                       clean, extract_json)
 from explorer import EXPLORER_MODEL
 
@@ -253,7 +254,8 @@ def extract_event(keyword, hits):
     if not hits:
         return None
 
-    text = chat(EXPLORER_MODEL, DATE_PROMPT, sources_block(keyword, hits))
+    text = chat(EXPLORER_MODEL, DATE_PROMPT, sources_block(keyword, hits),
+                max_tokens=DATE_TOKENS)
     data = extract_json(text)
 
     # A reply we cannot read is not a statement about the record. Only the

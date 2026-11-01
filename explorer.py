@@ -67,14 +67,44 @@ def migration_note():
 # Nemotron reasons before it answers, and the reasoning is billed against the
 # same budget as the answer. A small max_tokens returns an empty string because
 # the whole allowance went into thinking.
-# 2026-11-01: 4096 was enough for Nemotron 3 Super for three weeks. The first
-# run on Nemotron 3.5 Super VL came back with empty content, which is what
-# this model family does when the whole allowance goes into reasoning, so the
-# ceiling is doubled. That is the likeliest cause and not a measured one: the
-# empty-response error now reports finish_reason and the usage object, so the
-# next failure says whether the budget was the problem instead of leaving it
-# to be guessed. Raise it further from the environment if it was not enough.
-MAX_TOKENS = int(os.environ.get("MAX_TOKENS", "8192"))
+# 2026-11-01, in two steps.
+#
+# First: 4096 had been enough for Nemotron 3 Super for three weeks, and the
+# first run on Nemotron 3.5 Super VL came back with empty content, so the
+# ceiling was doubled.
+#
+# Then the evidence pass went 83s, 106s, and past the page's 240s limit, and
+# 802 said plainly that everything had been slower since the swap. He is
+# right, and one number sat on four jobs that want very different things:
+#
+#   planning   one call,  a JSON plan          - wants room to reason
+#   dating     one call per direction, parallel, a single ISO date
+#   review     up to three calls PER FINDING, serial - wants four tokens
+#   revision   up to two calls per finding, serial  - wants one sentence
+#
+# The review loop is the expensive one: two findings is up to ten calls in
+# sequence, and a reviewer that narrates will fill whatever it is given on
+# every one of them. Giving the narrow jobs narrow budgets is the fix; giving
+# all four the widest one was the bug.
+#
+# The review budget is deliberately small. The prompt now demands the verdict
+# on the FIRST line, so a compliant reviewer needs almost nothing, and a
+# reviewer that narrates instead gets cut off early - which fails exactly as
+# it fails today, in a tenth of the time. Failing fast is worth more here
+# than one more chance to ramble into an answer.
+#
+# These four numbers are starting points, not measurements. Every one is
+# overridable from the environment, and the empty-response error reports
+# finish_reason and the usage object, so a budget that is too small says so
+# rather than being guessed at.
+def _budget(name, default):
+    return int(os.environ.get(name, str(default)))
+
+
+MAX_TOKENS = _budget("MAX_TOKENS", 8192)          # planning, and the default
+DATE_TOKENS = _budget("DATE_TOKENS", 4096)        # what dating ran on before
+REVIEW_TOKENS = _budget("REVIEW_TOKENS", 1024)    # a verdict, not an essay
+REVISE_TOKENS = _budget("REVISE_TOKENS", 2048)    # one rewritten sentence
 TIMEOUT = 120
 
 # ---------------------------------------------------------------------------
@@ -788,7 +818,8 @@ def review(event, path, measure):
         # comes back empty - which is exactly the trap the handover warns
         # about on its first page, and which this call fell into at 256.
         verdict = chat(REVIEWER_MODEL, REVIEWER_PROMPT,
-                       finding_text(event, path, measure), max_tokens=MAX_TOKENS)
+                       finding_text(event, path, measure),
+                       max_tokens=REVIEW_TOKENS)
         passed, failures = parse_verdict(verdict)
         if passed:
             return True, event, path, [], attempt
@@ -800,6 +831,7 @@ def review(event, path, measure):
             EXPLORER_MODEL,
             REVISE_PROMPT,
             "REJECTED ON: %s\n\n%s" % (grounds, finding_text(event, path, measure)),
+            max_tokens=REVISE_TOKENS,
         )
         try:
             data = extract_json(revised)
